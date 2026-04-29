@@ -1,0 +1,37 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>Admin System</title>
+    <style>
+        :root { --sidebar-bg: #2c3e50; --accent: #3498db; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; }
+        
+        #sidebar { width: 260px; height: 100vh; background: var(--sidebar-bg); color: white; position: fixed; z-index: 100; }
+        .sidebar-header { padding: 30px 20px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 1px solid #3e4f5f; }
+        
+        .nav-link { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; border-left: 4px solid transparent; }
+        .nav-link:hover { background: #34495e; color: white; border-left-color: var(--accent); }
+        
+        #main-content { margin-left: 260px; padding: 40px; }
+        .logout-btn { color: #ff7675 !important; margin-top: 50px; }
+    </style>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="sidebar">
+            <div class="sidebar-header">ADMIN PANEL</div>
+            <a href="AdminDashboard.aspx" class="nav-link">📊 Dashboard</a>
+            <a href="#" class="nav-link">👥 Users</a>
+            <a href="#" class="nav-link">📚 Courses</a>
+            <a href="#" class="nav-link">📢 Announcements</a>
+            <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="nav-link logout-btn">🚪 Log Out</asp:LinkButton>
+        </div>
+
+        <div id="main-content">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+        </div>
+    </form>
+</body>
+</html>
