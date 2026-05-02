@@ -25,7 +25,7 @@ Bachelor in Computer Science, Year 2 Semester 2 Module: Software Engineering
    //This 2 command is your sidebar.
    
 3. Under AdminMaster.Master page, make sure to add your PAGENAME.aspx
-4. Remove default all HTML body, replace your page content with:
+4. Remove all the default HTML body, replace your page body with:
 
 ```
    <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
