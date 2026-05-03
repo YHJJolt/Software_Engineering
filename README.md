@@ -18,7 +18,7 @@ Bachelor in Computer Science, Year 2 Semester 2 Module: Software Engineering
    ``` <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WebForm1.aspx.cs" Inherits="SchoolSystem.WebForm1" %>```
    
    Add:
-   ```MasterPageFile="~/AdminMaster.Master"``` and ```CodeBehind="AdminDashboard.aspx.cs" ```// This 2 command is your sidebar.
+   ```MasterPageFile="~/AdminMaster.Master"``` // This command is your sidebar.
    
    After:
    ```<%@ Page Title="PAGENAME" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="AdminDashboard.aspx.cs" Inherits="SchoolSystem.Courses" %>```
