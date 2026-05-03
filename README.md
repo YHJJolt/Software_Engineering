@@ -14,15 +14,11 @@ Bachelor in Computer Science, Year 2 Semester 2 Module: Software Engineering
 ---
 
 # Add new Page
-1. On the first line
-   ``` <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WebForm1.aspx.cs" Inherits="SchoolSystem.WebForm1" %>```
-   
-   Add:
+1. On the first line, Add:
    ```MasterPageFile="~/AdminMaster.Master"``` // This command is your sidebar.
    
    After:
    ```<%@ Page Title="PAGENAME" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="AdminDashboard.aspx.cs" Inherits="SchoolSystem.Courses" %>```
-   //This 2 command is your sidebar.
    
 3. Under AdminMaster.Master page, make sure to add your PAGENAME.aspx
 4. Remove all the default HTML body, replace your page body with:
