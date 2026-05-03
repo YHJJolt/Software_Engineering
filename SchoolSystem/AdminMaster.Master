@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -12,6 +12,9 @@
         
         .nav-link { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; border-left: 4px solid transparent; }
         .nav-link:hover { background: #34495e; color: white; border-left-color: var(--accent); }
+
+        .nav-link.active { background: var(--accent);color: white; border-left-color: white; }
+        .nav-link.active:hover { background: #2980b9;}
         
         #main-content { margin-left: 260px; padding: 40px; }
         .logout-btn { color: #ff7675 !important; margin-top: 50px; }
@@ -20,12 +23,12 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <div id="sidebar">
+        <div id="sidebar"> 
             <div class="sidebar-header">ADMIN PANEL</div>
-            <a href="AdminDashboard.aspx" class="nav-link">📊 Dashboard</a>
-            <a href="#" class="nav-link">👥 Users</a>
-            <a href="#" class="nav-link">📚 Courses</a>
-            <a href="#" class="nav-link">📢 Announcements</a>
+            <a id="linkDashboard" runat="server" href="AdminDashboard.aspx" class="nav-link">📊 Dashboard</a>
+            <a id="linkUsers"     runat="server" href="#"                   class="nav-link">👥 Users</a>
+            <a id="linkCourses"   runat="server" href="Courses.aspx"        class="nav-link">📚 Courses</a>
+            <a id="linkAnnouncements" runat="server" href="#"               class="nav-link">📢 Announcements</a>
             <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="nav-link logout-btn">🚪 Log Out</asp:LinkButton>
         </div>
 
