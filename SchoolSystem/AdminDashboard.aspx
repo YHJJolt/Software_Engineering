@@ -57,18 +57,30 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('progChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: <%= ChartLabels %>,
-                datasets: [{ 
-                    data: <%= ChartData %>,
-                    backgroundColor: ['#4a69bd', '#1abc9c', '#f1c40f', '#e67e22', '#e74c3c', '#9b59b6']
-                }]
-            },
-            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
+        const canvas = document.getElementById('progChart');
+    
+        if (canvas instanceof HTMLCanvasElement) {
+            const ctx = canvas.getContext('2d');
+    
+            // @ts-ignore
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: <%= ChartLabels %>,
+                    datasets: [{
+                        data: <%= ChartData %>,
+                        backgroundColor: ['#4a69bd', '#1abc9c', '#f1c40f', '#e67e22', '#e74c3c', '#9b59b6']
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
     </script>
 </asp:Content>
