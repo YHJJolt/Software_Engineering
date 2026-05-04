@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 -- Create the Database
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
 BEGIN
@@ -213,3 +214,5 @@ VALUES
 ('Club Recruitment', 'Join the Robotics club today!', 'Co-curriculum', 1);
 
 GO
+=======
+>>>>>>> be4a2465d4ac7abf93aaacdb136c5dc83151596e
