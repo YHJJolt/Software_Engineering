@@ -60,10 +60,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const canvas = document.getElementById('progChart');
-    
+
         if (canvas instanceof HTMLCanvasElement) {
             const ctx = canvas.getContext('2d');
-    
+
             // @ts-ignore
             new Chart(ctx, {
                 type: 'pie',
