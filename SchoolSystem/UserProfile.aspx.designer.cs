@@ -11,70 +11,61 @@ namespace SchoolSystem
 {
 
 
-    public partial class AdminDashboard
+    public partial class UserProfile
     {
 
         /// <summary>
-        /// litStudents control.
+        /// imgBigProfile control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStudents;
+        protected global::System.Web.UI.WebControls.Image imgBigProfile;
 
         /// <summary>
-        /// litLecturers control.
+        /// fileUploadImg control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litLecturers;
+        protected global::System.Web.UI.WebControls.FileUpload fileUploadImg;
 
         /// <summary>
-        /// litCourses control.
+        /// litFullName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litCourses;
+        protected global::System.Web.UI.WebControls.Literal litFullName;
 
         /// <summary>
-        /// btnShowAnnounce control.
+        /// litEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnShowAnnounce;
+        protected global::System.Web.UI.WebControls.Literal litEmail;
 
         /// <summary>
-        /// btnShowCalendar control.
+        /// txtBio control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnShowCalendar;
+        protected global::System.Web.UI.WebControls.TextBox txtBio;
 
         /// <summary>
-        /// ddlSort control.
+        /// IDbtnSaveBio control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSort;
-
-        /// <summary>
-        /// rptHub control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptHub;
+        protected global::System.Web.UI.WebControls.Button IDbtnSaveBio;
     }
 }

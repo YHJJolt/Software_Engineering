@@ -5,97 +5,156 @@
 <head runat="server">
     <title>Login - School System</title>
     <style>
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        .gradient-bg { 
-            width: 100%; 
-            min-height: 100vh; 
-            background: linear-gradient(to bottom right, #f7f1c1, #c8e6f5); 
-            display: flex; 
-            flex-direction: column; 
-            background-attachment: fixed;
+        :root { 
+            --cream-base: #fdfaf6;    /* Main Light Base */
+            --navy-accent: #121420;   /* Primary Text/Button */
+            --antique-gold: #c5a059;  /* Structural Highlights */
+            --soft-glow: #7d8aff;     /* Input Focus Glow */
         }
 
-        .top-nav { width: 100%; padding: 30px; }
-        .nav-left { text-decoration: none; color: #555; font-weight: bold; font-size: 18px; margin-left: 20px; transition: color 0.2s; }
-        .nav-left:hover { color: #000; }
-
-        .page-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 60px 0; }
+        * { box-sizing: border-box; }
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            background-color: var(--cream-base); 
+        }
         
-        .white-box { 
-            background-color: #fff; 
-            border-radius: 30px; 
-            padding: 80px 60px; 
-            width: 500px; /* Wider login box */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        .page-wrapper { 
+            width: 100%; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .top-navigation { width: 100%; padding: 40px; }
+        .back-link { 
+            text-decoration: none; 
+            color: var(--navy-accent); 
+            font-weight: 800; 
+            font-size: 14px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-link:hover { color: var(--antique-gold); }
+
+        .content-area { flex: 1; display: flex; justify-content: center; align-items: center; padding-bottom: 100px; }
+        
+        /* The "Keycap" Login Box */
+        .login-card { 
+            background-color: #ffffff; 
+            border-radius: 20px; 
+            padding: 60px 50px; 
+            width: 480px; 
+            box-shadow: 0 10px 30px rgba(18, 20, 32, 0.05); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            border: 1px solid rgba(0,0,0,0.05); 
+            border: 1px solid rgba(18, 20, 32, 0.03); 
+            border-top: 5px solid var(--antique-gold); /* Brass Structural Accent */
         }
 
-        .title-row h1 { font-size: 42px; font-weight: bold; margin: 0; margin-bottom: 50px; color: #333; }
+        .login-header h1 { 
+            font-size: 36px; 
+            font-weight: 800; 
+            margin: 0; 
+            margin-bottom: 40px; 
+            color: var(--navy-accent); 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--antique-gold);
+            padding-bottom: 10px;
+        }
 
-        .form-group { width: 100%; margin-bottom: 30px; text-align: left; }
-        .form-label { font-size: 14px; color: #666; margin-bottom: 10px; display: block; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .form-input { 
+        .input-group { width: 100%; margin-bottom: 25px; }
+        .field-label { 
+            font-size: 11px; 
+            color: var(--navy-accent); 
+            margin-bottom: 10px; 
+            display: block; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            opacity: 0.6;
+        }
+        .text-field { 
             width: 100%; 
-            padding: 15px; 
-            border: 2px solid #eee; 
-            background-color: #f9f9f9; 
+            padding: 16px; 
+            border: 2px solid #f0f0f0; 
+            background-color: var(--cream-base); 
             border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            transition: border-color 0.2s;
+            font-size: 15px; 
+            color: var(--navy-accent);
+            transition: 0.3s;
         }
-        .form-input:focus { border-color: #4a69bd; outline: none; background-color: #fff; }
+        .text-field:focus { 
+            border-color: var(--soft-glow); 
+            outline: none; 
+            background-color: #fff; 
+            box-shadow: 0 0 10px rgba(125, 138, 255, 0.15);
+        }
 
-        .login-btn { 
-            width: 100%; /* Full width button for a stronger look */
-            background-color: #4a69bd; 
-            color: #fff; 
-            border: none; 
+        .action-button { 
+            width: 100%; 
+            background-color: var(--navy-accent); 
+            color: var(--cream-base); 
+            border: 1px solid var(--antique-gold); 
             border-radius: 10px; 
-            padding: 15px; 
-            font-size: 18px; 
+            padding: 16px; 
+            font-size: 16px; 
             cursor: pointer; 
             margin-top: 20px; 
-            font-weight: bold; 
-            box-shadow: 0 4px 15px rgba(74, 105, 189, 0.3);
-            transition: background-color 0.2s;
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
         }
-        .login-btn:hover { background-color: #3e58a2; }
+        .action-button:hover { 
+            background-color: var(--antique-gold); 
+            color: var(--navy-accent);
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
+        }
 
-        .error-label { color: #e74c3c; font-size: 14px; margin-top: 20px; text-align: center; display: block; font-weight: 500; }
+        .msg-label { 
+            font-size: 13px; 
+            margin-top: 20px; 
+            text-align: center; 
+            display: block; 
+            font-weight: 700; 
+        }
     </style>
 </head>
 <body>
     <form id="form1" runat="server">
-        <div class="gradient-bg">
-            <div class="top-nav">
-                <asp:HyperLink ID="lnkBack" runat="server" CssClass="nav-left" NavigateUrl="~/RoleSelect.aspx"> < Back to Roles</asp:HyperLink>
+        <div class="page-wrapper">
+            <div class="top-navigation">
+                <asp:HyperLink ID="lnkBack" runat="server" CssClass="back-link" NavigateUrl="~/RoleSelect.aspx">
+                    <i class="fas fa-chevron-left"></i> Back to Roles
+                </asp:HyperLink>
             </div>
 
-            <div class="page-content">
-                <div class="white-box">
-                    <div class="title-row">
+            <div class="content-area">
+                <div class="login-card">
+                    <div class="login-header">
                         <h1>Log In</h1>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">Email address</label>
-                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-input" placeholder="e.g. name@school.com"></asp:TextBox>
+                    <div class="input-group">
+                        <label class="field-label">Email Address</label>
+                        <asp:TextBox ID="txtEmail" runat="server" CssClass="text-field" placeholder="name@school.com"></asp:TextBox>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <asp:TextBox ID="txtPassword" runat="server" CssClass="form-input" TextMode="Password" placeholder="••••••••"></asp:TextBox>
+                    <div class="input-group">
+                        <label class="field-label">Password</label>
+                        <asp:TextBox ID="txtPassword" runat="server" CssClass="text-field" TextMode="Password" placeholder="••••••••"></asp:TextBox>
                     </div>
                     
-                    <asp:Label ID="lblMessage" runat="server" CssClass="error-label" Visible="false"></asp:Label>
+                    <asp:Label ID="lblMessage" runat="server" CssClass="msg-label" Visible="false"></asp:Label>
                     
-                    <asp:Button ID="btnLogin" runat="server" Text="Log In" CssClass="login-btn" OnClick="btnLogin_Click" />
+                    <asp:Button ID="btnLogin" runat="server" Text="Access System" CssClass="action-button" OnClick="btnLogin_Click" />
                 </div>
             </div>
         </div>

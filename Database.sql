@@ -8,18 +8,19 @@ GO
 -- 1. Table: Admin (HoP)
 IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
 CREATE TABLE [Admin (HoP)] (
-  [admin_id] INT NOT NULL IDENTITY(1,1),
+  [admin_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [admin_name] NVARCHAR(45) NOT NULL,
   [admin_email] NVARCHAR(45) NOT NULL,
   [admin_pw] NVARCHAR(45) NOT NULL,
   [admin_isactive] BIT NULL,
-  PRIMARY KEY ([admin_id])
+  [admin_bio] NVARCHAR(MAX) NULL,     -- New Bio Field
+  [admin_img] VARBINARY(MAX) NULL    -- New Image Field
 );
 
 -- 2. Table: Lecturer
 IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
 CREATE TABLE [Lecturer] (
-  [lecturer_id] INT NOT NULL IDENTITY(1,1),
+  [lecturer_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [lecturer_name] NVARCHAR(45) NOT NULL,
   [lecturer_pw] NVARCHAR(45) NOT NULL,
   [lecturer_email] NVARCHAR(45) NOT NULL,
@@ -28,8 +29,9 @@ CREATE TABLE [Lecturer] (
   [date_of_birth] NVARCHAR(100) NOT NULL,
   [program_specialisation] NVARCHAR(100) NOT NULL,
   [teacher_isactive] NVARCHAR(45) NOT NULL,
+  [lecturer_bio] NVARCHAR(MAX) NULL,   -- New Bio Field
+  [lecturer_img] VARBINARY(MAX) NULL,  -- New Image Field
   [Admin_admin_id] INT NOT NULL,
-  PRIMARY KEY ([lecturer_id]),
   CONSTRAINT [fk_Lecturer_Admin] FOREIGN KEY ([Admin_admin_id]) REFERENCES [Admin (HoP)] ([admin_id])
 );
 
@@ -54,7 +56,7 @@ CREATE TABLE [Program] (
 -- 4. Table: Student
 IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
 CREATE TABLE [Student] (
-  [student_id] INT NOT NULL IDENTITY(1,1),
+  [student_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [student_name] NVARCHAR(45) NOT NULL,
   [student_pw] NVARCHAR(45) NOT NULL,
   [student_email] NVARCHAR(45) NOT NULL,
@@ -64,10 +66,10 @@ CREATE TABLE [Student] (
   [student_sem] INT NULL,
   [enrollment_date] DATETIME DEFAULT GETDATE(),
   [student_isactive] NVARCHAR(45) NOT NULL,
-  [created_time] DATETIME DEFAULT GETDATE(),
+  [student_bio] NVARCHAR(MAX) NULL,    -- New Bio Field
+  [student_img] VARBINARY(MAX) NULL,   -- New Image Field
   [Admin_admin_id] INT NOT NULL,
   [Program_id] INT NOT NULL,
-  PRIMARY KEY ([student_id]),
   CONSTRAINT [fk_Student_Admin] FOREIGN KEY ([Admin_admin_id]) REFERENCES [Admin (HoP)] ([admin_id]),
   CONSTRAINT [fk_Student_Program] FOREIGN KEY ([Program_id]) REFERENCES [Program] ([program_id])
 );
@@ -142,8 +144,10 @@ CREATE TABLE [Announcement] (
     CONSTRAINT [fk_Rule_Course] FOREIGN KEY ([Course_id]) REFERENCES [Course] ([course_id])
 );
 
-INSERT INTO [Admin (HoP)] (admin_email, admin_name, admin_pw, admin_isactive)
-VALUES ('admin@school.com','Dr. Smith', 'admin123', 1);
+-- Insert Initial Admin
+INSERT INTO [Admin (HoP)] (admin_email, admin_name, admin_pw, admin_isactive, admin_bio)
+VALUES ('admin@school.com', 'Tan Kai En', 'admin123', 1, 'Senior Head of Program at School of Computing.');
+GO
 
 
 INSERT INTO [Calendar] (event_title, start_date, Admin_id) VALUES ('Semester 1 Starts', '2026-05-01', 1);

@@ -37,7 +37,7 @@ namespace SchoolSystem
             string passColumn = "";
             string nameColumn = "";
 
-            // Identify which table to check based on the role selected in RoleSelect.aspx
+            // Mapping based on your Database Schema
             switch (selectedRole)
             {
                 case "HOP":
@@ -49,7 +49,7 @@ namespace SchoolSystem
                 case "Lecturer":
                     tableName = "[Lecturer]";
                     emailColumn = "lecturer_email";
-                    passColumn = "lecture_pw";
+                    passColumn = "lecturer_pw"; // Standardized to lecturer_pw
                     nameColumn = "lecturer_name";
                     break;
                 case "Student":
@@ -81,15 +81,14 @@ namespace SchoolSystem
                             Session["UserName"] = reader[nameColumn].ToString();
                             Session["UserRole"] = selectedRole;
 
-                            // REDIRECT LOGIC
+                            // Redirect to HoP Dashboard (only HoP implemented for now)
                             if (selectedRole == "HOP")
                             {
                                 Response.Redirect("AdminDashboard.aspx");
                             }
                             else
                             {
-                                // Placeholder for other roles if their dashboards aren't ready yet
-                                ShowErrorMessage($"Login Successful! Welcome {Session["UserName"]}. Dashboard for {selectedRole} coming soon.", false);
+                                ShowErrorMessage($"Login Successful! Welcome {Session["UserName"]}. {selectedRole} Dashboard is under maintenance.", false);
                             }
                         }
                         else
@@ -108,7 +107,8 @@ namespace SchoolSystem
         private void ShowErrorMessage(string message, bool isError = true)
         {
             lblMessage.Text = message;
-            lblMessage.ForeColor = isError ? System.Drawing.Color.Red : System.Drawing.Color.Green;
+            // Use Antique Gold for success/info messages, standard Red for errors
+            lblMessage.ForeColor = isError ? System.Drawing.Color.FromArgb(231, 76, 60) : System.Drawing.Color.FromArgb(197, 160, 89);
             lblMessage.Visible = true;
         }
     }

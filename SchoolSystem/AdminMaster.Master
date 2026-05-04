@@ -2,39 +2,124 @@
 <!DOCTYPE html>
 <html>
 <head runat="server">
-    <title>Admin System</title>
+    <meta charset="utf-8" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <style>
-        :root { --sidebar-bg: #2c3e50; --accent: #3498db; }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; }
-        
-        #sidebar { width: 260px; height: 100vh; background: var(--sidebar-bg); color: white; position: fixed; z-index: 100; }
-        .sidebar-header { padding: 30px 20px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 1px solid #3e4f5f; }
-        
-        .nav-link { display: block; padding: 15px 25px; color: #bdc3c7; text-decoration: none; border-left: 4px solid transparent; }
-        .nav-link:hover { background: #34495e; color: white; border-left-color: var(--accent); }
+        :root { 
+            --cream-base: #fdfaf6;    /* Main Light Base */
+            --navy-accent: #121420;   /* Text and Structure */
+            --antique-gold: #c5a059;  /* Highlights */
+            --soft-glow: #7d8aff;     /* Secondary Accent */
+            --sidebar-width: 260px; 
+        }
 
-        .nav-link.active { background: var(--accent);color: white; border-left-color: white; }
-        .nav-link.active:hover { background: #2980b9;}
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--cream-base); 
+            color: var(--navy-accent); 
+            transition: 0.3s ease; 
+        }
         
-        #main-content { margin-left: 260px; padding: 40px; }
-        .logout-btn { color: #ff7675 !important; margin-top: 50px; }
+        #sidebar { 
+            width: var(--sidebar-width); 
+            height: 100vh; 
+            background: var(--cream-base); 
+            position: fixed; z-index: 100; 
+            display: flex; flex-direction: column;
+            border-right: 2px solid rgba(18, 20, 32, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header { 
+            padding: 30px 20px; 
+            font-size: 18px; font-weight: 800; 
+            letter-spacing: 2px; color: var(--navy-accent); 
+            border-bottom: 1px solid rgba(18, 20, 32, 0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .nav-container { flex: 1; padding-top: 20px; }
+        .nav-link { 
+            display: flex; align-items: center; padding: 14px 25px; 
+            color: rgba(18, 20, 32, 0.6); 
+            text-decoration: none; font-size: 14px; transition: 0.3s;
+            font-weight: 600;
+        }
+        .nav-link i { min-width: 35px; font-size: 17px; color: var(--soft-glow); }
+        .nav-link:hover { color: var(--navy-accent); background: rgba(197, 160, 89, 0.05); }
+        
+        .nav-link.active { 
+            background: rgba(197, 160, 89, 0.1); 
+            color: var(--navy-accent); 
+            box-shadow: inset 4px 0 0 var(--antique-gold);
+        }
+        .nav-link.active i { color: var(--antique-gold) !important; }
+
+        .sub-link { padding-left: 55px; font-size: 13px; }
+
+        #main-content { margin-left: var(--sidebar-width); padding: 40px; transition: 0.3s; }
+
+        .sidebar-profile { 
+            margin: 20px; padding: 15px; border-radius: 12px;
+            background: #fff; border: 1px solid var(--antique-gold);
+            display: flex; align-items: center; text-decoration: none; color: var(--navy-accent);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .p-img { width: 35px; height: 35px; border-radius: 8px; border: 1.5px solid var(--antique-gold); margin-right: 12px; object-fit: cover; }
+        .p-name { display: block; font-size: 13px; font-weight: 700; }
+
+        /* Sidebar Toggle Mechanics */
+        #toggle-btn { cursor: pointer; color: var(--navy-accent); font-size: 18px; opacity: 0.5; transition: 0.3s; }
+        #toggle-btn:hover { opacity: 1; }
+        body.sidebar-collapsed #sidebar { width: 80px; }
+        body.sidebar-collapsed #main-content { margin-left: 80px; }
+        body.sidebar-collapsed .nav-link span, body.sidebar-collapsed .header-text, body.sidebar-collapsed .p-text { display: none; }
+        body.sidebar-collapsed .nav-link { justify-content: center; padding: 18px 0; }
     </style>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
     <form id="form1" runat="server">
         <div id="sidebar"> 
-            <div class="sidebar-header">ADMIN PANEL</div>
-            <a id="linkDashboard" runat="server" href="AdminDashboard.aspx" class="nav-link">📊 Dashboard</a>
-            <a id="linkUsers"     runat="server" href="#"                   class="nav-link">👥 Users</a>
-            <a id="linkCourses"   runat="server" href="#"                  class="nav-link">📚 Courses</a>
-            <a id="linkAnnouncements" runat="server" href="#"               class="nav-link">📢 Announcements</a>
-            <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="nav-link logout-btn">🚪 Log Out</asp:LinkButton>
+            <div class="sidebar-header">
+                <span class="header-text">ADMIN PANEL</span>
+                <i class="fas fa-bars" id="toggle-btn" onclick="toggleSidebar()"></i>
+            </div>
+            <div class="nav-container">
+                <a id="linkDashboard" runat="server" href="AdminDashboard.aspx" class="nav-link"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
+                <a id="linkUsers" runat="server" href="UserManagement.aspx" class="nav-link"><i class="fas fa-users"></i> <span>User Management</span></a>
+                <a id="linkPayment" runat="server" href="Payments.aspx" class="nav-link sub-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
+                <a id="linkCourses" runat="server" href="CourseManagement.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
+                <a id="linkEnrolment" runat="server" href="Enrolment.aspx" class="nav-link sub-link"><i class="fas fa-user-plus"></i> <span>Enrolment</span></a>
+                <a id="linkPerformance" runat="server" href="StudentPerformance.aspx" class="nav-link"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
+                <a id="linkAnnouncements" runat="server" href="Announcements.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>
+                <a id="linkCalendar" runat="server" href="Calendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
+                
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="nav-link" Style="color:#e74c3c; margin-top:20px;">
+                    <i class="fas fa-power-off"></i> <span>Log Out</span>
+                </asp:LinkButton>
+            </div>
+            <a href="UserProfile.aspx" class="sidebar-profile">
+                <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
+                <div class="p-text">
+                    <span class="p-name"><asp:Literal ID="litSidebarName" runat="server" /></span>
+                </div>
+            </a>
         </div>
-
         <div id="main-content">
             <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
         </div>
     </form>
+    <script>
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
+        }
+        window.onload = function () {
+            if (localStorage.getItem('sidebarState') === 'collapsed') document.body.classList.add('sidebar-collapsed');
+        };
+    </script>
 </body>
 </html>

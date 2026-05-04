@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Web.UI.WebControls;
 
-namespace SchoolSystem // Change this to your actual project namespace
+namespace SchoolSystem
 {
     public partial class RoleSelect : System.Web.UI.Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Nothing needed on load for this simple page
+            // Simple redirection check can be added here if needed
         }
 
         protected void btnRole_Click(object sender, EventArgs e)

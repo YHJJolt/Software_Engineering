@@ -3,84 +3,107 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .stats-row { display: flex; gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 25px; border-radius: 15px; flex: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 5px solid #4a69bd; }
-        .stat-card h3 { color: #888; font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card .num { font-size: 36px; font-weight: bold; color: #2c3e50; display: block; margin-top: 10px; }
+        .stats-row { display:flex; gap:20px; margin-bottom:30px; }
+        
+        .stat-card {
+            background: #ffffff; /* Elevated White Card */
+            padding: 25px; border-radius: 12px; flex: 1;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(18, 20, 32, 0.05);
+            border-bottom: 3px solid var(--antique-gold);
+        }
+        
+        .stat-label { color: rgba(18, 20, 32, 0.5); font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .stat-value { color: var(--navy-accent); font-size: 32px; font-weight: 800; margin-top: 5px; }
+        .stat-icon { font-size: 24px; color: var(--soft-glow); opacity: 0.8; }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; }
-        .panel { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .panel h3 { margin-top: 0; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 15px; font-size: 18px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; }
+        
+        .panel { 
+            background: #ffffff; 
+            padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(18, 20, 32, 0.05);
+            color: var(--navy-accent);
+        }
+        .panel-title { 
+            font-size: 14px; font-weight: 700; color: var(--navy-accent); 
+            text-transform: uppercase; margin-bottom: 25px; 
+            border-bottom: 2px solid var(--antique-gold); padding-bottom: 10px; 
+        }
 
-        .list-item { display: block; padding: 12px; border-bottom: 1px solid #f9f9f9; text-decoration: none; color: inherit; transition: 0.2s; border-radius: 8px; }
-        .list-item:hover { background: #f0f4ff; color: #4a69bd; }
-        .list-item strong { display: block; font-size: 14px; }
-        .list-item small { color: #999; }
+        .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .tab-btn { background: none; border: none; color: rgba(18, 20, 32, 0.4); font-weight: 700; cursor: pointer; font-size: 15px; margin-right: 20px; text-decoration:none; }
+        .tab-btn.active { color: var(--navy-accent); border-bottom: 3px solid var(--antique-gold); padding-bottom: 5px; }
+        
+        .hub-table { width: 100%; border-collapse: collapse; }
+        .hub-table td { padding: 18px 10px; border-bottom: 1px solid rgba(18, 20, 32, 0.05); color: var(--navy-accent); font-size: 14px; font-weight: 600; }
+        .item-date { text-align: right; color: rgba(18, 20, 32, 0.4); font-size: 12px; }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="stats-row">
-        <div class="stat-card"><h3>Total Students</h3><span class="num"><asp:Literal ID="litStudents" runat="server" /></span></div>
-        <div class="stat-card"><h3>Total Lecturers</h3><span class="num"><asp:Literal ID="litLecturers" runat="server" /></span></div>
-        <div class="stat-card"><h3>Total Courses</h3><span class="num"><asp:Literal ID="litCourses" runat="server" /></span></div>
+        <div class="stat-card">
+            <div><div class="stat-label">Students</div><div class="stat-value"><asp:Literal ID="litStudents" runat="server" /></div></div>
+            <i class="fas fa-user-graduate stat-icon"></i>
+        </div>
+        <div class="stat-card">
+            <div><div class="stat-label">Lecturers</div><div class="stat-value"><asp:Literal ID="litLecturers" runat="server" /></div></div>
+            <i class="fas fa-chalkboard-teacher stat-icon"></i>
+        </div>
+        <div class="stat-card">
+            <div><div class="stat-label">Courses</div><div class="stat-value"><asp:Literal ID="litCourses" runat="server" /></div></div>
+            <i class="fas fa-book stat-icon"></i>
+        </div>
     </div>
 
     <div class="dashboard-grid">
         <div class="panel">
-            <h3>Student Program Distribution</h3>
-            <div style="height: 350px; position: relative;">
-                <canvas id="progChart"></canvas>
-            </div>
+            <div class="panel-title">Program Distribution</div>
+            <div style="height: 350px;"><canvas id="progChart"></canvas></div>
         </div>
-
         <div class="panel">
-            <h3>Latest Announcements</h3>
-            <asp:Repeater ID="rptAnnouncements" runat="server">
-                <ItemTemplate>
-                    <a href="AnnouncementManagement.aspx" class="list-item">
-                        <strong><%# Eval("title") %></strong>
-                        <small><%# Eval("created_at", "{0:MMM dd, yyyy}") %></small>
-                    </a>
-                </ItemTemplate>
-            </asp:Repeater>
-
-            <h3 style="margin-top: 30px;">Upcoming Schedule</h3>
-            <asp:Repeater ID="rptSchedule" runat="server">
-                <ItemTemplate>
-                    <a href="CalendarManagement.aspx" class="list-item">
-                        <strong><%# Eval("event_title") %></strong>
-                        <small>📅 <%# Eval("start_date", "{0:MMM dd}") %></small>
-                    </a>
-                </ItemTemplate>
-            </asp:Repeater>
+            <div class="hub-header">
+                <div>
+                    <asp:LinkButton ID="btnShowAnnounce" runat="server" OnClick="btnShowAnnounce_Click" CssClass="tab-btn active">Announcements</asp:LinkButton>
+                    <asp:LinkButton ID="btnShowCalendar" runat="server" OnClick="btnShowCalendar_Click" CssClass="tab-btn">Calendar</asp:LinkButton>
+                </div>
+                <asp:DropDownList ID="ddlSort" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlSort_SelectedIndexChanged" BackColor="#ffffff" ForeColor="#121420" BorderStyle="None" Font-Size="12px">
+                    <asp:ListItem Text="Newest" Value="DESC" />
+                    <asp:ListItem Text="Oldest" Value="ASC" />
+                </asp:DropDownList>
+            </div>
+            <table class="hub-table">
+                <asp:Repeater ID="rptHub" runat="server">
+                    <ItemTemplate>
+                        <tr>
+                            <td><i class="fas fa-chevron-right" style="color:var(--antique-gold); font-size:10px; margin-right:12px;"></i> <%# Eval("Title") %></td>
+                            <td class="item-date"><%# Eval("DisplayDate", "{0:MMM dd}") %></td>
+                        </tr>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </table>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const canvas = document.getElementById('progChart');
-    
-        if (canvas instanceof HTMLCanvasElement) {
-            const ctx = canvas.getContext('2d');
-    
-            // @ts-ignore
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('progChart').getContext('2d');
             new Chart(ctx, {
-                type: 'pie',
+                type: 'doughnut',
                 data: {
                     labels: <%= ChartLabels %>,
                     datasets: [{
                         data: <%= ChartData %>,
-                        backgroundColor: ['#4a69bd', '#1abc9c', '#f1c40f', '#e67e22', '#e74c3c', '#9b59b6']
+                        backgroundColor: ['#121420', '#c5a059', '#7d8aff', '#94a3b8', '#e2e8f0'],
+                        borderWidth: 5, borderColor: '#ffffff'
                     }]
                 },
                 options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
+                    maintainAspectRatio: false, cutout: '80%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#121420', usePointStyle: true, padding: 25 } } }
                 }
             });
-        }
+        });
     </script>
 </asp:Content>
