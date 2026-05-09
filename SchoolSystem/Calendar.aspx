@@ -3,7 +3,6 @@
 <asp:ScriptManagerProxy runat="server" />
 
 <style>
-    /* 1. Global Font & Layout */
     .calendar-container { 
         font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
         width: 1260px;
@@ -13,7 +12,7 @@
         color: #121420;
     }
 
-    /* 2. Modern Modal UI */
+    /* Modern Modal UI */
     .modal { 
         display: none; 
         position: fixed; 
@@ -34,7 +33,6 @@
         border: none;
     }
 
-    /* 3. Sleek Inputs */
     .input-row {
         display: flex;
         align-items: center;
@@ -61,7 +59,7 @@
 
     #title.modern-input { font-size: 18px; font-weight: 500; }
 
-    /* 4. Tag-Style Type Picker */
+    /* Tag-Style Type Picker */
     .type-picker-label {
         font-size: 11px;
         font-weight: 700;
@@ -90,7 +88,6 @@
         color: #3c4043;
     }
 
-    /* Specific Tag Colors */
     .type-tag[data-type="General"] { background-color: #e8f0fe; color: #1967d2; }
     .type-tag[data-type="Exam"] { background-color: #fce8e6; color: #d93025; }
     .type-tag[data-type="Holiday"] { background-color: #e6ffed; color: #1e8e3e; }
@@ -102,7 +99,6 @@
         transform: translateY(-1px);
     }
 
-    /* 5. Buttons */
     .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
 
     .modern-btn {
@@ -119,7 +115,7 @@
     .btn-save { background: #7B61FF; color: white; border: none; }
     .btn-save:hover { background: #6347d9; box-shadow: 0 4px 8px rgba(123, 97, 255, 0.3); }
 
-    /* 6. Event Card Styling */
+    /* Event Card Styling */
     .event-card {
         background: #FFF9E6;
         border: 1px solid #e0e0e0;
@@ -159,18 +155,15 @@
     .btn-delete { color: #e74c3c; }
     .fc {width: 100% !important;}
 
-    /* Hide the default event bars completely */
     .fc-daygrid-event-harness {
         display: none !important;
     }
 
-    /* Hover effect on date cells */
     .fc-daygrid-day:hover {
         background-color: #f8f7ff !important;
         cursor: pointer;
     }
 
-    /* Style for the "X Events" badge */
     .event-count-badge {
         background: #7B61FF;
         color: white;
@@ -181,11 +174,10 @@
         font-weight: bold;
     }
 
-    /* Sidebar styling */
     .calendar-sidebar {
         display: none;
         width: 300px;
-        flex: 0 0 300px; /* Locks sidebar width */
+        flex: 0 0 300px; 
         background: white;
         border: 1px solid #e0e0e0;
         border-radius: 12px;
@@ -196,27 +188,23 @@
         top: 20px;
     }
 
-    /* 2. Lock the Calendar side to exactly 900px */
     .calendar-main-box {
         width: 900px;
-        flex: 0 0 900px; /* This prevents it from shrinking or growing */
+        flex: 0 0 900px; 
         min-width: 900px;
     }
 
     .calendar-main-row {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    transition: all 0.3s ease;
-}
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        transition: all 0.3s ease;
+    }
 
-    /* Ensure the button changes color on hover */
     .calendar-sidebar button:hover {
         color: #333 !important;
     }
-
 </style>
-
 
 <div class="calendar-container">
     <h2>Calendar</h2>
@@ -225,13 +213,11 @@
     </button>
 
     <div style="display: flex; gap: 30px; align-items: flex-start; justify-content: center; margin-bottom: 30px;">
-        
         <div class="calendar-main-box">
             <div id="calendar" runat="server"></div>
 
             <div style="margin-top: 40px; border-top: 1px solid rgba(18, 20, 32, 0.1); padding-top: 20px;">
                 <div style="display: flex; gap: 30px; align-items: flex-start;">
-                    
                     <div style="flex: 1;">
                         <h3 style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: #121420; margin-bottom: 20px;">
                             Upcoming Events <i class="fa-solid fa-calendar-day" style="font-size: 16px; opacity: 0.5;"></i>
@@ -245,10 +231,9 @@
                         </h3>
                         <div id="pastEventsContainer"></div>
                     </div>
-
                 </div>
             </div>
-            </div>
+        </div>
 
         <div id="dateSidebar" class="calendar-sidebar">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #7B61FF; padding-bottom: 10px;">
@@ -259,7 +244,6 @@
                 <p style="color: #888; font-size: 13px;">Click a date on the calendar to see details.</p>
             </div>
         </div>
-
     </div> 
 </div>
 
@@ -319,7 +303,6 @@
 
 <script>
     var calendar;
-    // Map types to hex colors
     const typeColorMap = {
         "General": "#1967d2",
         "Exam": "#d93025",
@@ -328,12 +311,8 @@
     };
 
     function openModal() { document.getElementById("eventModal").style.display = "block"; }
-
     function closeModal() { document.getElementById("eventModal").style.display = "none"; }
-
-    function closeSidebar() {
-        $("#dateSidebar").fadeOut(300);
-    }
+    function closeSidebar() { $("#dateSidebar").fadeOut(300); }
 
     function prepareAddModal() {
         $("#modalHeaderTitle").text("Add schedule");
@@ -346,7 +325,6 @@
         openModal();
     }
 
-    // 1. MODIFIED SIDEBAR LOGIC
     function showSidebar(dateStr) {
         const sidebar = $("#dateSidebar");
         const listContainer = $("#sidebarEventsList");
@@ -362,7 +340,6 @@
         if (dayEvents.length === 0) {
             listContainer.append('<p style="color: #999; margin-top:15px; font-size:13px;">No events for this day.</p>');
         } else {
-            // Color Mapping Object
             const colorStyles = {
                 "General": { bg: "#e8f0fe", text: "#1967d2" },
                 "Exam": { bg: "#fce8e6", text: "#d93025" },
@@ -373,32 +350,28 @@
             dayEvents.forEach(event => {
                 const type = event.extendedProps.type || "General";
                 const style = colorStyles[type] || colorStyles["General"];
-
                 listContainer.append(`
-                <div style="background: ${style.bg}; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="font-weight: 700; color: ${style.text}; font-size: 14px;">${event.title}</span>
-                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px; color: ${style.text};">${type}</span>
+                    <div style="background: ${style.bg}; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <span style="font-weight: 700; color: ${style.text}; font-size: 14px;">${event.title}</span>
+                            <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px; color: ${style.text};">${type}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #444; margin-top: 6px; line-height: 1.4;">
+                            ${event.extendedProps.description || "No description."}
+                        </div>
                     </div>
-                    <div style="font-size: 12px; color: #444; margin-top: 6px; line-height: 1.4;">
-                        ${event.extendedProps.description || "No description."}
-                    </div>
-                </div>
-            `);
+                `);
             });
         }
     }
 
-    // 2. MODIFIED EVENT COUNT LOGIC
     function renderEventCounts(events) {
         $(".event-count-badge").remove();
         const counts = {};
-
         events.forEach(e => {
             const d = e.start.split('T')[0];
             counts[d] = (counts[d] || 0) + 1;
         });
-
         Object.keys(counts).forEach(date => {
             const cell = $(`.fc-daygrid-day[data-date="${date}"] .fc-daygrid-day-top`);
             if (cell.length > 0) {
@@ -408,9 +381,7 @@
     }
 
     $(document).ready(function () {
-        // Hide sidebar initially
         $("#dateSidebar").hide();
-
         $(".type-tag").click(function () {
             $(".type-tag").removeClass("active");
             $(this).addClass("active");
@@ -425,12 +396,7 @@
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             height: 'auto',
-
-            // Trigger sidebar on date click
-            dateClick: function (info) {
-                showSidebar(info.dateStr);
-            },
-
+            dateClick: function (info) { showSidebar(info.dateStr); },
             events: function (fetchInfo, successCallback) {
                 $.ajax({
                     url: 'Calendar.aspx/GetEvents',
@@ -439,23 +405,28 @@
                     data: '{}',
                     success: function (response) {
                         const rawEvents = response.d || [];
-                        const coloredEvents = rawEvents.map(event => {
-                            return {
-                                ...event,
-                                color: typeColorMap[event.type] || "#7B61FF"
-                            };
-                        });
+                        const coloredEvents = rawEvents.map(event => ({
+                            ...event,
+                            color: typeColorMap[event.type] || "#7B61FF"
+                        }));
                         successCallback(coloredEvents);
-                        renderEventCards(coloredEvents); // Existing cards below
-                        renderEventCounts(coloredEvents); // New badges on grid
+                        renderEventCards(coloredEvents);
+                        renderEventCounts(coloredEvents);
                     }
                 });
             }
         });
         calendar.render();
-    });
 
-    // --- REMAINDER OF YOUR ORIGINAL FUNCTIONS (SAVE, UPDATE, DELETE) ---
+        // DEEP LINKING LOGIC: Check URL for date parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetDate = urlParams.get('date');
+        if (targetDate) {
+            calendar.gotoDate(targetDate); // Jump to the month
+            // Small delay to ensure events are loaded before opening sidebar
+            setTimeout(() => { showSidebar(targetDate); }, 300);
+        }
+    });
 
     function saveEvent() {
         $.ajax({
@@ -483,9 +454,7 @@
         const pastContainer = $("#pastEventsContainer");
         upcomingContainer.empty();
         pastContainer.empty();
-
         events.sort((a, b) => new Date(a.start) - new Date(b.start));
-
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -493,19 +462,17 @@
             const eventDate = new Date(event.start);
             let dateRange = event.start;
             if (event.end && event.end !== event.start) dateRange += ` — ${event.end}`;
-
             const accentColor = typeColorMap[event.type] || "#7B61FF";
             const cardHtml = `
-            <div class="event-card ${eventDate < today ? 'past-event' : ''}" style="border-left: 6px solid ${accentColor};">
-                <div class="event-card-date">${dateRange}</div>
-                <h4 class="event-card-title">${event.title}</h4>
-                <div class="event-card-desc">${event.description || "No description provided."}</div>
-                <div class="card-actions">
-                    <button type="button" class="action-btn btn-edit" onclick="openEditModal('${event.id}')"><i class="fa-solid fa-pencil"></i></button>
-                    <button type="button" class="action-btn btn-delete" onclick="deleteEvent('${event.id}')"><i class="fa-solid fa-trash-can"></i></button>
-                </div>
-            </div>`;
-
+                <div class="event-card ${eventDate < today ? 'past-event' : ''}" style="border-left: 6px solid ${accentColor};">
+                    <div class="event-card-date">${dateRange}</div>
+                    <h4 class="event-card-title">${event.title}</h4>
+                    <div class="event-card-desc">${event.description || "No description provided."}</div>
+                    <div class="card-actions">
+                        <button type="button" class="action-btn btn-edit" onclick="openEditModal('${event.id}')"><i class="fa-solid fa-pencil"></i></button>
+                        <button type="button" class="action-btn btn-delete" onclick="deleteEvent('${event.id}')"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>`;
             if (eventDate < today) pastContainer.append(cardHtml);
             else upcomingContainer.append(cardHtml);
         });
@@ -517,18 +484,15 @@
     function openEditModal(id) {
         var eventObj = calendar.getEventById(id);
         if (!eventObj) return;
-
         $("#editEventId").val(id);
         $("#title").val(eventObj.title);
         $("#desc").val(eventObj.extendedProps.description);
         $("#startDate").val(eventObj.startStr);
         $("#endDate").val(eventObj.endStr ? eventObj.endStr : eventObj.startStr);
-
         var savedType = eventObj.extendedProps.type;
         $("#eventType").val(savedType);
         $(".type-tag").removeClass("active");
         $(`.type-tag[data-type='${savedType}']`).addClass("active");
-
         $("#modalHeaderTitle").text("Edit Event");
         $("#saveEvent").hide();
         $("#updateEventBtn").show();

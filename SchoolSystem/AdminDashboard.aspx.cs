@@ -22,7 +22,6 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Ensures chart and stat data repopulates on every postback
             LoadStats();
             LoadProgramDistribution();
 
@@ -44,7 +43,6 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Aggregates student counts for the doughnut chart
                 string sql = "SELECT p.program_name, COUNT(s.student_id) as Total FROM [Program] p LEFT JOIN [Student] s ON p.program_id = s.Program_id GROUP BY p.program_name";
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 conn.Open();
@@ -67,9 +65,11 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sortDir = ddlSort.SelectedValue;
+
+                // Fetching 'Content' for the announcement modal and 'event_desc' for calendar popups
                 string sql = (ActiveTab == "Announce")
-                    ? $"SELECT TOP 5 title as Title, created_at as DisplayDate FROM [Announcement] ORDER BY created_at {sortDir}"
-                    : $"SELECT TOP 5 event_title as Title, start_date as DisplayDate FROM [Calendar] ORDER BY start_date {sortDir}";
+                    ? $"SELECT TOP 5 title as Title, created_at as DisplayDate, content as Content, 'Announce' as Type FROM [Announcement] ORDER BY created_at {sortDir}"
+                    : $"SELECT TOP 5 event_title as Title, start_date as DisplayDate, event_desc as Content, event_type as Type FROM [Calendar] ORDER BY start_date {sortDir}";
 
                 SqlDataAdapter da = new SqlDataAdapter(sql, conn);
                 DataTable dt = new DataTable();

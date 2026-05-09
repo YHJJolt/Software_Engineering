@@ -1,12 +1,9 @@
-<<<<<<< HEAD
 USE master;
 GO
 
 IF DB_ID('SchoolSystemDB') IS NOT NULL
-=======
 -- Create the Database
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
->>>>>>> 4247f87528a1398f4d8a6fa65798244de9d80299
 BEGIN
     ALTER DATABASE SchoolSystemDB 
     SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -174,7 +171,8 @@ INSERT INTO [Program] (program_name, program_desc, program_fee, program_semester
 VALUES 
 ('School of Computing', 'Deep dive into coding and AI', '15000', 6, 120, 1, 1, 1),
 ('School of Business', 'Management and Economics', '12000', 6, 100, 1, 3, 1),
-('School of Design', 'UI/UX and Graphic Arts', '13000', 6, 110, 1, 2, 1);
+('School of Design', 'UI/UX and Graphic Arts', '13000', 6, 110, 1, 2, 1),
+('School of Arts', 'Painting and drawing', '10000', 6, 120, 1, 1, 1);
 
 -- 3. Add Students (Distributed across programs for the chart)
 -- Computing (4 students)
@@ -183,18 +181,11 @@ VALUES
 ('John Doe', 'stud123', 'john@stud.com', '017-1111', 'KL', '2004-01-01', 1, 'Active', 1, 1),
 ('Jane Smith', 'stud123', 'jane@stud.com', '017-2222', 'PJ', '2004-02-01', 1, 'Active', 1, 1),
 ('Bob Wilson', 'stud123', 'bob@stud.com', '017-3333', 'Subang', '2004-03-01', 2, 'Active', 1, 1),
-('Alice Wong', 'stud123', 'alice@stud.com', '017-4444', 'Cheras', '2004-04-01', 1, 'Active', 1, 1);
-
--- Business (2 students)
-INSERT INTO [Student] (student_name, student_pw, student_email, student_contact, student_address, date_of_birth, student_sem, student_isactive, Admin_admin_id, Program_id)
-VALUES 
+('Alice Wong', 'stud123', 'alice@stud.com', '017-4444', 'Cheras', '2004-04-01', 1, 'Active', 1, 1),
 ('Charlie Brown', 'stud123', 'charlie@stud.com', '017-5555', 'KL', '2003-05-01', 3, 'Active', 1, 2),
-('David Miller', 'stud123', 'david@stud.com', '017-6666', 'PJ', '2003-06-01', 3, 'Active', 1, 2);
-
--- Design (1 student)
-INSERT INTO [Student] (student_name, student_pw, student_email, student_contact, student_address, date_of_birth, student_sem, student_isactive, Admin_admin_id, Program_id)
-VALUES 
-('Eve Adams', 'stud123', 'eve@stud.com', '017-7777', 'Shah Alam', '2004-07-01', 1, 'Active', 1, 3);
+('David Miller', 'stud123', 'david@stud.com', '017-6666', 'PJ', '2003-06-01', 3, 'Active', 1, 2),
+('Eve Adams', 'stud123', 'eve@stud.com', '017-7777', 'Shah Alam', '2004-07-01', 1, 'Active', 1, 3),
+('Kelleher', 'stud123', 'kelleher@stud.com', '017-8888', 'Shah Alam', '2005-02-09', 1, 'Active', 1, 5);
 
 -- 4. Add Calendar Events (Driving your "Upcoming Schedule")
 INSERT INTO [Calendar] (event_title, event_desc, start_date, end_date, event_type, Admin_id)
@@ -219,9 +210,6 @@ VALUES
 ('Scholarship Open', 'Apply now for the 2026 intake.', 'Finance', 1),
 ('Club Recruitment', 'Join the Robotics club today!', 'Co-curriculum', 1);
 
-<<<<<<< HEAD
 GO
-=======
 GO
 
->>>>>>> 4247f87528a1398f4d8a6fa65798244de9d80299
