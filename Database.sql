@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 USE master;
 GO
 
 IF DB_ID('SchoolSystemDB') IS NOT NULL
+=======
+-- Create the Database
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
+>>>>>>> 4247f87528a1398f4d8a6fa65798244de9d80299
 BEGIN
     ALTER DATABASE SchoolSystemDB 
     SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -214,4 +219,9 @@ VALUES
 ('Scholarship Open', 'Apply now for the 2026 intake.', 'Finance', 1),
 ('Club Recruitment', 'Join the Robotics club today!', 'Co-curriculum', 1);
 
+<<<<<<< HEAD
 GO
+=======
+GO
+
+>>>>>>> 4247f87528a1398f4d8a6fa65798244de9d80299
