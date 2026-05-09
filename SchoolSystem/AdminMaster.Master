@@ -82,6 +82,8 @@
 </head>
 <body>
     <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+
         <div id="sidebar"> 
             <div class="sidebar-header">
                 <span class="header-text">ADMIN PANEL</span>
@@ -94,7 +96,7 @@
                 <a id="linkCourses" runat="server" href="CourseManagement.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
                 <a id="linkEnrolment" runat="server" href="Enrolment.aspx" class="nav-link sub-link"><i class="fas fa-user-plus"></i> <span>Enrolment</span></a>
                 <a id="linkPerformance" runat="server" href="StudentPerformance.aspx" class="nav-link"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
-                <a id="linkAnnouncements" runat="server" href="Announcements.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>
+                <a id="linkAnnouncements" runat="server" href="AdminAnnouncement.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>
                 <a id="linkCalendar" runat="server" href="Calendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
                 
                 <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="nav-link" Style="color:#e74c3c; margin-top:20px;">

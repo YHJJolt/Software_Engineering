@@ -1,13 +1,22 @@
-<<<<<<< HEAD
--- Create the Database
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
+USE master;
+GO
+
+IF DB_ID('SchoolSystemDB') IS NOT NULL
 BEGIN
-    CREATE DATABASE [SchoolSystemDB];
+    ALTER DATABASE SchoolSystemDB 
+    SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+
+    DROP DATABASE SchoolSystemDB;
 END
 GO
 
+-- Create the Database
+CREATE DATABASE [SchoolSystemDB];
+GO
+use [SchoolSystemDB];
+GO
+
 -- 1. Table: Admin (HoP)
-IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
 CREATE TABLE [Admin (HoP)] (
   [admin_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [admin_name] NVARCHAR(45) NOT NULL,
@@ -19,7 +28,6 @@ CREATE TABLE [Admin (HoP)] (
 );
 
 -- 2. Table: Lecturer
-IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
 CREATE TABLE [Lecturer] (
   [lecturer_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [lecturer_name] NVARCHAR(45) NOT NULL,
@@ -38,7 +46,6 @@ CREATE TABLE [Lecturer] (
 
 
 -- 3. Table: Program
-IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
 CREATE TABLE [Program] (
   [program_id] INT NOT NULL IDENTITY(1,1),
   [program_name] NVARCHAR(100) NOT NULL,
@@ -55,7 +62,6 @@ CREATE TABLE [Program] (
 );
 
 -- 4. Table: Student
-IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
 CREATE TABLE [Student] (
   [student_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [student_name] NVARCHAR(45) NOT NULL,
@@ -76,7 +82,6 @@ CREATE TABLE [Student] (
 );
 
 -- 5. Table: Grades
-IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
 CREATE TABLE [Grades] (
   [grades_id] INT NOT NULL IDENTITY(1,1),
   [gpa] DECIMAL(3,2) NULL,
@@ -88,7 +93,6 @@ CREATE TABLE [Grades] (
 );
 
 -- 6. Table: Calendar
-IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
 CREATE TABLE [Calendar] (
     [calendar_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [event_title] NVARCHAR(100) NOT NULL,
@@ -101,7 +105,6 @@ CREATE TABLE [Calendar] (
 );
 
 -- 7. Table: Course
-IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
 CREATE TABLE [Course] (
   [course_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [course_name] NVARCHAR(100) NULL, -- Added this so you can name the courses (e.g. 'Math')
@@ -117,7 +120,6 @@ CREATE TABLE [Course] (
 );
 
 -- 8. Table: Payment
-IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
 CREATE TABLE [Payment] (
   [payment_id] INT NOT NULL IDENTITY(1,1),
   [payment_amount] DECIMAL(10,2) NULL,
@@ -130,7 +132,6 @@ CREATE TABLE [Payment] (
 );
 
 -- 9. Table: Announcement
-IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
 CREATE TABLE [Announcement] (
     [announcement_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [title] NVARCHAR(100) NOT NULL,
@@ -214,5 +215,3 @@ VALUES
 ('Club Recruitment', 'Join the Robotics club today!', 'Co-curriculum', 1);
 
 GO
-=======
->>>>>>> be4a2465d4ac7abf93aaacdb136c5dc83151596e
