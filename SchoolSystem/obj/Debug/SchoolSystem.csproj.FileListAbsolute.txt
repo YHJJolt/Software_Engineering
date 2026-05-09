@@ -70,6 +70,8 @@ C:\Users\justi\source\repos\SchoolSystem\SchoolSystem\bin\Microsoft.CodeDom.Prov
 C:\Users\justi\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSy.0567E2FD.Up2Date
 C:\Users\justi\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.dll
 C:\Users\justi\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.pdb
+C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.csproj.AssemblyReference.cache
+C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.csproj.CoreCompileInputs.cache
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\SchoolSystem.dll.config
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\SchoolSystem.dll
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\SchoolSystem.pdb
@@ -137,8 +139,6 @@ C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\Newtonsoft.Json.xml
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\Antlr3.Runtime.pdb
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\Microsoft.AspNet.FriendlyUrls.xml
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
-C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.csproj.AssemblyReference.cache
-C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.csproj.CoreCompileInputs.cache
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSy.0567E2FD.Up2Date
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.dll
 C:\Users\ASUS\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.pdb
