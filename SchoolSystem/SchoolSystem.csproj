@@ -100,7 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
-    <Content Include="AdminAnnouncement.aspx" />
     <Content Include="AdminDashboard.aspx" />
     <Content Include="Calendar.aspx" />
     <Content Include="Contact.aspx" />
@@ -190,13 +189,6 @@
     <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdminAnnouncement.aspx.cs">
-      <DependentUpon>AdminAnnouncement.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="AdminAnnouncement.aspx.designer.cs">
-      <DependentUpon>AdminAnnouncement.aspx</DependentUpon>
-    </Compile>
     <Compile Include="AdminDashboard.aspx.cs">
       <DependentUpon>AdminDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
