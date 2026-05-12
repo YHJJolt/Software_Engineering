@@ -1,21 +1,22 @@
+--USE master;
+--GO
+
+--IF DB_ID('SchoolSystemDB') IS NOT NULL
+-- Create the Database
+--IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
+--BEGIN
+--    ALTER DATABASE SchoolSystemDB 
+--    SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+
+--    DROP DATABASE SchoolSystemDB;
+--END
+--GO
+
 -- Create the Database
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
 BEGIN
     CREATE DATABASE [SchoolSystemDB];
 END
-GO
-
--- Delete all the tables
-IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
-IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
-IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
-IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
-IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
-IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
-IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
-IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
-IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
-IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
 GO
 
 -- 1. Table: Admin (HoP)
@@ -115,21 +116,18 @@ CREATE TABLE [Calendar] (
 -- 7. Table: Course
 IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
 CREATE TABLE [Course] (
-  [course_code] NVARCHAR(20) NULL, -- Added Course Code
   [course_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-  [course_name] NVARCHAR(100) NULL,
-  [course_fee] NVARCHAR(45) NOT NULL,
-  [credit_hours] INT NULL,
-  [course_status] NVARCHAR(20) DEFAULT 'Open', 
+  [course_name] NVARCHAR(100) NULL, -- Added this so you can name the courses (e.g. 'Math')
+  [course_assignment] DECIMAL(5,2) NULL,
+  [course_exam] DECIMAL(5,2) NULL,
+  [course_attendance] BIT NULL,
+  [Student_id] INT NOT NULL,
   [Lecturer_id] INT NOT NULL,
   [Calendar_id] INT NOT NULL,
-  [Program_id] INT NOT NULL DEFAULT 1,
-  
+  CONSTRAINT [fk_Course_Student] FOREIGN KEY ([Student_id]) REFERENCES [Student] ([student_id]),
   CONSTRAINT [fk_Course_Lecturer] FOREIGN KEY ([Lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
-  CONSTRAINT [fk_Course_Calendar] FOREIGN KEY ([Calendar_id]) REFERENCES [Calendar] ([calendar_id]),
-  CONSTRAINT [fk_Course_Program] FOREIGN KEY ([Program_id]) REFERENCES [Program] ([program_id])
+  CONSTRAINT [fk_Course_Calendar] FOREIGN KEY ([Calendar_id]) REFERENCES [Calendar] ([calendar_id])
 );
-GO
 
 -- 8. Table: Payment
 IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
@@ -143,23 +141,8 @@ CREATE TABLE [Payment] (
   PRIMARY KEY ([payment_id]),
   CONSTRAINT [fk_Payment_Student] FOREIGN KEY ([Student_id]) REFERENCES [Student] ([student_id])
 );
--- 9. Table: Enrollment
-IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
-CREATE TABLE [Enrollment] (
-    [enrollment_id] INT IDENTITY(1,1) PRIMARY KEY,
-    [student_id] INT NOT NULL,
-    [course_id] INT NOT NULL,
-    [enrollment_date] DATETIME DEFAULT GETDATE(),
-    [status] VARCHAR(20) DEFAULT 'Active',
-    CONSTRAINT [FK_Enrollment_Student]
-        FOREIGN KEY ([student_id])
-        REFERENCES [Student]([student_id]),
-    CONSTRAINT [FK_Enrollment_Course]
-        FOREIGN KEY ([course_id])
-        REFERENCES [Course]([course_id])
-);
 
--- 10. Table: Announcement
+-- 9. Table: Announcement
 IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
 CREATE TABLE [Announcement] (
     [announcement_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -228,7 +211,12 @@ VALUES
 ('Course Registration', 'New Semester', '2026-08-20', '2026-08-25', 'Enrollment', 1),
 ('System Maintenance', 'Portal Offline', '2026-05-10', '2026-05-11', 'General', 1);
 
-
+-- 5. Add Courses (To test the "Total Courses" count)
+INSERT INTO [Course] (course_name, course_assignment, course_exam, course_attendance, Student_id, Lecturer_id, Calendar_id)
+VALUES 
+('C# Development', 85.0, 90.0, 1, 1, 1, 1),
+('Database Systems', 70.0, 75.0, 1, 2, 2, 1),
+('Business Ethics', 95.0, 88.0, 1, 5, 3, 1);
 
 -- 6. Add Announcements (Driving your "Latest Announcements" list)
 INSERT INTO [Announcement] (title, content, category, Admin_id)
@@ -238,16 +226,147 @@ VALUES
 ('Scholarship Open', 'Apply now for the 2026 intake.', 'Finance', 1),
 ('Club Recruitment', 'Join the Robotics club today!', 'Co-curriculum', 1);
 
+
+--AML added
+USE [SchoolSystemDB];
+GO
+
+-- Drop tables with dependencies first
+IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
+IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
+IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
+GO
+
+CREATE TABLE [Course] (
+  [course_code] NVARCHAR(20) NULL, -- Added Course Code
+  [course_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+  [course_name] NVARCHAR(100) NULL,
+  [credit_hours] INT NULL,
+  [course_status] NVARCHAR(20) DEFAULT 'Open', 
+  [Lecturer_id] INT NOT NULL,
+  [Calendar_id] INT NOT NULL,
+  [Program_id] INT NOT NULL DEFAULT 1,
+  
+  CONSTRAINT [fk_Course_Lecturer] FOREIGN KEY ([Lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
+  CONSTRAINT [fk_Course_Calendar] FOREIGN KEY ([Calendar_id]) REFERENCES [Calendar] ([calendar_id]),
+  CONSTRAINT [fk_Course_Program] FOREIGN KEY ([Program_id]) REFERENCES [Program] ([program_id])
+);
+GO
+
+CREATE TABLE [Announcement] (
+    [announcement_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [title] NVARCHAR(100) NOT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [category] NVARCHAR(45) DEFAULT 'General',
+    [created_at] DATETIME DEFAULT GETDATE(),
+    [Admin_id] INT NULL,
+    [Lecturer_id] INT NULL,
+    [Course_id] INT NULL,
+    CONSTRAINT [fk_Rule_Admin] FOREIGN KEY ([Admin_id]) REFERENCES [Admin (HoP)] ([admin_id]),
+    CONSTRAINT [fk_Rule_Lecturer] FOREIGN KEY ([Lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
+    CONSTRAINT [fk_Rule_Course] FOREIGN KEY ([Course_id]) REFERENCES [Course] ([course_id])
+);
 GO
 
 -- Insert Courses with the new [course_code] column
-INSERT INTO Course (course_code, course_name,course_fee, Lecturer_id, Calendar_id, credit_hours, course_status, Program_id)
+INSERT INTO Course (course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_status, Program_id)
 VALUES 
-    ('CS101', 'C# Development', 3300, 1, 1, 3, 'Open', 1),
-    ('DB202', 'Database Systems', 4000, 2, 1, 4, 'Ongoing', 1),
-    ('BUS301', 'Business Ethics', 2700,  3, 1, 3, 'Open', 1),
-    ('WEB105', 'Web Development', 2500,  1, 1, 3, 'Open', 1),
-    ('DS204', 'Data Structures',3100,  2, 1, 4, 'Ongoing', 1);
+    ('CS101', 'C# Development', 1, 1, 3, 'Open', 1),
+    ('DB202', 'Database Systems', 2, 1, 4, 'Ongoing', 1),
+    ('BUS301', 'Business Ethics', 3, 1, 3, 'Open', 1),
+    ('WEB105', 'Web Development', 1, 1, 3, 'Open', 1),
+    ('DS204', 'Data Structures', 2, 1, 4, 'Ongoing', 1);
 GO
 
-Select * from Course
+
+
+
+-- HJ Added Enrollment Table, CourseGrade, Dummy Data
+IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
+IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
+GO
+
+CREATE TABLE [Enrollment] (
+    [enrollment_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [semester]      INT NOT NULL,
+    [Student_id]    INT NOT NULL,
+    [Course_id]     INT NOT NULL,
+    CONSTRAINT [fk_Enrollment_Student] FOREIGN KEY ([Student_id]) REFERENCES [Student]([student_id]),
+    CONSTRAINT [fk_Enrollment_Course]  FOREIGN KEY ([Course_id])  REFERENCES [Course]([course_id])
+);
+
+CREATE TABLE [CourseGrade] (
+    [cg_id]          INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [letter_grade]   NVARCHAR(5) NOT NULL,
+    [grade_point]    DECIMAL(3,2) NOT NULL,
+    [total_hours]    INT NOT NULL DEFAULT 0,
+    [attended_hours] INT NOT NULL DEFAULT 0,
+    [Enrollment_id]  INT NOT NULL,
+    CONSTRAINT [fk_CG_Enrollment] FOREIGN KEY ([Enrollment_id]) REFERENCES [Enrollment]([enrollment_id])
+);
+
+-- =============================================
+-- DATA FOR STUDENT 1 (John Doe)
+-- =============================================
+-- Semester 1: CS101, DB202, WEB105
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(1, 1, 1),(1, 1, 2),(1, 1, 4);
+-- Semester 2: DS204, BUS301
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(2, 1, 5),(2, 1, 3);
+
+-- CourseGrades (Enrollment IDs: 1, 2, 3, 4, 5)
+INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hours, Enrollment_id) VALUES
+('A',  4.00, 42, 38, 1),
+('B+', 3.50, 48, 44, 2),
+('A-', 3.70, 36, 32, 3),
+('A',  4.00, 48, 45, 4),
+('B',  3.00, 42, 36, 5);
+
+
+-- =============================================
+-- DATA FOR STUDENT 2 (Jane Smith) - CRITICAL CASE
+-- =============================================
+-- Low attendance and failing/borderline grades
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(1, 2, 1),(1, 2, 2);
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(2, 2, 4),(2, 2, 5);
+
+-- CourseGrades (Enrollment IDs: 6, 7, 8, 9)
+INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hours, Enrollment_id) VALUES
+('F',  0.00, 42, 10, 6), -- Failed, very low attendance
+('D',  1.00, 48, 15, 7), -- Barely passed, low attendance
+('F',  0.00, 36, 5,  8), -- Failed, almost never attended
+('C-', 1.70, 48, 20, 9); -- Poor grade, low attendance
+
+
+-- =============================================
+-- DATA FOR STUDENT 3 (Bob Wilson) - 1 Exc, 1 Good, 1 Avg, 1 Poor
+-- =============================================
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(1, 3, 1),(1, 3, 2);
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(2, 3, 4),(2, 3, 5);
+
+-- CourseGrades (check your actual enrollment_ids after re-run)
+INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hours, Enrollment_id) VALUES
+('A',  4.00, 42, 40, (SELECT enrollment_id FROM [Enrollment] WHERE Student_id = 3 AND Course_id = 1)),
+('B',  3.00, 48, 44, (SELECT enrollment_id FROM [Enrollment] WHERE Student_id = 3 AND Course_id = 2)),
+('C+', 2.30, 36, 30, (SELECT enrollment_id FROM [Enrollment] WHERE Student_id = 3 AND Course_id = 4)),
+('D',  1.00, 42, 28, (SELECT enrollment_id FROM [Enrollment] WHERE Student_id = 3 AND Course_id = 5));
+
+
+-- =============================================
+-- DATA FOR STUDENT 4 (Alice Wong) - WARNING CASE
+-- =============================================
+-- Attendance hovering in the 70-79% warning zone
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(1, 4, 1),(1, 4, 4);
+INSERT INTO [Enrollment] (semester, Student_id, Course_id) VALUES(2, 4, 2),(2, 4, 3);
+
+-- CourseGrades (Enrollment IDs: 14, 15, 16, 17)
+INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hours, Enrollment_id) VALUES
+('B-', 2.70, 42, 31, 14), -- 73.8% attendance - warning zone
+('C+', 2.30, 36, 26, 15), -- 72.2% attendance - warning zone
+('B',  3.00, 48, 35, 16), -- 72.9% attendance - warning zone
+('C',  2.00, 42, 30, 17); -- 71.4% attendance - warning zone
+
+GO
+
+--NEWEST
+
+
