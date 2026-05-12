@@ -12,6 +12,23 @@
 --END
 --GO
 
+IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
+IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
+IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
+IF OBJECT_ID('[Enrolment]', 'U') IS NOT NULL DROP TABLE [Enrolment];
+IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
+IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
+IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
+IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
+IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
+IF OBJECT_ID('[Programme]', 'U') IS NOT NULL DROP TABLE [Programme];
+IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('[LecturerCourse]', 'U') IS NOT NULL DROP TABLE [LecturerCourse];
+IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
+IF OBJECT_ID('[Lecturers]', 'U') IS NOT NULL DROP TABLE [Lecturers];
+IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
+GO
+
 -- Create the Database
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
 BEGIN
@@ -270,13 +287,13 @@ CREATE TABLE [Announcement] (
 GO
 
 -- Insert Courses with the new [course_code] column
-INSERT INTO Course (course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_status, Program_id)
+INSERT INTO Course (course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_fee, course_status, Program_id)
 VALUES 
-    ('CS101', 'C# Development', 1, 1, 3, 'Open', 1),
-    ('DB202', 'Database Systems', 2, 1, 4, 'Ongoing', 1),
-    ('BUS301', 'Business Ethics', 3, 1, 3, 'Open', 1),
-    ('WEB105', 'Web Development', 1, 1, 3, 'Open', 1),
-    ('DS204', 'Data Structures', 2, 1, 4, 'Ongoing', 1);
+    ('CS101', 'C# Development', 1, 1, 3, '1500', 'Open', 1),
+    ('DB202', 'Database Systems', 2, 1, 4, '1234', 'Ongoing', 1),
+    ('BUS301', 'Business Ethics', 3, 1, 3, '4321',  'Open', 1),
+    ('WEB105', 'Web Development', 1, 1, 3, '9999', 'Open', 1),
+    ('DS204', 'Data Structures', 2, 1, 4, '1', 'Ongoing', 1);
 GO
 
 

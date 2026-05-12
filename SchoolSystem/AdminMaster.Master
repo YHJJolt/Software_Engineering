@@ -1,4 +1,4 @@
-<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
+~<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
