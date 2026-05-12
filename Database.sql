@@ -1,22 +1,16 @@
-USE master;
-GO
+--USE master;
+--GO
 
-IF DB_ID('SchoolSystemDB') IS NOT NULL
+--IF DB_ID('SchoolSystemDB') IS NOT NULL
 -- Create the Database
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
-BEGIN
-    ALTER DATABASE SchoolSystemDB 
-    SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+--IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
+--BEGIN
+--    ALTER DATABASE SchoolSystemDB 
+--    SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
 
-    DROP DATABASE SchoolSystemDB;
-END
-GO
-
--- Create the Database
-CREATE DATABASE [SchoolSystemDB];
-GO
-use [SchoolSystemDB];
-GO
+--    DROP DATABASE SchoolSystemDB;
+--END
+--GO
 
 -- Create the Database
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')

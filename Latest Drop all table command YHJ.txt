@@ -1,0 +1,16 @@
+IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
+IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
+IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
+IF OBJECT_ID('[Enrolment]', 'U') IS NOT NULL DROP TABLE [Enrolment];
+IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
+IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
+IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
+IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
+IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
+IF OBJECT_ID('[Programme]', 'U') IS NOT NULL DROP TABLE [Programme];
+IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('[LecturerCourse]', 'U') IS NOT NULL DROP TABLE [LecturerCourse];
+IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
+IF OBJECT_ID('[Lecturers]', 'U') IS NOT NULL DROP TABLE [Lecturers];
+IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
+GO
