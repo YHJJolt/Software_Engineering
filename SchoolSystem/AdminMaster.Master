@@ -89,8 +89,8 @@
             <div class="nav-container">
                 <a id="linkDashboard" runat="server" href="AdminDashboard.aspx" class="nav-link"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
                 <a id="linkUsers" runat="server" href="UserManagement.aspx" class="nav-link"><i class="fas fa-users"></i> <span>User Management</span></a>
-                <a id="linkPayment" runat="server" href="Payments.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
-                <a id="linkCourses" runat="server" href="CourseManagement.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
+                <a id="linkPayment" runat="server" href="ManagePayments.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
+                <a id="linkCourses" runat="server" href="Courses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
                 <a id="linkEnrolment" runat="server" href="Enrolment.aspx" class="nav-link"><i class="fas fa-user-plus"></i> <span>Enrolment</span></a>
                 <a id="linkPerformance" runat="server" href="StudentPerformance.aspx" class="nav-link"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
                 <a id="linkAnnouncements" runat="server" href="AdminAnnouncement.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>

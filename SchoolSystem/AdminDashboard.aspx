@@ -3,152 +3,301 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* 1. Stat Cards with Vibrant Gradients */
-        .stats-row { display:flex; gap:20px; margin-bottom:30px; }
+        /* ==================== 1. Modern Stat Cards ==================== */
+        .dashboard-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 120px); /* Calculates screen height to push panels down */
+        }
+
+        .stats-row { 
+            display: flex; 
+            gap: 25px; 
+            margin-bottom: 30px; 
+        }
         
         .stat-card {
-            padding: 25px; border-radius: 12px; flex: 1;
-            display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 8px 25px rgba(18, 20, 32, 0.08);
-            border-bottom: 4px solid var(--antique-gold);
-            transition: transform 0.3s ease;
+            background: #ffffff;
+            padding: 25px 30px; 
+            border-radius: 12px; 
+            flex: 1;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            border-left: 5px solid transparent;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .stat-card:hover { transform: translateY(-5px); }
         
-        .stat-students { background: linear-gradient(135deg, #121420 0%, #2b3558 100%); }
-        .stat-lecturers { background: linear-gradient(135deg, #c5a059 0%, #f1e4c7 100%); }
-        .stat-courses { background: linear-gradient(135deg, #7d8aff 0%, #ced4ff 100%); }
+        .stat-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Accent Borders */
+        .stat-students { border-left-color: #2b3558; }
+        .stat-lecturers { border-left-color: #c5a059; }
+        .stat-courses { border-left-color: #7d8aff; }
 
-        .stat-label { font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 5px; display: block; }
-        .stat-value { font-size: 36px; font-weight: 900; }
-        .stat-icon { font-size: 28px; opacity: 0.6; }
+        .stat-info { display: flex; flex-direction: column; }
+        
+        .stat-label { 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            letter-spacing: 1px; 
+            color: #888;
+            margin-bottom: 8px; 
+        }
+        
+        .stat-value { 
+            font-size: 34px; 
+            font-weight: 800; 
+            color: #2c3e50;
+            line-height: 1;
+        }
+        
+        /* Soft Icon Containers */
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+        .stat-students .icon-box { background: rgba(43, 53, 88, 0.1); color: #2b3558; }
+        .stat-lecturers .icon-box { background: rgba(197, 160, 89, 0.15); color: #c5a059; }
+        .stat-courses .icon-box { background: rgba(125, 138, 255, 0.15); color: #7d8aff; }
 
-        .stat-students .stat-label { color: rgba(255, 255, 255, 0.7); }
-        .stat-students .stat-value, .stat-students .stat-icon { color: #ffffff; }
-        .stat-lecturers .stat-label, .stat-courses .stat-label { color: rgba(18, 20, 32, 0.5); }
-        .stat-lecturers .stat-value, .stat-courses .stat-value { color: var(--navy-accent); }
-        .stat-lecturers .stat-icon, .stat-courses .stat-icon { color: var(--navy-accent); }
-
-        /* 2. Interactive Hub & Panels */
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; }
+        /* ==================== 2. Interactive Hub & Panels ==================== */
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1.3fr; 
+            gap: 25px; 
+            flex-grow: 1; /* Forces the grid to stretch and fill the remaining bottom space */
+        }
         
         .panel { 
-            background: #ffffff; padding: 30px; border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(18, 20, 32, 0.05); color: var(--navy-accent);
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); 
+            display: flex;
+            flex-direction: column;
         }
+        
         .panel-title { 
-            font-size: 14px; font-weight: 700; color: var(--navy-accent); 
-            text-transform: uppercase; margin-bottom: 25px; 
-            border-bottom: 2px solid var(--antique-gold); padding-bottom: 10px; 
+            font-size: 15px; 
+            font-weight: 700; 
+            color: #2c3e50; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            margin-bottom: 25px; 
+            border-bottom: 2px solid #f0f0f0; 
+            padding-bottom: 12px; 
         }
 
-        .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .chart-wrapper {
+            flex-grow: 1;
+            position: relative;
+            min-height: 350px;
+        }
+
+        /* Hub Header & Tabs */
+        .hub-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
         
-        /* Search Bar Interaction */
+        .hub-tabs {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tab-btn { 
+            background: none; 
+            border: none; 
+            color: #999; 
+            font-weight: 700; 
+            cursor: pointer; 
+            font-size: 15px; 
+            text-decoration: none; 
+            padding-bottom: 15px;
+            margin-bottom: -17px; /* Pull down to overlap border */
+            transition: color 0.2s;
+        }
+        .tab-btn:hover { color: #555; }
+        .tab-btn.active { 
+            color: #2c3e50; 
+            border-bottom: 3px solid #c5a059; 
+        }
+        
+        /* Search Box */
         .search-box {
-            background: var(--cream-base); border: 1px solid rgba(18, 20, 32, 0.1);
-            border-radius: 20px; padding: 6px 15px; font-size: 12px;
-            color: var(--navy-accent); outline: none; transition: 0.3s;
-            width: 140px; margin-left: 15px;
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0;
+            border-radius: 20px; 
+            padding: 8px 15px; 
+            font-size: 13px;
+            color: #2c3e50; 
+            outline: none; 
+            transition: 0.3s;
+            width: 160px; 
+            margin-left: 15px;
         }
-        .search-box:focus { width: 200px; border-color: var(--antique-gold); box-shadow: 0 0 10px rgba(197, 160, 89, 0.1); }
-
-        .tab-btn { background: none; border: none; color: rgba(18, 20, 32, 0.4); font-weight: 700; cursor: pointer; font-size: 15px; margin-right: 15px; text-decoration:none; }
-        .tab-btn.active { color: var(--navy-accent); border-bottom: 3px solid var(--antique-gold); padding-bottom: 5px; }
+        .search-box:focus { 
+            width: 220px; 
+            border-color: #c5a059; 
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1); 
+        }
         
+        /* Sort Dropdown */
+        .sort-dropdown {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Hub Table */
         .hub-table { width: 100%; border-collapse: collapse; }
         .hub-row { cursor: pointer; transition: 0.2s; }
-        .hub-row:hover { background: rgba(125, 138, 255, 0.05); }
-        .hub-table td { padding: 18px 10px; border-bottom: 1px solid rgba(18, 20, 32, 0.05); color: var(--navy-accent); font-size: 14px; font-weight: 600; }
-        .item-date { text-align: right; color: rgba(18, 20, 32, 0.4); font-size: 12px; }
+        .hub-row:hover { background: #f8fafc; }
+        .hub-table td { 
+            padding: 16px 12px; 
+            border-bottom: 1px solid #f0f0f0; 
+            color: #444; 
+            font-size: 14px; 
+            font-weight: 500; 
+        }
+        .hub-table tr:last-child td { border-bottom: none; }
+        
+        .row-title { font-weight: 600; color: #2c3e50; }
+        .item-date { text-align: right; color: #888; font-size: 13px; font-weight: 500; }
 
-        .dash-tag { font-size: 9px; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-left: 10px; vertical-align: middle; }
+        /* Tags */
+        .dash-tag { 
+            font-size: 10px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            margin-left: 12px; 
+            vertical-align: middle; 
+            letter-spacing: 0.5px;
+        }
         .tag-General { background: #e8f0fe; color: #1967d2; }
         .tag-Exam { background: #fce8e6; color: #d93025; }
         .tag-Holiday { background: #e6ffed; color: #1e8e3e; }
         .tag-Enrolment { background: #f3e8fd; color: #9334e6; }
-        .tag-Announce { background: var(--cream-base); color: var(--antique-gold); border: 1px solid var(--antique-gold); }
+        .tag-Announce { background: #fff8eb; color: #c5a059; border: 1px solid rgba(197, 160, 89, 0.3); }
 
-        /* 3. Modern Announcement Modal */
+        /* ==================== 3. Modern Announcement Modal ==================== */
         .preview-modal {
             display: none; position: fixed; z-index: 9999; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(18, 20, 32, 0.6); backdrop-filter: blur(5px);
+            width: 100%; height: 100%; background: rgba(18, 20, 32, 0.5); backdrop-filter: blur(4px);
         }
         .modal-body {
-            background: #ffffff; margin: 10% auto; padding: 45px;
-            width: 550px; border-radius: 15px; border-top: 6px solid var(--antique-gold);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3); position: relative;
+            background: #ffffff; margin: 8% auto; padding: 40px;
+            width: 550px; border-radius: 16px; border-top: 6px solid #c5a059;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative;
         }
-        .modal-close { position: absolute; right: 25px; top: 20px; font-size: 28px; cursor: pointer; color: #ccc; transition: 0.2s; }
-        .modal-close:hover { color: var(--navy-accent); }
+        .modal-close { 
+            position: absolute; right: 25px; top: 20px; 
+            font-size: 28px; cursor: pointer; color: #aaa; transition: 0.2s; 
+        }
+        .modal-close:hover { color: #d33; }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="stats-row">
-        <div class="stat-card stat-students">
-            <div><span class="stat-label">Students</span><div class="stat-value"><asp:Literal ID="litStudents" runat="server" /></div></div>
-            <i class="fas fa-user-graduate stat-icon"></i>
-        </div>
-        <div class="stat-card stat-lecturers">
-            <div><span class="stat-label">Lecturers</span><div class="stat-value"><asp:Literal ID="litLecturers" runat="server" /></div></div>
-            <i class="fas fa-chalkboard-teacher stat-icon"></i>
-        </div>
-        <div class="stat-card stat-courses">
-            <div><span class="stat-label">Courses</span><div class="stat-value"><asp:Literal ID="litCourses" runat="server" /></div></div>
-            <i class="fas fa-book stat-icon"></i>
-        </div>
-    </div>
-
-    <div class="dashboard-grid">
-        <div class="panel">
-            <div class="panel-title">Program Distribution</div>
-            <div style="height: 350px;"><canvas id="progChart"></canvas></div>
-        </div>
-
-        <div class="panel">
-            <div class="hub-header">
-                <div style="display:flex; align-items:center;">
-                    <asp:LinkButton ID="btnShowAnnounce" runat="server" OnClick="btnShowAnnounce_Click" CssClass="tab-btn active">Announcements</asp:LinkButton>
-                    <asp:LinkButton ID="btnShowCalendar" runat="server" OnClick="btnShowCalendar_Click" CssClass="tab-btn">Calendar</asp:LinkButton>
-                    <input type="text" id="hubSearch" class="search-box" placeholder="Search items..." onkeyup="filterHub()" />
+    <div class="dashboard-wrapper">
+        <div class="stats-row">
+            <div class="stat-card stat-students">
+                <div class="stat-info">
+                    <span class="stat-label">Students</span>
+                    <div class="stat-value"><asp:Literal ID="litStudents" runat="server" /></div>
                 </div>
-                <asp:DropDownList ID="ddlSort" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlSort_SelectedIndexChanged" BackColor="Transparent" BorderStyle="None" Font-Bold="True">
-                    <asp:ListItem Text="Newest" Value="DESC" />
-                    <asp:ListItem Text="Oldest" Value="ASC" />
-                </asp:DropDownList>
+                <div class="icon-box"><i class="fas fa-user-graduate"></i></div>
+            </div>
+            <div class="stat-card stat-lecturers">
+                <div class="stat-info">
+                    <span class="stat-label">Lecturers</span>
+                    <div class="stat-value"><asp:Literal ID="litLecturers" runat="server" /></div>
+                </div>
+                <div class="icon-box"><i class="fas fa-chalkboard-teacher"></i></div>
+            </div>
+            <div class="stat-card stat-courses">
+                <div class="stat-info">
+                    <span class="stat-label">Courses</span>
+                    <div class="stat-value"><asp:Literal ID="litCourses" runat="server" /></div>
+                </div>
+                <div class="icon-box"><i class="fas fa-book"></i></div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <div class="panel-title">Program Distribution</div>
+                <div class="chart-wrapper"><canvas id="progChart"></canvas></div>
             </div>
 
-            <table class="hub-table" id="hubTable">
-                <asp:Repeater ID="rptHub" runat="server">
-                    <ItemTemplate>
-                        <tr class="hub-row" 
-                            data-type='<%# Eval("Type") %>' 
-                            data-date='<%# Eval("DisplayDate", "{0:yyyy-MM-dd}") %>'
-                            data-title='<%# Eval("Title") %>'
-                            data-content='<%# Eval("Content") %>'
-                            onclick="handleInteractiveClick(this)">
-                            <td>
-                                <div style="display:flex; align-items:center;">
-                                    <span class="row-title"><%# Eval("Title") %></span>
-                                    <span class="dash-tag tag-<%# Eval("Type") %>"><%# Eval("Type") %></span>
-                                </div>
-                            </td>
-                            <td class="item-date"><%# Eval("DisplayDate", "{0:MMM dd}") %></td>
-                        </tr>
-                    </ItemTemplate>
-                </asp:Repeater>
-            </table>
+            <div class="panel">
+                <div class="hub-header">
+                    <div class="hub-tabs">
+                        <asp:LinkButton ID="btnShowAnnounce" runat="server" OnClick="btnShowAnnounce_Click" CssClass="tab-btn active">Announcements</asp:LinkButton>
+                        <asp:LinkButton ID="btnShowCalendar" runat="server" OnClick="btnShowCalendar_Click" CssClass="tab-btn">Calendar</asp:LinkButton>
+                        <input type="text" id="hubSearch" class="search-box" placeholder="Search items..." onkeyup="filterHub()" />
+                    </div>
+                    <asp:DropDownList ID="ddlSort" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlSort_SelectedIndexChanged" CssClass="sort-dropdown">
+                        <asp:ListItem Text="Newest First" Value="DESC" />
+                        <asp:ListItem Text="Oldest First" Value="ASC" />
+                    </asp:DropDownList>
+                </div>
+
+                <table class="hub-table" id="hubTable">
+                    <asp:Repeater ID="rptHub" runat="server">
+                        <ItemTemplate>
+                            <tr class="hub-row" 
+                                data-type='<%# Eval("Type") %>' 
+                                data-date='<%# Eval("DisplayDate", "{0:yyyy-MM-dd}") %>'
+                                data-title='<%# Eval("Title") %>'
+                                data-content='<%# Eval("Content") %>'
+                                onclick="handleInteractiveClick(this)">
+                                <td>
+                                    <div style="display:flex; align-items:center;">
+                                        <span class="row-title"><%# Eval("Title") %></span>
+                                        <span class="dash-tag tag-<%# Eval("Type") %>"><%# Eval("Type") %></span>
+                                    </div>
+                                </td>
+                                <td class="item-date"><%# Eval("DisplayDate", "{0:MMM dd}") %></td>
+                            </tr>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Announcement Modal -->
     <div id="previewModal" class="preview-modal">
         <div class="modal-body">
             <span class="modal-close" onclick="closePreview()">&times;</span>
-            <span id="pDate" style="font-size: 11px; font-weight: 800; color: var(--antique-gold); text-transform: uppercase;"></span>
-            <h2 id="pTitle" style="color: var(--navy-accent); margin: 10px 0 25px 0; border-bottom: 2px solid var(--cream-base); padding-bottom: 12px;"></h2>
-            <p id="pContent" style="color: #555; line-height: 1.8; font-size: 14px;"></p>
+            <span id="pDate" style="font-size: 12px; font-weight: 700; color: #c5a059; text-transform: uppercase; letter-spacing: 1px;"></span>
+            <h2 id="pTitle" style="color: #2c3e50; margin: 12px 0 20px 0; font-size: 24px;"></h2>
+            <p id="pContent" style="color: #555; line-height: 1.7; font-size: 15px; border-top: 1px solid #eee; padding-top: 20px;"></p>
         </div>
     </div>
 
@@ -191,18 +340,27 @@
                     labels: <%= ChartLabels %>,
                     datasets: [{
                         data: <%= ChartData %>,
-                        backgroundColor: ['#121420', '#c5a059', '#7d8aff', '#94a3b8', '#e2e8f0'],
-                        hoverOffset: 25, // Pops out segment on hover
-                        borderWidth: 5, borderColor: '#ffffff'
+                        backgroundColor: ['#2b3558', '#c5a059', '#7d8aff', '#94a3b8', '#e2e8f0'],
+                        hoverOffset: 15,
+                        borderWidth: 4,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
-                    maintainAspectRatio: false, cutout: '78%',
+                    maintainAspectRatio: false,
+                    cutout: '75%',
                     animation: { animateScale: true, animateRotate: true },
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 25, font: { weight: 'bold' } } },
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 25, font: { weight: 'bold', size: 13 } }
+                        },
                         tooltip: {
-                            backgroundColor: '#121420', padding: 15,
+                            backgroundColor: '#2c3e50',
+                            padding: 15,
+                            cornerRadius: 8,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 14 },
                             callbacks: { label: (c) => ` ${c.label}: ${c.raw} Students` }
                         }
                     }
