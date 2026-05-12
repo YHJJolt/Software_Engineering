@@ -121,10 +121,13 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="Courses.aspx" />
+    <Content Include="CreateCourses.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Login.aspx" />
+    <Content Include="ManagePayments.aspx" />
     <Content Include="Performance.aspx" />
     <Content Include="RoleSelect.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -184,6 +187,7 @@
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
+    <Content Include="testing - chloe.aspx" />
     <Content Include="UserProfile.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
@@ -235,6 +239,20 @@
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Courses.aspx.cs">
+      <DependentUpon>Courses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Courses.aspx.designer.cs">
+      <DependentUpon>Courses.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CreateCourses.aspx.cs">
+      <DependentUpon>CreateCourses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CreateCourses.aspx.designer.cs">
+      <DependentUpon>CreateCourses.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -251,6 +269,13 @@
     </Compile>
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ManagePayments.aspx.cs">
+      <DependentUpon>ManagePayments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ManagePayments.aspx.designer.cs">
+      <DependentUpon>ManagePayments.aspx</DependentUpon>
     </Compile>
     <Compile Include="Performance.aspx.cs">
       <DependentUpon>Performance.aspx</DependentUpon>
@@ -280,6 +305,13 @@
     </Compile>
     <Compile Include="Site.Mobile.Master.designer.cs">
       <DependentUpon>Site.Mobile.Master</DependentUpon>
+    </Compile>
+    <Compile Include="testing - chloe.aspx.cs">
+      <DependentUpon>testing - chloe.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="testing - chloe.aspx.designer.cs">
+      <DependentUpon>testing - chloe.aspx</DependentUpon>
     </Compile>
     <Compile Include="testing - hj.cs" />
     <Compile Include="UserProfile.aspx.cs">

@@ -313,7 +313,8 @@ namespace SchoolSystem
 
             if (!int.TryParse(rawId, out int courseId) || courseId <= 0)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "error",
+                // Attach script to the UpdatePanel, not 'this'
+                ScriptManager.RegisterStartupScript(upGridView, upGridView.GetType(), "error",
                     "Swal.fire('Error', 'Invalid course selected.', 'error');", true);
                 return;
             }
@@ -324,10 +325,22 @@ namespace SchoolSystem
                 {
                     conn.Open();
 
+                    // 1. Delete CourseGrades linked to the Enrollments for this course
+                    string deleteGradesQuery = @"
+                DELETE FROM CourseGrade 
+                WHERE Enrollment_id IN (
+                    SELECT Enrollment_id FROM Enrollment WHERE course_id = @ID
+                )";
+                    SqlCommand cmdGrade = new SqlCommand(deleteGradesQuery, conn);
+                    cmdGrade.Parameters.AddWithValue("@ID", courseId);
+                    cmdGrade.ExecuteNonQuery();
+
+                    // 2. Delete Enrollments linked to this course
                     SqlCommand cmdEnroll = new SqlCommand("DELETE FROM Enrollment WHERE course_id = @ID", conn);
                     cmdEnroll.Parameters.AddWithValue("@ID", courseId);
                     cmdEnroll.ExecuteNonQuery();
 
+                    // 3. Delete the Course itself
                     SqlCommand cmdCourse = new SqlCommand("DELETE FROM Course WHERE course_id = @ID", conn);
                     cmdCourse.Parameters.AddWithValue("@ID", courseId);
                     cmdCourse.ExecuteNonQuery();
@@ -335,18 +348,28 @@ namespace SchoolSystem
 
                 LoadAllCourses(txtSearch.Text.Trim());
 
-                ScriptManager.RegisterStartupScript(this, GetType(), "deleted",
+                // Force the UpdatePanel to redraw the table with the new data
+                upGridView.Update();
+
+                // Attach script to the UpdatePanel
+                ScriptManager.RegisterStartupScript(upGridView, upGridView.GetType(), "deleted",
                     "Swal.fire({ title: 'Deleted!', text: 'Course has been deleted.', icon: 'success', timer: 1500, showConfirmButton: false });", true);
             }
-            catch (SqlException)
+            catch (SqlException ex)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "error",
-                    "Swal.fire('Error', 'Failed to delete course.', 'error');", true);
+                // Safely format the database error so it doesn't break the JavaScript popup
+                string safeMessage = HttpUtility.JavaScriptStringEncode(ex.Message);
+
+                ScriptManager.RegisterStartupScript(upGridView, upGridView.GetType(), "error",
+                    $"Swal.fire('Database Error', '{safeMessage}', 'error');", true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "error",
-                    "Swal.fire('Error', 'An unexpected error occurred.', 'error');", true);
+                // Safely format the system error
+                string safeMessage = HttpUtility.JavaScriptStringEncode(ex.Message);
+
+                ScriptManager.RegisterStartupScript(upGridView, upGridView.GetType(), "error",
+                    $"Swal.fire('System Error', '{safeMessage}', 'error');", true);
             }
         }
     }

@@ -241,6 +241,7 @@ CREATE TABLE [Course] (
   [course_code] NVARCHAR(20) NULL, -- Added Course Code
   [course_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [course_name] NVARCHAR(100) NULL,
+  [course_fee] NVARCHAR(45) NOT NULL,
   [credit_hours] INT NULL,
   [course_status] NVARCHAR(20) DEFAULT 'Open', 
   [Lecturer_id] INT NOT NULL,
