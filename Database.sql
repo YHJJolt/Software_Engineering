@@ -1,7 +1,39 @@
 USE master;
 GO
 
+<<<<<<< HEAD
 -- 1. Create the Database FIRST
+=======
+--IF DB_ID('SchoolSystemDB') IS NOT NULL
+-- Create the Database
+--IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
+--BEGIN
+--    ALTER DATABASE SchoolSystemDB 
+--    SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+
+--    DROP DATABASE SchoolSystemDB;
+--END
+--GO
+
+IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
+IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
+IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
+IF OBJECT_ID('[Enrolment]', 'U') IS NOT NULL DROP TABLE [Enrolment];
+IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
+IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
+IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
+IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
+IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
+IF OBJECT_ID('[Programme]', 'U') IS NOT NULL DROP TABLE [Programme];
+IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('[LecturerCourse]', 'U') IS NOT NULL DROP TABLE [LecturerCourse];
+IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
+IF OBJECT_ID('[Lecturers]', 'U') IS NOT NULL DROP TABLE [Lecturers];
+IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
+GO
+
+-- Create the Database
+>>>>>>> 67bc1b10b2ca05f1de30ce661ffcfbca2e42ee21
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
 BEGIN
     CREATE DATABASE [SchoolSystemDB];
@@ -152,9 +184,45 @@ CREATE TABLE [Course] (
 );
 GO
 
+<<<<<<< HEAD
 -- ============================================================
 -- 8. Table: Enrolment
 -- ============================================================
+=======
+CREATE TABLE [Announcement] (
+    [announcement_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [title] NVARCHAR(100) NOT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [category] NVARCHAR(45) DEFAULT 'General',
+    [created_at] DATETIME DEFAULT GETDATE(),
+    [Admin_id] INT NULL,
+    [Lecturer_id] INT NULL,
+    [Course_id] INT NULL,
+    CONSTRAINT [fk_Rule_Admin] FOREIGN KEY ([Admin_id]) REFERENCES [Admin (HoP)] ([admin_id]),
+    CONSTRAINT [fk_Rule_Lecturer] FOREIGN KEY ([Lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
+    CONSTRAINT [fk_Rule_Course] FOREIGN KEY ([Course_id]) REFERENCES [Course] ([course_id])
+);
+GO
+
+-- Insert Courses with the new [course_code] column
+INSERT INTO Course (course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_fee, course_status, Program_id)
+VALUES 
+    ('CS101', 'C# Development', 1, 1, 3, '1500', 'Open', 1),
+    ('DB202', 'Database Systems', 2, 1, 4, '1234', 'Ongoing', 1),
+    ('BUS301', 'Business Ethics', 3, 1, 3, '4321',  'Open', 1),
+    ('WEB105', 'Web Development', 1, 1, 3, '9999', 'Open', 1),
+    ('DS204', 'Data Structures', 2, 1, 4, '1', 'Ongoing', 1);
+GO
+
+
+
+
+-- HJ Added Enrollment Table, CourseGrade, Dummy Data
+IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
+IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
+GO
+
+>>>>>>> 67bc1b10b2ca05f1de30ce661ffcfbca2e42ee21
 CREATE TABLE [Enrollment] (
     [enrollment_id] INT IDENTITY(1,1) PRIMARY KEY,
     [student_id] INT NOT NULL,
