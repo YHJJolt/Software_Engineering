@@ -60,12 +60,21 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.TextBox txtBio;
 
         /// <summary>
-        /// IDbtnSaveBio control.
+        /// btnLogout control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button IDbtnSaveBio;
+        protected global::System.Web.UI.WebControls.LinkButton btnLogout;
+
+        /// <summary>
+        /// btnSaveBio control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveBio;
     }
 }

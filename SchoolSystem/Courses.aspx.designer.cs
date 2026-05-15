@@ -15,6 +15,24 @@ namespace SchoolSystem
     {
 
         /// <summary>
+        /// upGridView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upGridView;
+
+        /// <summary>
+        /// ddlProgramFilter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlProgramFilter;
+
+        /// <summary>
         /// txtSearch control.
         /// </summary>
         /// <remarks>
@@ -33,31 +51,13 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.Button btnSearch;
 
         /// <summary>
-        /// btnExport control.
+        /// hdnCourseId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnExport;
-
-        /// <summary>
-        /// btnCreateCourse control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCreateCourse;
-
-        /// <summary>
-        /// upGridView control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upGridView;
+        protected global::System.Web.UI.WebControls.HiddenField hdnCourseId;
 
         /// <summary>
         /// gvCourses control.
@@ -69,49 +69,13 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.GridView gvCourses;
 
         /// <summary>
-        /// txtPageSize control.
+        /// pnlEditModal control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPageSize;
-
-        /// <summary>
-        /// BtnApplyPageSize control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button BtnApplyPageSize;
-
-        /// <summary>
-        /// TotalRows control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label TotalRows;
-
-        /// <summary>
-        /// upModal control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upModal;
-
-        /// <summary>
-        /// popUpForm control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel popUpForm;
+        protected global::System.Web.UI.WebControls.Panel pnlEditModal;
 
         /// <summary>
         /// hdnEditCourseId control.
@@ -150,40 +114,13 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.TextBox txtEditFee;
 
         /// <summary>
-        /// txtEditCredits control.
+        /// btnCancelEdit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditCredits;
-
-        /// <summary>
-        /// ddlEditStatus control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditStatus;
-
-        /// <summary>
-        /// ddlEditLecturer control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditLecturer;
-
-        /// <summary>
-        /// ddlEditProgram control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditProgram;
+        protected global::System.Web.UI.WebControls.Button btnCancelEdit;
 
         /// <summary>
         /// btnSaveUpdate control.
@@ -193,14 +130,5 @@ namespace SchoolSystem
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnSaveUpdate;
-
-        /// <summary>
-        /// btnCancelEdit control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnCancelEdit;
     }
 }

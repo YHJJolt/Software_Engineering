@@ -11,142 +11,142 @@ namespace SchoolSystem
 {
 
 
-    public partial class AdminMaster
+    public partial class Enrollment
     {
 
         /// <summary>
-        /// head control.
+        /// ddlStatusFilter control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder head;
+        protected global::System.Web.UI.WebControls.DropDownList ddlStatusFilter;
 
         /// <summary>
-        /// form1 control.
+        /// txtSearch control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
+        protected global::System.Web.UI.WebControls.TextBox txtSearch;
 
         /// <summary>
-        /// ScriptManager1 control.
+        /// btnSearch control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.ScriptManager ScriptManager1;
+        protected global::System.Web.UI.WebControls.Button btnSearch;
 
         /// <summary>
-        /// linkDashboard control.
+        /// btnApproveSelected control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkDashboard;
+        protected global::System.Web.UI.WebControls.Button btnApproveSelected;
 
         /// <summary>
-        /// linkPrograms control.
+        /// btnRejectSelected control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkPrograms;
+        protected global::System.Web.UI.WebControls.Button btnRejectSelected;
 
         /// <summary>
-        /// linkUsers control.
+        /// btnDeleteSelected control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkUsers;
+        protected global::System.Web.UI.WebControls.Button btnDeleteSelected;
 
         /// <summary>
-        /// linkPayment control.
+        /// hdnActiveTab control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkPayment;
+        protected global::System.Web.UI.WebControls.HiddenField hdnActiveTab;
 
         /// <summary>
-        /// linkCourses control.
+        /// tabStudents control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkCourses;
+        protected global::System.Web.UI.WebControls.LinkButton tabStudents;
 
         /// <summary>
-        /// linkEnrollment control.
+        /// tabLecturers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkEnrollment;
+        protected global::System.Web.UI.WebControls.LinkButton tabLecturers;
 
         /// <summary>
-        /// linkPerformance control.
+        /// upGridView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkPerformance;
+        protected global::System.Web.UI.UpdatePanel upGridView;
 
         /// <summary>
-        /// linkAnnouncements control.
+        /// lblMessage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkAnnouncements;
+        protected global::System.Web.UI.WebControls.Label lblMessage;
 
         /// <summary>
-        /// linkCalendar control.
+        /// Enrollments control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkCalendar;
+        protected global::System.Web.UI.WebControls.GridView Enrollments;
 
         /// <summary>
-        /// imgSidebar control.
+        /// txtPageSize control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Image imgSidebar;
+        protected global::System.Web.UI.WebControls.TextBox txtPageSize;
 
         /// <summary>
-        /// litSidebarName control.
+        /// BtnApplyPageSize control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litSidebarName;
+        protected global::System.Web.UI.WebControls.Button BtnApplyPageSize;
 
         /// <summary>
-        /// MainContent control.
+        /// TotalRows control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder MainContent;
+        protected global::System.Web.UI.WebControls.Label TotalRows;
     }
 }

@@ -39,12 +39,12 @@ namespace SchoolSystem
                 {
                     litFullName.Text = rdr["admin_name"].ToString();
                     litEmail.Text = rdr["admin_email"].ToString();
-                    txtBio.Text = rdr["admin_bio"] != DBNull.Value ? rdr["admin_bio"].ToString() : "";
+                    txtBio.Text = rdr["admin_bio"].ToString();
 
                     if (rdr["admin_img"] != DBNull.Value)
                     {
-                        byte[] imgData = (byte[])rdr["admin_img"];
-                        string base64 = Convert.ToBase64String(imgData);
+                        byte[] bytes = (byte[])rdr["admin_img"];
+                        string base64 = Convert.ToBase64String(bytes);
                         imgBigProfile.ImageUrl = "data:image/png;base64," + base64;
                     }
                 }
@@ -79,6 +79,13 @@ namespace SchoolSystem
                 cmd.ExecuteNonQuery();
             }
             Response.Redirect("UserProfile.aspx"); // Refresh to show new image
+        }
+
+        // NEW: Handles the Log Out action from the profile page
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            Session.Abandon();
+            Response.Redirect("RoleSelect.aspx");
         }
     }
 }

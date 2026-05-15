@@ -22,40 +22,57 @@
 
         /* Themed Upload Button */
         .upload-btn { 
-            font-size: 12px; font-weight: 700; color: var(--soft-glow); 
-            cursor: pointer; background: rgba(125, 138, 255, 0.1); 
-            padding: 8px 18px; border-radius: 8px; 
-            border: 1px solid var(--soft-glow); transition: 0.3s;
+            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--antique-gold); background: rgba(197, 160, 89, 0.1); 
+            padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; transition: 0.2s;
         }
-        .upload-btn:hover { background: rgba(125, 138, 255, 0.2); color: var(--navy-accent); }
+        .upload-btn:hover { background: var(--antique-gold); color: white; }
 
-        .info-label { 
-            font-weight: 800; color: var(--navy-accent); 
-            margin-top: 25px; display: block; font-size: 14px; 
-            text-transform: uppercase; letter-spacing: 1px;
-            border-bottom: 2px solid var(--antique-gold); /* Structural Gold Line */
-            padding-bottom: 5px; margin-bottom: 15px;
-        }
-
+        /* Typography & Details */
+        .info-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: rgba(18, 20, 32, 0.4); letter-spacing: 1px; margin-top: 25px; display: block; }
         .bio-box { 
-            width: 100%; height: 140px; margin-top: 10px; padding: 15px; 
-            border: 1px solid rgba(18, 20, 32, 0.1); border-radius: 8px; 
-            font-family: inherit; font-size: 14px; color: var(--navy-accent);
-            background: #fdfaf6; resize: none;
+            width: 100%; height: 120px; padding: 15px; border: 1px solid rgba(18, 20, 32, 0.1); 
+            border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--navy-accent); 
+            background: #fcfcfc; resize: none; transition: 0.2s; box-sizing: border-box; margin-top: 5px;
         }
-        .bio-box:focus { outline: none; border-color: var(--soft-glow); box-shadow: 0 0 5px rgba(125, 138, 255, 0.2); }
+        .bio-box:focus { outline: none; border-color: var(--antique-gold); background: #ffffff; }
 
-        /* Themed Save Button */
-        .save-btn { 
-            margin-top: 25px; background: var(--navy-accent); 
-            color: var(--cream-base); border: 1px solid var(--antique-gold); 
-            padding: 12px 30px; border-radius: 8px; cursor: pointer; 
-            font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-            transition: 0.3s;
+        /* Buttons Container */
+        .action-buttons {
+            margin-top: 30px; 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 15px;
         }
-        .save-btn:hover { background: var(--antique-gold); color: var(--navy-accent); }
 
-        h3 { color: var(--navy-accent); font-weight: 800; margin-top: 0; }
+        /* Action Buttons */
+        .btn-save { 
+            padding: 12px 30px; border: none; border-radius: 8px; 
+            background: var(--navy-accent); color: white; font-size: 14px; font-weight: 600; 
+            cursor: pointer; transition: 0.2s; 
+        }
+        .btn-save:hover { background: #2a2e45; box-shadow: 0 4px 15px rgba(18, 20, 32, 0.2); }
+
+        /* New Modern Logout Button */
+        .btn-logout {
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 8px; 
+            background: #ffeaea; 
+            color: #e74c3c; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            text-decoration: none; 
+            transition: 0.2s; 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-logout:hover { 
+            background: #ffcece; 
+            color: #c0392b; 
+        }
     </style>
 </asp:Content>
 
@@ -79,9 +96,14 @@
 
             <span class="info-label">Biography</span>
             <asp:TextBox ID="txtBio" runat="server" TextMode="MultiLine" CssClass="bio-box" placeholder="Tell us about yourself..."></asp:TextBox>
-            
-            <br />
-            <asp:Button ID="IDbtnSaveBio" runat="server" Text="Save Biography" CssClass="save-btn" OnClick="btnSaveBio_Click" />
+
+            <div class="action-buttons">
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="btn-logout" CausesValidation="false">
+                    <i class="fas fa-power-off"></i> Log Out
+                </asp:LinkButton>
+                
+                <asp:Button ID="btnSaveBio" runat="server" Text="Save Bio" CssClass="btn-save" OnClick="btnSaveBio_Click" />
+            </div>
         </div>
     </div>
 </asp:Content>

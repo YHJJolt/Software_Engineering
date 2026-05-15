@@ -15,8 +15,9 @@ namespace SchoolSystem
         {
             if (!IsPostBack)
             {
-                LoadPayments();
+                PopulatePrograms();
                 PopulateStudents();
+                LoadPayments();
             }
         }
 
@@ -31,19 +32,85 @@ namespace SchoolSystem
                         p.payment_amount, 
                         p.payment_duedate, 
                         p.payment_paydate, 
-                        p.payment_method, 
-                        s.student_name 
+                        ISNULL(p.payment_method, 'Unpaid') AS payment_method, 
+                        s.student_name,
+                        pr.program_code
                     FROM Payment p
-                    INNER JOIN Student s ON p.Student_id = s.student_id
-                    ORDER BY p.payment_duedate DESC";
+                    INNER JOIN Student s ON p.student_id = s.student_id
+                    INNER JOIN Program pr ON s.Program_id = pr.program_id
+                    WHERE 1=1 ";
 
-                SqlDataAdapter da = new SqlDataAdapter(sql, conn);
+                SqlCommand cmd = new SqlCommand();
+
+                // 1. Apply Search Filter
+                if (!string.IsNullOrWhiteSpace(txtSearchStudent.Text))
+                {
+                    sql += " AND s.student_name LIKE @Search ";
+                    cmd.Parameters.AddWithValue("@Search", "%" + txtSearchStudent.Text.Trim() + "%");
+                }
+
+                // 2. Apply Status Filter
+                if (ddlFilterStatus.SelectedValue == "Paid")
+                {
+                    sql += " AND p.payment_paydate IS NOT NULL ";
+                }
+                else if (ddlFilterStatus.SelectedValue == "Unpaid")
+                {
+                    sql += " AND p.payment_paydate IS NULL ";
+                }
+
+                // 3. Apply Program Filter
+                if (ddlFilterProgram.SelectedValue != "0")
+                {
+                    sql += " AND pr.program_id = @ProgId ";
+                    cmd.Parameters.AddWithValue("@ProgId", ddlFilterProgram.SelectedValue);
+                }
+
+                // 4. Apply Sorting
+                if (ddlSortDue.SelectedValue == "ASC")
+                {
+                    sql += " ORDER BY p.payment_duedate ASC";
+                }
+                else
+                {
+                    sql += " ORDER BY p.payment_duedate DESC";
+                }
+
+                cmd.CommandText = sql;
+                cmd.Connection = conn;
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
                 gvPayments.DataSource = dt;
                 gvPayments.DataBind();
+
+                // --- UPDATE DYNAMIC SUMMARY STATS ---
+                CalculateSummary(dt);
             }
+        }
+
+        private void CalculateSummary(DataTable dt)
+        {
+            int totalInvoices = dt.Rows.Count;
+            decimal totalCollected = 0;
+            decimal pendingPayments = 0;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                decimal amount = Convert.ToDecimal(row["payment_amount"]);
+
+                // If it has a pay date, it's collected. Otherwise, it's pending.
+                if (row["payment_paydate"] != DBNull.Value)
+                    totalCollected += amount;
+                else
+                    pendingPayments += amount;
+            }
+
+            litTotalInvoices.Text = totalInvoices.ToString();
+            litTotalCollected.Text = totalCollected.ToString("N2");
+            litPendingPayments.Text = pendingPayments.ToString("N2");
         }
 
         private void PopulateStudents()
@@ -63,10 +130,32 @@ namespace SchoolSystem
             }
         }
 
+        private void PopulatePrograms()
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string sql = "SELECT program_id, program_code FROM Program ORDER BY program_code ASC";
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                conn.Open();
+
+                ddlFilterProgram.DataSource = cmd.ExecuteReader();
+                ddlFilterProgram.DataTextField = "program_code";
+                ddlFilterProgram.DataValueField = "program_id";
+                ddlFilterProgram.DataBind();
+
+                ddlFilterProgram.Items.Insert(0, new ListItem("All Programs", "0"));
+            }
+        }
+
+        // Triggered whenever a dropdown changes OR the search button is clicked
+        protected void Filter_Changed(object sender, EventArgs e)
+        {
+            LoadPayments();
+        }
+
         // --- 2. OPEN MODALS ---
         protected void BtnOpenCreateModal_Click(object sender, EventArgs e)
         {
-            // Reset fields for new entry
             hdnPaymentId.Value = "";
             modalTitle.InnerText = "Create New Invoice";
             ddlStudent.SelectedIndex = 0;
@@ -75,7 +164,7 @@ namespace SchoolSystem
             txtPayDate.Text = "";
             ddlMethod.SelectedIndex = 0;
 
-            ddlStudent.Enabled = true; // Allow selecting student for new records
+            ddlStudent.Enabled = true;
 
             pnlModal.Visible = true;
             upModal.Update();
@@ -106,8 +195,8 @@ namespace SchoolSystem
                         hdnPaymentId.Value = id.ToString();
                         modalTitle.InnerText = "Update Payment";
 
-                        ddlStudent.SelectedValue = reader["Student_id"].ToString();
-                        ddlStudent.Enabled = false; // Prevent changing student on existing invoice
+                        ddlStudent.SelectedValue = reader["student_id"].ToString();
+                        ddlStudent.Enabled = false;
 
                         txtAmount.Text = Convert.ToDecimal(reader["payment_amount"]).ToString("F2");
 
@@ -146,13 +235,12 @@ namespace SchoolSystem
                     SqlCommand cmd = new SqlCommand();
                     cmd.Connection = conn;
 
-                    // Prepare Nullable parameters
                     object payDate = string.IsNullOrEmpty(txtPayDate.Text) ? DBNull.Value : (object)Convert.ToDateTime(txtPayDate.Text);
                     object method = string.IsNullOrEmpty(ddlMethod.SelectedValue) ? DBNull.Value : (object)ddlMethod.SelectedValue;
 
                     if (string.IsNullOrEmpty(hdnPaymentId.Value)) // INSERT
                     {
-                        cmd.CommandText = @"INSERT INTO Payment (payment_amount, payment_duedate, payment_paydate, payment_method, Student_id) 
+                        cmd.CommandText = @"INSERT INTO Payment (payment_amount, payment_duedate, payment_paydate, payment_method, student_id) 
                                           VALUES (@Amt, @Due, @Pay, @Method, @StudID)";
                         cmd.Parameters.AddWithValue("@StudID", ddlStudent.SelectedValue);
                     }

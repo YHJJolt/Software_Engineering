@@ -43,72 +43,61 @@
             font-size: 14px; 
         }
 
-        /* Button styles */
+        /* Button Style */
         .btn { 
             padding: 9px 18px; 
             border: none; 
             border-radius: 6px; 
             cursor: pointer; 
             font-size: 14px; 
+            margin-right: 10px;
         }
-        .btn-primary { 
-            background: #C5A059; 
-            color: white; 
-        }
-        .btn-primary:hover { 
-            background: #CCB68B; 
-        }
-        .btn-cancel{
-            background: #C9B78D;
-            color:white;
-        }
-        .btn-cancel:hover {
-            background: #A9A9A9;
-        }
+        .btn-primary   { background: #C5A059; color: white; }
+        .btn-primary:hover { background: #CCB68B; }
+        .btn-secondary { background: #7D8AFF; color: white; }
+        .btn-secondary:hover { background: #B4B9F0; }
     </style>
 
+    <div class="header">
+        <h1>Create New Course</h1>
+    </div>
+
     <div class="form-container">
-        <h2>Create New Course</h2>
-        <div/>
-        
         <div class="form-row">
             <div class="form-group">
                 <label>Course Code</label>
-                <asp:TextBox ID="txtSubjectCode" runat="server" CssClass="form-control" placeholder="e.g. INT1105"></asp:TextBox>
+                <asp:TextBox ID="txtCode" runat="server" CssClass="form-control" placeholder="e.g. CS101" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtCode" ErrorMessage="Code is required" ForeColor="Red" Display="Dynamic" />
             </div>
+
             <div class="form-group">
                 <label>Course Name</label>
-                <asp:TextBox ID="txtSubjectName" runat="server" CssClass="form-control" placeholder="e.g. System Design"></asp:TextBox>
+                <asp:TextBox ID="txtName" runat="server" CssClass="form-control" placeholder="e.g. C# Development" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtName" ErrorMessage="Name is required" ForeColor="Red" Display="Dynamic" />
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label>Credit Hours</label>
-                <asp:DropDownList ID="CreditHours" runat="server" CssClass="form-control">
-                    <asp:ListItem Value="1">1</asp:ListItem>
-                    <asp:ListItem Value="2">2</asp:ListItem>
-                    <asp:ListItem Value="3">3</asp:ListItem>
-                    <asp:ListItem Value="4">4</asp:ListItem>
-                </asp:DropDownList>
+                <asp:TextBox ID="txtCreditHours" runat="server" CssClass="form-control" TextMode="Number" placeholder="e.g. 3" />
             </div>
 
             <div class="form-group">
-                <label>Status</label>
-                <asp:DropDownList ID="Status" runat="server" CssClass="form-control">
-                    <asp:ListItem Value="Open">Open</asp:ListItem>
-                    <asp:ListItem Value="Ongoing">Ongoing</asp:ListItem>
-                    <asp:ListItem Value="Closed">Closed</asp:ListItem>
-                </asp:DropDownList>
+                <label>Course Fee (RM)</label>
+                <asp:TextBox ID="txtCourseFee" runat="server" CssClass="form-control" TextMode="Number" Step="0.01" placeholder="e.g. 1500.00" />
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label>Course Fee (RM)</label>
-                <asp:TextBox ID="txtCourseFee" runat="server" CssClass="form-control" placeholder="e.g. 3000"></asp:TextBox>
-                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtCourseFee" 
-                    ErrorMessage="Course fee is required" ForeColor="Red" Display="Dynamic" />
+                <label>Status</label>
+                <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-control">
+                    <asp:ListItem Value="Open">Open</asp:ListItem>
+                    <asp:ListItem Value="Ongoing">Ongoing</asp:ListItem>
+                    <asp:ListItem Value="Closed">Closed</asp:ListItem>
+                </asp:DropDownList>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlStatus" ErrorMessage="Status is required" ForeColor="Red" Display="Dynamic" />
             </div>
             <div class="form-group">
             </div>
@@ -133,6 +122,6 @@
         </div>
 
         <asp:Button ID="btnSubmit" runat="server" Text="Add Course" CssClass="btn btn-primary" OnClick="BtnSubmit_Click" />
-        <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-cancel" OnClick="BtnCancel_Click" CausesValidation="false" />
+        <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="BtnCancel_Click" CausesValidation="false" />
     </div>
 </asp:Content>

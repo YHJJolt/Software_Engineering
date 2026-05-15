@@ -43,7 +43,9 @@ namespace SchoolSystem
         private void HighlightActiveSideBar()
         {
             string currentPage = Request.Url.AbsolutePath.ToLowerInvariant();
-            HtmlAnchor[] links = { linkDashboard, linkUsers, linkPayment, linkCourses, linkEnrolment, linkPerformance, linkAnnouncements, linkCalendar };
+
+            // Added linkPrograms to the array
+            HtmlAnchor[] links = { linkDashboard, linkPrograms, linkUsers, linkPayment, linkCourses, linkEnrollment, linkPerformance, linkAnnouncements, linkCalendar };
 
             foreach (var link in links)
             {
@@ -57,19 +59,14 @@ namespace SchoolSystem
             }
 
             if (currentPage.Contains("admindashboard") && linkDashboard != null) linkDashboard.Attributes["class"] += " active";
+            else if (currentPage.Contains("program") && linkPrograms != null) linkPrograms.Attributes["class"] += " active"; // NEW
             else if (currentPage.Contains("usermanagement") && linkUsers != null) linkUsers.Attributes["class"] += " active";
             else if (currentPage.Contains("payments") && linkPayment != null) linkPayment.Attributes["class"] += " active";
-            else if (currentPage.Contains("coursemanagement") && linkCourses != null) linkCourses.Attributes["class"] += " active";
-            else if (currentPage.Contains("enrolment") && linkEnrolment != null) linkEnrolment.Attributes["class"] += " active";
-            else if (currentPage.Contains("studentperformance") && linkPerformance != null) linkPerformance.Attributes["class"] += " active";
+            else if (currentPage.Contains("course") && linkCourses != null) linkCourses.Attributes["class"] += " active";
+            else if (currentPage.Contains("enrollment") && linkEnrollment != null) linkEnrollment.Attributes["class"] += " active";
+            else if (currentPage.Contains("performance") && linkPerformance != null) linkPerformance.Attributes["class"] += " active";
             else if (currentPage.Contains("announcement") && linkAnnouncements != null) linkAnnouncements.Attributes["class"] += " active";
             else if (currentPage.Contains("calendar") && linkCalendar != null) linkCalendar.Attributes["class"] += " active";
-        }
-
-        protected void btnLogout_Click(object sender, EventArgs e)
-        {
-            Session.Abandon();
-            Response.Redirect("RoleSelect.aspx");
         }
     }
 }

@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace YourApp
+namespace SchoolSystem
 {
 
 

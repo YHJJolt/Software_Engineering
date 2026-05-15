@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Web.UI;
 
-namespace YourApp
+namespace SchoolSystem
 {
     public partial class Performance : Page
     {
@@ -100,13 +100,16 @@ namespace YourApp
             string connStr = GetConnectionString();
             var semMap = new Dictionary<int, List<CourseRow>>();
 
+            // Updated SQL: Joins the Student table to get 'student_sem' since it is no longer in Enrollment
             string sql = @"
-                SELECT e.semester, c.course_name, c.credit_hours, cg.letter_grade, cg.grade_point, cg.total_hours, cg.attended_hours
+                SELECT s.student_sem AS semester, c.course_name, c.credit_hours, 
+                       cg.letter_grade, cg.grade_point, cg.total_hours, cg.attended_hours
                 FROM   [Enrollment]  e
-                JOIN   [Course]      c  ON c.course_id      = e.Course_id
+                JOIN   [Course]      c  ON c.course_id      = e.course_id
                 JOIN   [CourseGrade] cg ON cg.Enrollment_id = e.enrollment_id
-                WHERE  e.Student_id = @sid
-                ORDER  BY e.semester, c.course_name";
+                JOIN   [Student]     s  ON s.student_id     = e.student_id
+                WHERE  e.student_id = @sid
+                ORDER  BY s.student_sem, c.course_name";
 
             using (var conn = new SqlConnection(connStr))
             using (var cmd = new SqlCommand(sql, conn))

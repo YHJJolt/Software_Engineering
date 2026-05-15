@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="performance.aspx.cs" Inherits="YourApp.Performance" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="performance.aspx.cs" Inherits="SchoolSystem.Performance" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <title>Student Performance</title>
