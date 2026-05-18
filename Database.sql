@@ -334,7 +334,20 @@ GO
 -- Calendar
 -- ============================================================
 INSERT INTO [Calendar] (event_title, event_desc, start_date, end_date, event_type, Admin_id)
-VALUES 
+VALUES
+-- Multiple Events on May 20th (Testing Sidebar & Badges)
+('Java Workshop', 'Intro to Spring Boot', '2026-05-20', '2026-05-20', 'General', 1),
+('Midterm Consultation', 'Room 302', '2026-05-20', '2026-05-20', 'Exam', 1),
+('Club Recruitment', 'Main Hall', '2026-05-20', '2026-05-20', 'Enrollment', 1),
+('Guest Lecturer Visit', 'Dr. Alan Turing', '2026-05-20', '2026-05-20', 'General', 1),
+('Library Book Return', 'Final Deadline', '2026-05-20', '2026-05-20', 'Holiday', 1),
+
+-- Additional Spread Out Events
+('Database Lab Exam', 'Practical Assessment', '2026-05-28', '2026-05-28', 'Exam', 1),
+('Sports Day', 'Stadium Complex', '2026-06-05', '2026-06-05', 'General', 1),
+('Convocation Ceremony', 'Class of 2026', '2026-07-15', '2026-07-15', 'General', 1),
+
+--Existing Events
 ('Final Exam Week', 'All levels', '2026-06-15', '2026-06-30', 'Exam', 1),
 ('Semester Break', 'Summer holiday', '2026-07-01', '2026-08-31', 'Holiday', 1),
 ('Course Registration', 'New Semester', '2026-08-20', '2026-08-25', 'Enrollment', 1),

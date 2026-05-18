@@ -1,108 +1,12 @@
-~<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
     <meta charset="utf-8" />
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <style>
-        :root { 
-            --cream-base: #fdfaf6;
-            --navy-accent: #121420;
-            --antique-gold: #c5a059;
-            --soft-glow: #7d8aff;
-            --sidebar-width: 260px; 
-        }
-
-        body, html { 
-            margin: 0;
-            padding: 0; height: 100%; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--cream-base); 
-            color: var(--navy-accent); 
-            transition: 0.3s ease;
-        }
-        
-        #sidebar { 
-            width: var(--sidebar-width);
-            height: 100vh; 
-            background: var(--cream-base); 
-            position: fixed; z-index: 100; 
-            display: flex; flex-direction: column;
-            border-right: 2px solid rgba(18, 20, 32, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-header { 
-            padding: 30px 20px;
-            font-size: 18px; font-weight: 800; 
-            letter-spacing: 2px; color: var(--navy-accent); 
-            border-bottom: 1px solid rgba(18, 20, 32, 0.05);
-            display: flex; justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-container { flex: 1; padding-top: 20px;
-        }
-        .nav-link { 
-            display: flex;
-            align-items: center; padding: 14px 25px; 
-            color: rgba(18, 20, 32, 0.6); 
-            text-decoration: none; font-size: 14px; transition: 0.3s;
-            font-weight: 600;
-        }
-        .nav-link i { min-width: 35px; font-size: 17px; color: var(--soft-glow);
-        }
-        .nav-link:hover { color: var(--navy-accent); background: rgba(197, 160, 89, 0.05);
-        }
-        
-        .nav-link.active { 
-            background: rgba(197, 160, 89, 0.1);
-            color: var(--navy-accent); 
-            box-shadow: inset 4px 0 0 var(--antique-gold);
-        }
-        .nav-link.active i { color: var(--antique-gold) !important;
-        }
-
-        #main-content { margin-left: var(--sidebar-width); padding: 40px; transition: 0.3s;
-        }
-
-        .sidebar-profile { 
-            margin: 20px;
-            padding: 15px; border-radius: 12px;
-            background: #fff; border: 1px solid var(--antique-gold);
-            display: flex; align-items: center; text-decoration: none; color: var(--navy-accent);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-        .p-img { width: 35px; height: 35px;
-            border-radius: 8px; border: 1.5px solid var(--antique-gold); margin-right: 12px; object-fit: cover;
-        }
-        .p-name { display: block; font-size: 13px; font-weight: 700;
-        }
-
-        #toggle-btn { cursor: pointer; color: var(--navy-accent); font-size: 18px; opacity: 0.5; transition: 0.3s;
-        }
-        #toggle-btn:hover { opacity: 1;
-        }
-        body.sidebar-collapsed #sidebar { width: 80px;
-        }
-        body.sidebar-collapsed #main-content { margin-left: 80px;
-        }
-        body.sidebar-collapsed .nav-link span, body.sidebar-collapsed .header-text, body.sidebar-collapsed .p-text { display: none;
-        }
-        body.sidebar-collapsed .nav-link { justify-content: center; padding: 18px 0;
-        }
-        
-        /* FIX: Collapsed sidebar profile image alignment */
-        body.sidebar-collapsed .sidebar-profile {
-            margin: 20px 10px;
-            padding: 10px;
-            justify-content: center;
-        }
-        body.sidebar-collapsed .p-img {
-            margin-right: 0;
-        }
-    </style>
+<link href="Admin.css" rel="stylesheet" type="text/css" />
+    
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
@@ -113,12 +17,10 @@
             <div class="sidebar-header">
                 <span class="header-text">ADMIN PANEL</span>
                 <i class="fas fa-bars" id="toggle-btn" onclick="toggleSidebar()"></i>
-             </div>
+            </div>
             <div class="nav-container">
                 <a id="linkDashboard" runat="server" href="AdminDashboard.aspx" class="nav-link"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-                
                 <a id="linkPrograms" runat="server" href="Program.aspx" class="nav-link"><i class="fas fa-graduation-cap"></i> <span>Program Management</span></a>
-                
                 <a id="linkUsers" runat="server" href="UserManagement.aspx" class="nav-link"><i class="fas fa-users"></i> <span>User Management</span></a>
                 <a id="linkPayment" runat="server" href="ManagePayments.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
                 <a id="linkCourses" runat="server" href="Courses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
@@ -126,9 +28,8 @@
                 <a id="linkPerformance" runat="server" href="Performance.aspx" class="nav-link"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
                 <a id="linkAnnouncements" runat="server" href="AdminAnnouncement.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>
                 <a id="linkCalendar" runat="server" href="Calendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
-                
             </div>
-            <a href="UserProfile.aspx" class="sidebar-profile">
+            <a href="AdminProfile.aspx" class="sidebar-profile">
                 <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
                 <div class="p-text">
                     <span class="p-name"><asp:Literal ID="litSidebarName" runat="server" /></span>

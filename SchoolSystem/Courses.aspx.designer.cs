@@ -87,6 +87,24 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.HiddenField hdnEditCourseId;
 
         /// <summary>
+        /// imgEditPreview control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgEditPreview;
+
+        /// <summary>
+        /// fuEditCourseImage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload fuEditCourseImage;
+
+        /// <summary>
         /// txtEditCode control.
         /// </summary>
         /// <remarks>

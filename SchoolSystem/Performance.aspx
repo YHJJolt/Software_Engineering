@@ -2,126 +2,18 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <title>Student Performance</title>
-    <style>
-        *{box-sizing:border-box;margin:0;padding:0}
-        .pg{background:#f5f0e8;padding:20px;border-radius:12px;font-family:sans-serif}
-        .card{background:#fff;border-radius:12px;border:0.5px solid #e0dbd0;padding:16px 20px;margin-bottom:14px}
-        .header-card { min-height: 180px; display: flex; flex-direction: column; }
-        .picker-row { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 0.5px solid #f0ebe0; }
-        .picker-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
-        .student-picker { padding: 7px 12px; border: 0.5px solid #d0c9b8; border-radius: 6px; font-size: 13px; background: #fff; color: #1a2238; min-width: 200px; cursor: pointer; }
-        .student-picker:focus { outline: none; border-color: #1a2238; }
-        .top-row { display: flex; width: 100%; align-items: center; justify-content: space-between; }
-        .top-left { flex: 1; padding-right: 20px; border-right: 0.5px solid #e8e3d8; display: flex; flex-direction: column; gap: 8px; }
-        .top-mid { flex: 1.2; padding: 0 20px; border-right: 0.5px solid #e8e3d8; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .top-right { flex: 1.5; padding-left: 20px; display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
-        .info-group { display: flex; align-items: baseline; gap: 10px; }
-        .info-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: .4px; width: 100px; flex-shrink: 0; }
-        .info-val { font-size: 13px; color: #1a2238; font-weight: 500; }
-        .info-val.large { font-size: 13px; font-weight: 600; }
-        .status-pill { display: inline-block; padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid transparent; }
-        .stat-good { background: #ecfdf5; color: #059669; border-color: #10b981; }
-        .stat-warn { background: #fffbeb; color: #92400e; border-color: #f59e0b; }
-        .stat-crit { background: #fef2f2; color: #dc2626; border-color: #ef4444; }
-        .stat-na   { background: #f3f4f6; color: #6b7280; border-color: #9ca3af; }
-        .stat-grid-horizontal { display: flex; gap: 10px; width: 100%; }
-        .stat-box { background: #fcfaf7; border: 1px solid #f0ebe0; border-radius: 8px; padding: 10px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .stat-label { font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
-        .stat-val { font-size: 18px; font-weight: 700; color: #1a2238; }
-        select { width: 100%; padding: 8px 10px; border: 0.5px solid #d0c9b8; border-radius: 6px; font-size: 13px; background: #fff; color: #1a2238; }
-        .section-title { position: relative; min-height: 35px; display: flex; justify-content: space-between; align-items: center; border-bottom: 0.5px solid #f0ebe0; padding-bottom: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 500; }
-        .title-center { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 700; color: #1a2238; white-space: nowrap; }
-        .course-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f8f5ef; font-size: 13px; }
-        .badge { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
-        .b-green { background: #e8f4ec; color: #2a7a45; }
-        .b-blue { background: #e8f0fb; color: #1a5fa0; }
-        .b-purple { background: #f3e8ff; color: #6b21a8; }
-        .b-amber { background: #fffbeb; color: #92400e; }
-        .b-red { background: #fef2f2; color: #dc2626; }
-        .chart-container { position: relative; padding: 35px 10px 0 35px; border-bottom: 2px solid #e8e3d8; margin: 20px 0 50px 10px; background: #fff; min-height: 200px; }
-        .chart-container::before { content: ''; position: absolute; left: -2px; top: 10px; bottom: 0; width: 2px; background: #e8e3d8; }
-        .grid-line { position: absolute; left: 0; right: 0; border-top: 1px dashed #eee; z-index: 1; }
-        .chart-wrap { position: relative; z-index: 2; height: 160px; display: flex; align-items: flex-end; justify-content: space-around; width: 100%; }
-        .bar-grp { flex: 1; position: relative; height: 160px; max-width: 120px; display: flex; flex-direction: column; align-items: center; }
-        .lbl { position: absolute; top: 100%; font-size: 10px; color: #888; padding-top: 6px; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .yl { position: absolute; left: -32px; font-size: 10px; color: #999; font-weight: 600; width: 28px; text-align: right; }
-        .tab-row { display: flex; gap: 8px; margin-bottom: 14px; justify-content: space-between; align-items: center; }
-        .tb { padding: 6px 16px; border-radius: 20px; border: 0.5px solid #d0c9b8; font-size: 12px; cursor: pointer; background: #fff; color: #666; }
-        .tb.on { background: #1a2238; color: #fff; border-color: #1a2238; }
-        .hidden { display: none !important; }
-        .btn-export { background: #1a2238; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .bar-wrap { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 100%; }
-        .tip { visibility: hidden; background: #1a2238; color: #fff; padding: 5px 8px; border-radius: 4px; position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%); font-size: 10px; white-space: nowrap; z-index: 100; pointer-events: none; }
-        .bar-wrap:hover .tip { visibility: visible; }
-        .legend { display: flex; justify-content: center; gap: 20px; margin-top: 10px; font-size: 11px; color: #666; flex-wrap: wrap; }
-        .leg-item { display: flex; align-items: center; gap: 6px; }
-        .leg-box { width: 12px; height: 12px; border-radius: 3px; }
-        .no-data { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="Admin.css" rel="stylesheet" type="text/css" />
 
-        /* ── Print report title ────────────────────────────────────── */
-        .print-title { display: none; text-align: center; padding: 18px 0 10px; margin-bottom: 4px; }
-        .print-title-text { font-size: 18px; font-weight: 700; color: #1a2238; letter-spacing: .5px; }
-        .print-title-sub { font-size: 11px; color: #999; margin-top: 3px; text-transform: uppercase; letter-spacing: .6px; }
-
-        /* ── Section card titles ───────────────────────────────────── */
-        .section-card-title { font-size: 13px; font-weight: 700; color: #1a2238; letter-spacing: .3px; text-transform: uppercase; }
-
-        /* ── Grade Distribution Panel ──────────────────────────────── */
-        .grade-dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; padding: 0 4px; }
-        .grade-dist-row { display: flex; align-items: center; gap: 8px; background: #fcfaf7; border: 1px solid #f0ebe0; border-radius: 8px; padding: 8px 10px; }
-        .grade-dist-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-        .grade-dist-info { display: flex; flex-direction: column; flex: 1; min-width: 0; text-align: left; }
-        .grade-dist-name { font-size: 11px; font-weight: 600; color: #1a2238; line-height: 1.2; }
-        .grade-dist-range { font-size: 9px; color: #999; }
-        .grade-dist-count { font-size: 16px; font-weight: 700; color: #1a2238; min-width: 20px; text-align: right; }
-        .grade-dist-label { font-size: 9px; color: #999; white-space: nowrap; }
-
-        /* ── Print / Export to PDF ─────────────────────────────────── */
-        @media print {
-            @page {
-                margin: 0;
-            }
-
-            .header-card {
-                min-height: auto !important;
-                margin-bottom: 10px !important;
-            }
-
-            /* Hide chrome */
-            #sidebar,
-            .tab-row,
-            .picker-row,
-            #semFilterWrap,
-            .tip,
-            .btn-export { display: none !important; }
-
-            /* Remove sidebar offset */
-            #main-content { margin-left: 0 !important; padding: 10px !important; }
-
-            /* Force background colours to print */
-            body { background: #f5f0e8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-            /* Keep inactive tab hidden */
-            .hidden { display: none !important; }
-
-            /* Hide the attendance colour-key hint line */
-            #enrollMid div:last-child { display: none !important; }
-
-            /* Prevent cards splitting across pages */
-            .card { border: 0.5px solid #e0dbd0 !important; box-shadow: none !important; break-inside: avoid; }
-
-            .pg { padding-top: 50px !important; }
-
-            /* Ensure bar colours print */
-            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-            /* Print report title banner */
-            .print-title { display: block !important; }
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+
+    <div class="performance-page">
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i>Student Performance</h1>
+    </div>
 <div class="pg">
     <div class="tab-row">
         <div>
@@ -521,4 +413,5 @@
         }
     };
 </script>
+</div>
 </asp:Content>

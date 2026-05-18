@@ -14,6 +14,12 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Required to allow file uploads on the page
+            if (Page.Form != null)
+            {
+                Page.Form.Enctype = "multipart/form-data";
+            }
+
             if (!IsPostBack)
             {
                 PopulateProgramFilter();
@@ -115,17 +121,52 @@ namespace SchoolSystem
             }
         }
 
-        // ==========================================
-        // EDIT / UPDATE LOGIC
-        // ==========================================
+        // -------------------------------------------------------------
+        // LOADING THE MODAL (Fetching Base64 Image)
+        // -------------------------------------------------------------
         protected void gvCourses_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "EditCourse")
             {
-                int courseId = Convert.ToInt32(e.CommandArgument);
-                LoadCourseDetailsForEdit(courseId);
+                string courseId = e.CommandArgument.ToString();
+                hdnEditCourseId.Value = courseId;
+
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    string sql = "SELECT course_code, course_name, course_fee, course_img FROM Course WHERE course_id = @Id";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", courseId);
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                txtEditCode.Text = reader["course_code"].ToString();
+                                txtEditName.Text = reader["course_name"].ToString();
+                                txtEditFee.Text = reader["course_fee"].ToString();
+
+                                // Convert VARBINARY back to an image preview string
+                                if (reader["course_img"] != DBNull.Value)
+                                {
+                                    byte[] bytes = (byte[])reader["course_img"];
+                                    string base64String = Convert.ToBase64String(bytes, 0, bytes.Length);
+                                    imgEditPreview.ImageUrl = "data:image/jpeg;base64," + base64String;
+                                }
+                                else
+                                {
+                                    // Reset to transparent if no image exists in DB
+                                    imgEditPreview.ImageUrl = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+                                }
+                            }
+                        }
+                    }
+                }
+
+                pnlEditModal.Visible = true;
             }
         }
+
 
         private void LoadCourseDetailsForEdit(int courseId)
         {
@@ -159,34 +200,66 @@ namespace SchoolSystem
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string sql = @"UPDATE Course 
-                                   SET course_code = @Code, course_name = @Name, course_fee = @Fee 
-                                   WHERE course_id = @ID";
+                    string sql = "";
+
+                    // 1. Determine the correct SQL String based on whether a file exists
+                    if (fuEditCourseImage.HasFile)
+                    {
+                        // User uploaded a new image: Update everything INCLUDING course_img
+                        sql = @"UPDATE Course 
+                        SET course_code = @Code, 
+                            course_name = @Name, 
+                            course_fee = @Fee, 
+                            course_img = @Image 
+                        WHERE course_id = @Id";
+                    }
+                    else
+                    {
+                        // No new image: Update everything EXCEPT course_img
+                        sql = @"UPDATE Course 
+                        SET course_code = @Code, 
+                            course_name = @Name, 
+                            course_fee = @Fee 
+                        WHERE course_id = @Id";
+                    }
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
+                        // 2. Add the standard parameters that ALWAYS exist
                         cmd.Parameters.AddWithValue("@Code", txtEditCode.Text.Trim());
                         cmd.Parameters.AddWithValue("@Name", txtEditName.Text.Trim());
-                        cmd.Parameters.AddWithValue("@Fee", Convert.ToDecimal(txtEditFee.Text));
-                        cmd.Parameters.AddWithValue("@ID", hdnEditCourseId.Value);
 
+                        decimal fee = 0;
+                        decimal.TryParse(txtEditFee.Text, out fee);
+                        cmd.Parameters.AddWithValue("@Fee", fee);
+
+                        cmd.Parameters.AddWithValue("@Id", hdnEditCourseId.Value);
+
+                        // 3. Add the @Image parameter ONLY if we declared it in the SQL string above
+                        if (fuEditCourseImage.HasFile)
+                        {
+                            cmd.Parameters.AddWithValue("@Image", fuEditCourseImage.FileBytes);
+                        }
+
+                        // Execute the update
                         conn.Open();
                         cmd.ExecuteNonQuery();
                     }
                 }
 
-                // Hide modal and refresh grid
+                // Hide modal and show success alert
                 pnlEditModal.Visible = false;
-                LoadAllCourses(txtSearch.Text.Trim(), ddlProgramFilter.SelectedValue);
 
-                ScriptManager.RegisterStartupScript(upGridView, upGridView.GetType(), "updated",
-                    "Swal.fire('Success', 'Course updated successfully!', 'success');", true);
+                // IMPORTANT: Rebind your GridView here so the UI updates
+                // BindGridView(); // Or whatever your method to load courses is named
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "success",
+                    "Swal.fire('Updated', 'Course updated successfully!', 'success');", true);
             }
             catch (Exception ex)
             {
-                string safeMessage = HttpUtility.JavaScriptStringEncode(ex.Message);
-                ScriptManager.RegisterStartupScript(upGridView, upGridView.GetType(), "error",
-                    $"Swal.fire('Error', '{safeMessage}', 'error');", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "errorAlert",
+                    $"Swal.fire('Error', '{ex.Message.Replace("'", "\\'")}', 'error');", true);
             }
         }
 

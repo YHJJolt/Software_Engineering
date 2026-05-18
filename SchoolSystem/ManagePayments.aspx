@@ -2,73 +2,16 @@
 
 <asp:Content ID="Styling" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        /* General styles */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        /* Summary Dashboard Cards */
-        .stats-container { display: flex; gap: 20px; margin-bottom: 25px; }
-        .stat-card { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 15px; border: 1px solid #f0f0f0; }
-        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .stat-details { display: flex; flex-direction: column; }
-        .stat-title { font-size: 13px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .stat-value { font-size: 22px; color: #2c3e50; font-weight: 700; }
-
-        /* Filter Styles */
-        .action-bar { display: flex; justify-content: space-between; margin-bottom: 25px; width: 100%; align-items: center; }
-        .filter-bar { display: flex; gap: 15px; align-items: center; background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); flex-wrap: wrap; }
-        .filter-group { display: flex; align-items: center; gap: 10px; }
-        .filter-group label { font-size: 13px; font-weight: 600; color: #555; margin: 0; }
-        .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer; transition: 0.2s; }
-        .filter-select:focus { border-color: #C5A059; }
-        
-        /* Search Bar */
-        .search-group { display: flex; align-items: center; position: relative; }
-        .filter-input { padding: 8px 35px 8px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 220px; outline: none; transition: 0.2s; }
-        .filter-input:focus { border-color: #C5A059; box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1); }
-        .search-btn { position: absolute; right: 10px; color: #888; border: none; background: none; cursor: pointer; font-size: 14px; }
-        .search-btn:hover { color: #C5A059; }
-
-        /* Button Style */
-        .btn { padding: 9px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; }
-        .btn-primary { background: #C5A059; color: white; box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3); }
-        .btn-primary:hover { background: #b08d4b; transform: translateY(-1px); }
-        .btn-tertiary { background: #f8fafc; border: 1px solid #ddd; color: #555; }
-        .btn-tertiary:hover { background: #e2e8f0; }
-        .btn-warning { background: #fff5f5; border: 1px solid #ffcccc; color: #d33; }
-        .btn-warning:hover { background: #ffe6e6; }
-
-        /* Table */
-        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-        .data-table th { background: #2c3e50; color: white; padding: 15px 16px; text-align: left; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
-        .data-table td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
-        .data-table tr:hover td { background: #f8fafc; }
-        .data-table tr:last-child td { border-bottom: none; }
-
-        /* Status badges */
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-paid { background: #e6ffed; color: #1e8e3e; border: 1px solid #b7ebc5; }
-        .badge-unpaid { background: #fce8e6; color: #d93025; border: 1px solid #fad2cf; }
-
-        .action-container { display: flex; gap: 8px; align-items: center; }
-
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18, 20, 32, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-form { background: #fff; padding: 35px 40px; border-radius: 12px; width: 450px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-top: 5px solid #C5A059; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .modal-form h3 { margin: 0 0 25px 0; color: #2c3e50; font-size: 22px; font-weight: 700; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
-        .form-control { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; transition: 0.3s; box-sizing: border-box; }
-        .form-control:focus { border-color: #C5A059; box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15); outline: none; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="Admin.css" rel="stylesheet" type="text/css" />
+    
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server"> 
 
+    <div class="payment-mgmt-page">
     <div class="header">
-        <h1 style="color: #2c3e50; font-size: 28px; margin: 0;">Fee & Payment Management</h1>
+        <h1><i class="fas fa-credit-card"></i>Payment Management</h1>
     </div>
 
     <asp:UpdatePanel ID="upGridView" runat="server" UpdateMode="Conditional">
@@ -265,4 +208,5 @@
             return false;
         }
     </script>
+    </div>
 </asp:Content>

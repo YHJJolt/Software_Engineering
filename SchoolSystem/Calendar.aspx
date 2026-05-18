@@ -1,213 +1,15 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Calendar.aspx.cs" Inherits="SchoolSystem.Calendar" MasterPageFile="~/AdminMaster.Master"%>
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 <asp:ScriptManagerProxy runat="server" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<link href="Admin.css" rel="stylesheet" type="text/css" />
 
-<style>
-    .calendar-container { 
-        font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-        width: 1260px;
-        max-width: 95%; 
-        margin: 20px auto;
-        box-sizing: border-box;
-        color: #121420;
-    }
-
-    /* Modern Modal UI */
-    .modal { 
-        display: none; 
-        position: fixed; 
-        z-index: 9999; 
-        top: 0; left: 0; 
-        width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.4); 
-        backdrop-filter: blur(2px);
-    }
-
-    .modal-content { 
-        background: white; 
-        padding: 32px; 
-        width: 420px; 
-        margin: 80px auto; 
-        border-radius: 16px; 
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        border: none;
-    }
-
-    .input-row {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 16px;
-        border-bottom: 1px solid #f0f0f0;
-        transition: border-color 0.3s;
-    }
-
-    .input-row:focus-within { border-color: #7B61FF; }
-    .input-row i { color: #5f6368; font-size: 16px; width: 20px; text-align: center; }
-
-    .modern-input {
-        border: none !important;
-        outline: none !important;
-        width: 100%;
-        padding: 12px 0;
-        font-size: 15px;
-        font-weight: 400;
-        color: #3c4043;
-        font-family: inherit;
-        background: transparent;
-    }
-
-    #title.modern-input { font-size: 18px; font-weight: 500; }
-
-    /* Tag-Style Type Picker */
-    .type-picker-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #70757a;
-        margin: 20px 0 10px 36px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .type-tags-container {
-        display: flex;
-        gap: 8px;
-        margin-left: 36px;
-        flex-wrap: wrap;
-    }
-
-    .type-tag {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        border: 2px solid transparent;
-        background: #f1f3f4;
-        color: #3c4043;
-    }
-
-    .type-tag[data-type="General"] { background-color: #e8f0fe; color: #1967d2; }
-    .type-tag[data-type="Exam"] { background-color: #fce8e6; color: #d93025; }
-    .type-tag[data-type="Holiday"] { background-color: #e6ffed; color: #1e8e3e; }
-    .type-tag[data-type="Enrolment"] { background-color: #f3e8fd; color: #9334e6; }
-
-    .type-tag.active {
-        border-color: #7B61FF;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transform: translateY(-1px);
-    }
-
-    .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
-
-    .modern-btn {
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-        font-family: inherit;
-    }
-
-    .btn-cancel { background: white; border: 1px solid #dadce0; color: #3c4043; }
-    .btn-save { background: #7B61FF; color: white; border: none; }
-    .btn-save:hover { background: #6347d9; box-shadow: 0 4px 8px rgba(123, 97, 255, 0.3); }
-
-    /* Event Card Styling */
-    .event-card {
-        background: #FFF9E6;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 15px;
-        position: relative;
-        transition: transform 0.2s;
-    }
-
-    .event-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .event-card-date { font-size: 11px; text-transform: uppercase; font-weight: 800; color: #888; }
-    .event-card-title { font-size: 18px; font-weight: 800; margin: 6px 0; color: #121420; }
-    .event-card-desc { font-size: 13px; color: #555; margin-bottom: 10px; }
-    .card-actions { position: absolute; bottom: 15px; right: 20px; display: flex; gap: 12px; }
-    .action-btn { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #eee; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .past-event { background-color: #f5f5f5 !important; border-style: dashed; opacity: 0.8; }
-    .past-event .event-card-title { color: #777; }
-
-    .btn-add-event {
-        background-color: #E8DCBE;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        font-size: 14px;
-        font-weight: 700;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 20px;
-    }
-
-    .btn-add-event:hover { background-color: #9C927B; }
-    .btn-edit { color: #333; }
-    .btn-delete { color: #e74c3c; }
-    .fc {width: 100% !important;}
-
-    .fc-daygrid-event-harness {
-        display: none !important;
-    }
-
-    .fc-daygrid-day:hover {
-        background-color: #f8f7ff !important;
-        cursor: pointer;
-    }
-
-    .event-count-badge {
-        background: #7B61FF;
-        color: white;
-        font-size: 10px;
-        padding: 2px 5px;
-        border-radius: 4px;
-        margin-left: 5px;
-        font-weight: bold;
-    }
-
-    .calendar-sidebar {
-        display: none;
-        width: 300px;
-        flex: 0 0 300px; 
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        height: fit-content;
-        position: sticky;
-        top: 20px;
-    }
-
-    .calendar-main-box {
-        width: 900px;
-        flex: 0 0 900px; 
-        min-width: 900px;
-    }
-
-    .calendar-main-row {
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
-        transition: all 0.3s ease;
-    }
-
-    .calendar-sidebar button:hover {
-        color: #333 !important;
-    }
-</style>
-
+<div class="calendar-page">
+<div class="header">
+    <h1><i class="fas fa-calendar-alt"></i>Calendar</h1>
+</div>
 <div class="calendar-container">
-    <h2>Calendar</h2>
+    
     <button type="button" class="btn-add-event" onclick="prepareAddModal()">
         <i class="fa-solid fa-plus"></i> Add New Event
     </button>
@@ -396,6 +198,7 @@
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             height: 'auto',
+            aspectRatio: 1.5,
             dateClick: function (info) { showSidebar(info.dateStr); },
             events: function (fetchInfo, successCallback) {
                 $.ajax({
@@ -537,4 +340,5 @@
         }
     }
 </script>
+</div>
 </asp:Content>

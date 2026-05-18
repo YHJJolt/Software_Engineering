@@ -11,7 +11,7 @@ namespace SchoolSystem
 {
 
 
-    public partial class UserProfile
+    public partial class AdminProfile
     {
 
         /// <summary>

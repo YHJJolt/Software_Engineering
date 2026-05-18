@@ -2,60 +2,13 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="Admin.css" rel="stylesheet" type="text/css" />
 
-    <style>
-        /* Form styles */
-        .form-container { 
-            background: #E0E0E0;
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            max-width: 800px; 
-            margin: 20px auto;
-        }
-        .form-row { 
-            display: flex;
-            gap: 20px; 
-            margin-bottom: 20px; 
-        }
-        .form-group { 
-            flex: 1;
-            display: flex; 
-            flex-direction: column; 
-        }
-        .form-group label { 
-            font-size: 14px;
-            color: #555; 
-            margin-bottom: 8px; 
-            font-weight: 500; 
-        }
-        .form-control { 
-            padding: 10px;
-            border: 1px solid #ddd; 
-            border-radius: 6px; 
-            font-size: 14px;
-        }
-        
-        /* Button Style */
-        .btn { 
-            padding: 9px 18px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            margin-right: 10px;
-        }
-        .btn-primary   { background: #C5A059; color: white; }
-        .btn-primary:hover { background: #CCB68B; }
-        .btn-secondary { background: #7D8AFF; color: white; }
-        .btn-secondary:hover { background: #B4B9F0; }
-        
-        .header {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-    </style>
+   
+    <div class="create-program-page">
 
+    
     <div class="header">
         <h1>Create New Program</h1>
     </div>
@@ -140,5 +93,6 @@
             <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="BtnCancel_Click" CausesValidation="false" />
             <asp:Button ID="btnSubmit" runat="server" Text="Add Program" CssClass="btn btn-primary" OnClick="BtnSubmit_Click" />
         </div>
+    </div>
     </div>
 </asp:Content>

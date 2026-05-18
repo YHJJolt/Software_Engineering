@@ -5,7 +5,8 @@ using System.IO;
 
 namespace SchoolSystem
 {
-    public partial class UserProfile : System.Web.UI.Page
+    // UPDATED CLASS NAME HERE
+    public partial class AdminProfile : System.Web.UI.Page
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
 
@@ -78,7 +79,8 @@ namespace SchoolSystem
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
-            Response.Redirect("UserProfile.aspx"); // Refresh to show new image
+            // UPDATED REDIRECT HERE
+            Response.Redirect("AdminProfile.aspx");
         }
 
         // NEW: Handles the Log Out action from the profile page
