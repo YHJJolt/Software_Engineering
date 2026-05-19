@@ -8,12 +8,28 @@ namespace SchoolSystem
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
 
+        protected void Page_PreInit(object sender, EventArgs e)
+        {
+            if (Request.QueryString["course_id"] != null)
+            {
+                // Updated to point to the renamed Master File
+                this.MasterPageFile = "~/LecturerCourseMaster.Master";
+            }
+            else
+            {
+                this.MasterPageFile = "~/LecturerMaster.Master";
+            }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("Login.aspx");
 
-            // Set dynamic title
-            ((LecturerMaster)this.Master).PageTitle = "My Profile";
+            if (this.Master is LecturerMaster)
+                ((LecturerMaster)this.Master).PageTitle = "My Profile";
+            // Updated casting
+            else if (this.Master is LecturerCourseMaster)
+                ((LecturerCourseMaster)this.Master).PageTitle = "My Profile";
 
             if (!IsPostBack) LoadUserData();
             if (fileUploadImg.HasFile) UploadImage();
@@ -68,7 +84,13 @@ namespace SchoolSystem
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
-            Response.Redirect("LecturerProfile.aspx");
+
+            string redirectUrl = "LecturerProfile.aspx";
+            if (Request.QueryString["course_id"] != null)
+            {
+                redirectUrl += "?course_id=" + Request.QueryString["course_id"];
+            }
+            Response.Redirect(redirectUrl);
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)

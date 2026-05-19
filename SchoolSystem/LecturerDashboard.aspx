@@ -1,32 +1,54 @@
 ﻿<%@ Page Title="Dashboard" Language="C#" MasterPageFile="~/LecturerMaster.Master" AutoEventWireup="true" CodeBehind="LecturerDashboard.aspx.cs" Inherits="SchoolSystem.LecturerDashboard" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    </asp:Content>
+</asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     
     <div class="stats-grid">
         <div class="stat-card">
-            <span>Courses Assigned</span>
-            <h2><asp:Literal ID="litCourseCount" runat="server">0</asp:Literal></h2>
+            <div class="stat-info">
+                <span>Courses Assigned</span>
+                <h2><asp:Literal ID="litCourseCount" runat="server">0</asp:Literal></h2>
+            </div>
+            <div class="stat-icon-wrapper icon-blue">
+                <i class="fas fa-layer-group"></i>
+            </div>
         </div>
+        
         <div class="stat-card">
-            <span>Registered Students</span>
-            <h2><asp:Literal ID="litStudentCount" runat="server">0</asp:Literal></h2>
+            <div class="stat-info">
+                <span>Registered Students</span>
+                <h2><asp:Literal ID="litStudentCount" runat="server">0</asp:Literal></h2>
+            </div>
+            <div class="stat-icon-wrapper icon-gold">
+                <i class="fas fa-users"></i>
+            </div>
         </div>
-        <div class="stat-card">
-            <span>Avg. Passing Rate (Excl. F)</span>
-            <h2><asp:Literal ID="litPassRate" runat="server">N/A</asp:Literal></h2>
-            <a href="javascript:void(0);" class="rate-link" onclick="openModal('rateModal');">View Specific Course Rates <i class="fas fa-arrow-right"></i></a>
+        
+        <div class="stat-card" style="flex-direction: column; align-items: flex-start; justify-content: center; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <div class="stat-info">
+                    <span>Avg. Passing Rate</span>
+                    <h2><asp:Literal ID="litPassRate" runat="server">N/A</asp:Literal></h2>
+                </div>
+                <div class="stat-icon-wrapper icon-green">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <a href="javascript:void(0);" class="rate-link" onclick="openModal('rateModal');">View Course Rates <i class="fas fa-arrow-right"></i></a>
         </div>
     </div>
 
-    <h3 class="section-title">My Assigned Courses</h3>
+    <div class="section-header">
+        <h3 class="section-title">My Assigned Courses</h3>
+    </div>
     
     <div class="courses-grid">
         <asp:Repeater ID="rptCourses" runat="server">
             <ItemTemplate>
                 <div class="course-card" onclick="window.location.href='ManageAttendance.aspx?id=<%# Eval("course_id") %>'">
+                    <div class="course-badge">Active</div>
                     <div class="course-img-container">
                         <img src='<%# GetImageSrc(Eval("course_img")) %>' alt="Course Image" onerror="this.src='Images/default-course.png';" />
                     </div>

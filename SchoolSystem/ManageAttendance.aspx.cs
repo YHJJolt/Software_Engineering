@@ -14,10 +14,13 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) Response.Redirect("Login.aspx");
 
-            // Safety check to ensure a Course ID was passed
             if (Request.QueryString["id"] == null) Response.Redirect("LecturerDashboard.aspx");
 
-            ((CourseMaster)this.Master).PageTitle = "Manage Attendance";
+            // Updated casting to LecturerCourseMaster
+            if (this.Master is LecturerCourseMaster)
+            {
+                ((LecturerCourseMaster)this.Master).PageTitle = "Manage Attendance";
+            }
 
             if (!IsPostBack)
             {
@@ -31,7 +34,6 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Joins Enrollment to Student. Uses LEFT JOIN on CourseGrade to handle brand new students without records safely.
                 string sql = @"
                     SELECT 
                         e.Enrollment_id,
@@ -66,7 +68,6 @@ namespace SchoolSystem
             {
                 conn.Open();
 
-                // Loop through every student row in the Repeater
                 foreach (RepeaterItem item in rptStudents.Items)
                 {
                     if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
@@ -77,8 +78,6 @@ namespace SchoolSystem
                         int enrollmentId = Convert.ToInt32(hfEnrollmentId.Value);
                         int hoursToAdd = (ddlStatus.SelectedValue == "Present") ? 2 : 0;
 
-                        // UPSERT Logic: 
-                        // If record exists, add hours. If it doesn't, create it and add hours.
                         string sql = @"
                             IF EXISTS (SELECT 1 FROM CourseGrade WHERE Enrollment_id = @EnrollID)
                             BEGIN
@@ -101,7 +100,6 @@ namespace SchoolSystem
                 }
             }
 
-            // Show success message and reload the table with new numbers
             lblSuccessMsg.Text = "<i class='fas fa-check-circle'></i> Attendance saved successfully! (+2 Total Hours applied to all).";
             lblSuccessMsg.Visible = true;
             LoadStudentAttendance();

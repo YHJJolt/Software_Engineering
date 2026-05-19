@@ -1,104 +1,10 @@
 ﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="AdminProfile.aspx.cs" Inherits="SchoolSystem.AdminProfile" %>
-
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-<<<<<<< HEAD
-    <style>
-        /* Profile Panel Styling - Jingliu Light Theme */
-        .profile-container { 
-            display: flex;
-            gap: 50px; padding: 45px; 
-            background: #ffffff; border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(18, 20, 32, 0.05);
-            border: 1px solid rgba(18, 20, 32, 0.05);
-        }
-
-        .left-col { text-align: center;
-            width: 250px; }
-        .right-col { flex: 1;
-        }
-
-        .profile-main-img { 
-            width: 180px;
-            height: 180px; border-radius: 12px; 
-            object-fit: cover; background: #fdfaf6; 
-            margin-bottom: 20px; 
-            border: 3px solid var(--antique-gold);
-            /* Brass/Gold Accent */
-        }
-
-        /* Themed Upload Button */
-        .upload-btn { 
-            font-size: 12px;
-            font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--antique-gold); background: rgba(197, 160, 89, 0.1); 
-            padding: 10px 20px; border: none; border-radius: 30px;
-            cursor: pointer; transition: 0.2s;
-        }
-        .upload-btn:hover { background: var(--antique-gold); color: white;
-        }
-
-        /* Typography & Details */
-        .info-label { font-size: 12px;
-            font-weight: 700; text-transform: uppercase; color: rgba(18, 20, 32, 0.4); letter-spacing: 1px; margin-top: 25px; display: block;
-        }
-        .bio-box { 
-            width: 100%;
-            height: 120px; padding: 15px; border: 1px solid rgba(18, 20, 32, 0.1); 
-            border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--navy-accent);
-            background: #fcfcfc; resize: none; transition: 0.2s; box-sizing: border-box; margin-top: 5px;
-        }
-        .bio-box:focus { outline: none; border-color: var(--antique-gold); background: #ffffff;
-        }
-
-        /* Buttons Container */
-        .action-buttons {
-            margin-top: 30px;
-            display: flex; 
-            justify-content: flex-end; 
-            gap: 15px;
-        }
-
-        /* Action Buttons */
-        .btn-save { 
-            padding: 12px 30px;
-            border: none; border-radius: 8px; 
-            background: var(--navy-accent); color: white; font-size: 14px; font-weight: 600; 
-            cursor: pointer; transition: 0.2s;
-        }
-        .btn-save:hover { background: #2a2e45; box-shadow: 0 4px 15px rgba(18, 20, 32, 0.2);
-        }
-
-        /* New Modern Logout Button */
-        .btn-logout {
-            padding: 12px 25px;
-            border: none; 
-            border-radius: 8px; 
-            background: #ffeaea; 
-            color: #e74c3c; 
-            font-size: 14px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            text-decoration: none; 
-            transition: 0.2s; 
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-logout:hover { 
-            background: #ffcece;
-            color: #c0392b; 
-        }
-    </style>
-</asp:Content>
-
-<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-=======
         <link href="Admin.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="user-profile-page">
->>>>>>> a72db36c9a946b810e2d267460e9bfaf31b2e3f0
     <h1 style="margin-bottom: 30px; color: var(--navy-accent); font-weight: 800;">My Profile</h1>
     
     <div class="profile-container">
@@ -128,8 +34,5 @@
             </div>
         </div>
     </div>
-<<<<<<< HEAD
-=======
 </div>
->>>>>>> a72db36c9a946b810e2d267460e9bfaf31b2e3f0
 </asp:Content>

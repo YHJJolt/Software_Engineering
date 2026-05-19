@@ -6,7 +6,6 @@
     <title>Lecturer Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link rel="stylesheet" type="text/css" href="LecturerStyle.css" />
-    
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
@@ -39,19 +38,31 @@
                 </div>
                 
                 <div class="notif-container" onclick="toggleNotifs()">
-                    <i class="fas fa-bell notif-bell"></i>
-                    <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                    <div class="notif-bell-wrapper">
+                        <i class="fas fa-bell notif-bell"></i>
+                        <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                    </div>
                     
                     <div id="notifDropdown" class="notif-dropdown">
-                        <asp:Repeater ID="rptNotifications" runat="server">
-                            <ItemTemplate>
-                                <div class='notif-item <%# Eval("CssClass") %>'>
-                                    <strong><i class="<%# Eval("Type").ToString() == "Alert" ? "fas fa-exclamation-circle text-danger" : "fas fa-bullhorn" %>"></i> <%# Eval("Type") %></strong> 
-                                    <span><%# Eval("Message") %></span>
-                                </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                        <div id="noNotifs" runat="server" visible="false" style="padding:15px; text-align:center; color:#888;">No new notifications.</div>
+                        <div class="notif-header">
+                            <h4>Notifications</h4>
+                        </div>
+                        <div class="notif-body">
+                            <asp:Repeater ID="rptNotifications" runat="server">
+                                <ItemTemplate>
+                                    <div class='notif-item <%# Eval("CssClass") %>'>
+                                        <div class="notif-icon">
+                                            <i class="<%# Eval("Type").ToString() == "Alert" ? "fas fa-exclamation-circle" : "fas fa-bullhorn" %>"></i>
+                                        </div>
+                                        <div class="notif-content">
+                                            <strong><%# Eval("Type") %></strong> 
+                                            <span><%# Eval("Message") %></span>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                            <div id="noNotifs" runat="server" visible="false" style="padding:20px; text-align:center; color:#64748b;">No new notifications right now.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,26 +74,19 @@
     </form>
 
     <script>
-        // Sidebar Toggle Logic (Matches AdminMaster)
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
         }
-
-        // Apply saved state on load to prevent flickering
         window.onload = function () {
             if (localStorage.getItem('sidebarState') === 'collapsed') {
                 document.body.classList.add('sidebar-collapsed');
             }
         }
-
-        // Notification Dropdown Logic
         function toggleNotifs() {
             var dropdown = document.getElementById('notifDropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
-
-        // Close dropdown when clicking outside
         document.addEventListener('click', function (event) {
             var isClickInside = document.querySelector('.notif-container').contains(event.target);
             if (!isClickInside) {

@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="CourseMaster.master.cs" Inherits="SchoolSystem.CourseMaster" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="LecturerCourseMaster.master.cs" Inherits="SchoolSystem.LecturerCourseMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -8,10 +8,10 @@
     <link rel="stylesheet" type="text/css" href="LecturerStyle.css" />
     
     <style>
-        /* Specific override for the Back Button */
         .back-btn { background-color: rgba(18, 20, 32, 0.05); margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
         .back-btn i { color: var(--navy-accent) !important; }
-        .back-btn:hover { background-color: rgba(231, 76, 60, 0.1) !important; border-right: 4px solid #e74c3c !important; }
+        .back-btn:hover { background-color: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+        .back-btn:hover i { color: #ef4444 !important; }
     </style>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
@@ -24,7 +24,6 @@
             </div>
             <div class="nav-links">
                 <a href="LecturerDashboard.aspx" class="nav-link back-btn"><i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span></a>
-                
                 <a id="linkHome" runat="server" href="#" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
                 <a id="linkPeople" runat="server" href="#" class="nav-link"><i class="fas fa-users"></i> <span>People</span></a>
                 <a id="linkAttendance" runat="server" href="ManageAttendance.aspx" class="nav-link"><i class="fas fa-user-check"></i> <span>Manage Attendance</span></a>
@@ -33,7 +32,7 @@
                 <a id="linkAssignments" runat="server" href="#" class="nav-link"><i class="fas fa-file-alt"></i> <span>Assignments</span></a>
                 <a id="linkAnnouncements" runat="server" href="#" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
             </div>
-            <a href="LecturerProfile.aspx" class="sidebar-profile">
+            <a id="linkSidebarProfile" runat="server" href="LecturerProfile.aspx" class="sidebar-profile">
                 <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
                 <div class="p-text">
                     <span class="p-name"><asp:Literal ID="litSidebarName" runat="server" /></span>
@@ -51,19 +50,31 @@
                 </div>
                 
                 <div class="notif-container" onclick="toggleNotifs()">
-                    <i class="fas fa-bell notif-bell"></i>
-                    <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                    <div class="notif-bell-wrapper">
+                        <i class="fas fa-bell notif-bell"></i>
+                        <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                    </div>
                     
                     <div id="notifDropdown" class="notif-dropdown">
-                        <asp:Repeater ID="rptNotifications" runat="server">
-                            <ItemTemplate>
-                                <div class='notif-item <%# Eval("CssClass") %>'>
-                                    <strong><i class="<%# Eval("Type").ToString() == "Alert" ? "fas fa-exclamation-circle text-danger" : "fas fa-bullhorn" %>"></i> <%# Eval("Type") %></strong> 
-                                    <span><%# Eval("Message") %></span>
-                                </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                        <div id="noNotifs" runat="server" visible="false" style="padding:15px; text-align:center; color:#888;">No new notifications.</div>
+                        <div class="notif-header">
+                            <h4>Notifications</h4>
+                        </div>
+                        <div class="notif-body">
+                            <asp:Repeater ID="rptNotifications" runat="server">
+                                <ItemTemplate>
+                                    <div class='notif-item <%# Eval("CssClass") %>'>
+                                        <div class="notif-icon">
+                                            <i class="<%# Eval("Type").ToString() == "Alert" ? "fas fa-exclamation-circle" : "fas fa-bullhorn" %>"></i>
+                                        </div>
+                                        <div class="notif-content">
+                                            <strong><%# Eval("Type") %></strong> 
+                                            <span><%# Eval("Message") %></span>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                            <div id="noNotifs" runat="server" visible="false" style="padding:20px; text-align:center; color:#64748b;">No new notifications right now.</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,7 +86,6 @@
     </form>
 
     <script>
-        // Same Sidebar/Notif scripts as LecturerMaster
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
@@ -89,7 +99,7 @@
             var dropdown = document.getElementById('notifDropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         }
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             var isClickInside = document.querySelector('.notif-container').contains(event.target);
             if (!isClickInside) {
                 document.getElementById('notifDropdown').style.display = 'none';

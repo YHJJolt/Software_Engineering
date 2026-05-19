@@ -19,7 +19,7 @@ namespace SchoolSystem
             {
                 LoadDashboardStats();
                 LoadCourses();
-                LoadCourseRates(); // Load the data for the pop-up modal
+                LoadCourseRates();
             }
         }
 
@@ -70,12 +70,11 @@ namespace SchoolSystem
                 }
                 else
                 {
-                    litPassRate.Text = "N/A"; // Displayed when no grades exist for the lecturer
+                    litPassRate.Text = "N/A";
                 }
             }
         }
 
-        // NEW: Method to load specific rates for the Modal
         private void LoadCourseRates()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -100,7 +99,6 @@ namespace SchoolSystem
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
-                // Add a formatted column so it looks clean in the UI if there are no grades
                 dt.Columns.Add("PassRateFormatted", typeof(string));
                 foreach (DataRow row in dt.Rows)
                 {

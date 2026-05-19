@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Manage Attendance" Language="C#" MasterPageFile="~/CourseMaster.Master" AutoEventWireup="true" CodeBehind="ManageAttendance.aspx.cs" Inherits="SchoolSystem.ManageAttendance" %>
+﻿<%@ Page Title="Manage Attendance" Language="C#" MasterPageFile="~/LecturerCourseMaster.Master" AutoEventWireup="true" CodeBehind="ManageAttendance.aspx.cs" Inherits="SchoolSystem.ManageAttendance" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>

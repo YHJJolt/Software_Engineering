@@ -11,7 +11,7 @@ namespace SchoolSystem
 {
 
 
-    public partial class CourseMaster
+    public partial class LecturerCourseMaster
     {
 
         /// <summary>
@@ -103,6 +103,15 @@ namespace SchoolSystem
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlAnchor linkAnnouncements;
+
+        /// <summary>
+        /// linkSidebarProfile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkSidebarProfile;
 
         /// <summary>
         /// imgSidebar control.

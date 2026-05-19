@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 
 namespace SchoolSystem
 {
-    public partial class CourseMaster : System.Web.UI.MasterPage
+    public partial class LecturerCourseMaster : System.Web.UI.MasterPage
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
 
@@ -30,28 +30,27 @@ namespace SchoolSystem
 
         private void LoadCourseDetails()
         {
-            if (Request.QueryString["id"] != null)
+            string cid = Request.QueryString["id"] ?? Request.QueryString["course_id"];
+
+            if (!string.IsNullOrEmpty(cid))
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     string sql = "SELECT course_code, course_name FROM Course WHERE course_id = @CourseID";
                     SqlCommand cmd = new SqlCommand(sql, conn);
-                    cmd.Parameters.AddWithValue("@CourseID", Request.QueryString["id"]);
+                    cmd.Parameters.AddWithValue("@CourseID", cid);
                     conn.Open();
                     SqlDataReader rdr = cmd.ExecuteReader();
                     if (rdr.Read())
                     {
                         litCourseCode.Text = rdr["course_code"].ToString();
-                        // Optional: Append course ID to all side links so they stay in this course
-                        string cid = Request.QueryString["id"];
                         linkAttendance.HRef = "ManageAttendance.aspx?id=" + cid;
-                        // Example for others when ready: linkGrades.HRef = "Grades.aspx?id=" + cid;
+                        linkSidebarProfile.HRef = "LecturerProfile.aspx?course_id=" + cid;
                     }
                 }
             }
         }
 
-        // Identical backend functions to LecturerMaster
         private void LoadSidebarProfile()
         {
             using (SqlConnection conn = new SqlConnection(connStr))

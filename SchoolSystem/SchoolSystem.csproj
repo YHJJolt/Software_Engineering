@@ -128,13 +128,10 @@
     <Content Include="Enrollment.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-<<<<<<< HEAD
     <Content Include="LecturerDashboard.aspx" />
     <Content Include="LecturerProfile.aspx" />
     <Content Include="LecturerStyle.css" />
-=======
     <Content Include="Admin.css" />
->>>>>>> a72db36c9a946b810e2d267460e9bfaf31b2e3f0
     <Content Include="Login.aspx" />
     <Content Include="ManageAttendance.aspx" />
     <Content Include="ManagePayments.aspx" />
@@ -171,7 +168,7 @@
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="AdminMaster.Master" />
     <Content Include="LecturerMaster.Master" />
-    <Content Include="CourseMaster.Master" />
+    <Content Include="LecturerCourseMaster.Master" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -252,12 +249,12 @@
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
-    <Compile Include="CourseMaster.Master.cs">
-      <DependentUpon>CourseMaster.Master</DependentUpon>
+    <Compile Include="LecturerCourseMaster.Master.cs">
+      <DependentUpon>LecturerCourseMaster.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="CourseMaster.Master.designer.cs">
-      <DependentUpon>CourseMaster.Master</DependentUpon>
+    <Compile Include="LecturerCourseMaster.Master.designer.cs">
+      <DependentUpon>LecturerCourseMaster.Master</DependentUpon>
     </Compile>
     <Compile Include="Courses.aspx.cs">
       <DependentUpon>Courses.aspx</DependentUpon>
