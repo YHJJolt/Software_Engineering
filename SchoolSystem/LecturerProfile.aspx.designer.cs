@@ -11,7 +11,7 @@ namespace SchoolSystem
 {
 
 
-    public partial class UserProfile
+    public partial class LecturerProfile
     {
 
         /// <summary>
@@ -69,12 +69,12 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.LinkButton btnLogout;
 
         /// <summary>
-        /// btnSaveBio control.
+        /// btnSave control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveBio;
+        protected global::System.Web.UI.WebControls.Button btnSave;
     }
 }

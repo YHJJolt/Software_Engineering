@@ -1,4 +1,4 @@
-~<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminMaster.master.cs" Inherits="SchoolSystem.AdminMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -113,12 +113,10 @@
             <div class="sidebar-header">
                 <span class="header-text">ADMIN PANEL</span>
                 <i class="fas fa-bars" id="toggle-btn" onclick="toggleSidebar()"></i>
-             </div>
+            </div>
             <div class="nav-container">
                 <a id="linkDashboard" runat="server" href="AdminDashboard.aspx" class="nav-link"><i class="fas fa-th-large"></i> <span>Dashboard</span></a>
-                
                 <a id="linkPrograms" runat="server" href="Program.aspx" class="nav-link"><i class="fas fa-graduation-cap"></i> <span>Program Management</span></a>
-                
                 <a id="linkUsers" runat="server" href="UserManagement.aspx" class="nav-link"><i class="fas fa-users"></i> <span>User Management</span></a>
                 <a id="linkPayment" runat="server" href="ManagePayments.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
                 <a id="linkCourses" runat="server" href="Courses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
@@ -126,9 +124,8 @@
                 <a id="linkPerformance" runat="server" href="Performance.aspx" class="nav-link"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
                 <a id="linkAnnouncements" runat="server" href="AdminAnnouncement.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>
                 <a id="linkCalendar" runat="server" href="Calendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
-                
             </div>
-            <a href="UserProfile.aspx" class="sidebar-profile">
+            <a href="AdminProfile.aspx" class="sidebar-profile">
                 <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
                 <div class="p-text">
                     <span class="p-name"><asp:Literal ID="litSidebarName" runat="server" /></span>

@@ -49,7 +49,7 @@ namespace SchoolSystem
                 case "Lecturer":
                     tableName = "[Lecturer]";
                     emailColumn = "lecturer_email";
-                    passColumn = "lecturer_pw"; // Standardized to lecturer_pw
+                    passColumn = "lecturer_pw";
                     nameColumn = "lecturer_name";
                     break;
                 case "Student":
@@ -81,10 +81,14 @@ namespace SchoolSystem
                             Session["UserName"] = reader[nameColumn].ToString();
                             Session["UserRole"] = selectedRole;
 
-                            // Redirect to HoP Dashboard (only HoP implemented for now)
+                            // NEW FIX: Redirect to the correct Dashboard based on Role
                             if (selectedRole == "HOP")
                             {
                                 Response.Redirect("AdminDashboard.aspx");
+                            }
+                            else if (selectedRole == "Lecturer")
+                            {
+                                Response.Redirect("LecturerDashboard.aspx");
                             }
                             else
                             {

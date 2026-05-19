@@ -142,6 +142,7 @@ CREATE TABLE [Course] (
   [credit_hours] INT NULL,
   [course_fee] NVARCHAR(45) NOT NULL, 
   [course_status] NVARCHAR(20) DEFAULT 'Open', 
+  [course_img] VARBINARY(MAX) NULL,
   [Lecturer_id] INT NOT NULL,
   [Calendar_id] INT NOT NULL,
   [Program_id] INT NOT NULL DEFAULT 1,
@@ -408,3 +409,5 @@ VALUES
 GO
 
 SELECT * FROM Enrollment;
+SELECT * FROM Lecturer;
+SELECT * FROM CourseGrade;

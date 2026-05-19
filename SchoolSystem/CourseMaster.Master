@@ -1,0 +1,100 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="CourseMaster.master.cs" Inherits="SchoolSystem.CourseMaster" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>Course Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="stylesheet" type="text/css" href="LecturerStyle.css" />
+    
+    <style>
+        /* Specific override for the Back Button */
+        .back-btn { background-color: rgba(18, 20, 32, 0.05); margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .back-btn i { color: var(--navy-accent) !important; }
+        .back-btn:hover { background-color: rgba(231, 76, 60, 0.1) !important; border-right: 4px solid #e74c3c !important; }
+    </style>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-book-open icon"></i>
+                <span style="font-size: 18px;"><asp:Literal ID="litCourseCode" runat="server">Course</asp:Literal></span>
+            </div>
+            <div class="nav-links">
+                <a href="LecturerDashboard.aspx" class="nav-link back-btn"><i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span></a>
+                
+                <a id="linkHome" runat="server" href="#" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
+                <a id="linkPeople" runat="server" href="#" class="nav-link"><i class="fas fa-users"></i> <span>People</span></a>
+                <a id="linkAttendance" runat="server" href="ManageAttendance.aspx" class="nav-link"><i class="fas fa-user-check"></i> <span>Manage Attendance</span></a>
+                <a id="linkGrades" runat="server" href="#" class="nav-link"><i class="fas fa-star"></i> <span>Grades</span></a>
+                <a id="linkModules" runat="server" href="#" class="nav-link"><i class="fas fa-layer-group"></i> <span>Modules</span></a>
+                <a id="linkAssignments" runat="server" href="#" class="nav-link"><i class="fas fa-file-alt"></i> <span>Assignments</span></a>
+                <a id="linkAnnouncements" runat="server" href="#" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+            </div>
+            <a href="LecturerProfile.aspx" class="sidebar-profile">
+                <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
+                <div class="p-text">
+                    <span class="p-name"><asp:Literal ID="litSidebarName" runat="server" /></span>
+                </div>
+            </a>
+        </div>
+
+        <div id="main-wrapper">
+            <div id="topbar">
+                <div class="topbar-left">
+                    <button type="button" class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="page-title"><asp:Literal ID="litPageTitle" runat="server">Course Screen</asp:Literal></h2>
+                </div>
+                
+                <div class="notif-container" onclick="toggleNotifs()">
+                    <i class="fas fa-bell notif-bell"></i>
+                    <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                    
+                    <div id="notifDropdown" class="notif-dropdown">
+                        <asp:Repeater ID="rptNotifications" runat="server">
+                            <ItemTemplate>
+                                <div class='notif-item <%# Eval("CssClass") %>'>
+                                    <strong><i class="<%# Eval("Type").ToString() == "Alert" ? "fas fa-exclamation-circle text-danger" : "fas fa-bullhorn" %>"></i> <%# Eval("Type") %></strong> 
+                                    <span><%# Eval("Message") %></span>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                        <div id="noNotifs" runat="server" visible="false" style="padding:15px; text-align:center; color:#888;">No new notifications.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="main-content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        // Same Sidebar/Notif scripts as LecturerMaster
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
+        }
+        window.onload = function () {
+            if (localStorage.getItem('sidebarState') === 'collapsed') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        }
+        function toggleNotifs() {
+            var dropdown = document.getElementById('notifDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+        document.addEventListener('click', function(event) {
+            var isClickInside = document.querySelector('.notif-container').contains(event.target);
+            if (!isClickInside) {
+                document.getElementById('notifDropdown').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

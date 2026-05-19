@@ -1,45 +1,57 @@
-﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="UserProfile.aspx.cs" Inherits="SchoolSystem.UserProfile" %>
+﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="AdminProfile.aspx.cs" Inherits="SchoolSystem.AdminProfile" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>
         /* Profile Panel Styling - Jingliu Light Theme */
         .profile-container { 
-            display: flex; gap: 50px; padding: 45px; 
+            display: flex;
+            gap: 50px; padding: 45px; 
             background: #ffffff; border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(18, 20, 32, 0.05); 
+            box-shadow: 0 4px 20px rgba(18, 20, 32, 0.05);
             border: 1px solid rgba(18, 20, 32, 0.05);
         }
 
-        .left-col { text-align: center; width: 250px; }
-        .right-col { flex: 1; }
+        .left-col { text-align: center;
+            width: 250px; }
+        .right-col { flex: 1;
+        }
 
         .profile-main-img { 
-            width: 180px; height: 180px; border-radius: 12px; 
+            width: 180px;
+            height: 180px; border-radius: 12px; 
             object-fit: cover; background: #fdfaf6; 
             margin-bottom: 20px; 
-            border: 3px solid var(--antique-gold); /* Brass/Gold Accent */
+            border: 3px solid var(--antique-gold);
+            /* Brass/Gold Accent */
         }
 
         /* Themed Upload Button */
         .upload-btn { 
-            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 12px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             color: var(--antique-gold); background: rgba(197, 160, 89, 0.1); 
-            padding: 10px 20px; border: none; border-radius: 30px; cursor: pointer; transition: 0.2s;
+            padding: 10px 20px; border: none; border-radius: 30px;
+            cursor: pointer; transition: 0.2s;
         }
-        .upload-btn:hover { background: var(--antique-gold); color: white; }
+        .upload-btn:hover { background: var(--antique-gold); color: white;
+        }
 
         /* Typography & Details */
-        .info-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: rgba(18, 20, 32, 0.4); letter-spacing: 1px; margin-top: 25px; display: block; }
+        .info-label { font-size: 12px;
+            font-weight: 700; text-transform: uppercase; color: rgba(18, 20, 32, 0.4); letter-spacing: 1px; margin-top: 25px; display: block;
+        }
         .bio-box { 
-            width: 100%; height: 120px; padding: 15px; border: 1px solid rgba(18, 20, 32, 0.1); 
-            border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--navy-accent); 
+            width: 100%;
+            height: 120px; padding: 15px; border: 1px solid rgba(18, 20, 32, 0.1); 
+            border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--navy-accent);
             background: #fcfcfc; resize: none; transition: 0.2s; box-sizing: border-box; margin-top: 5px;
         }
-        .bio-box:focus { outline: none; border-color: var(--antique-gold); background: #ffffff; }
+        .bio-box:focus { outline: none; border-color: var(--antique-gold); background: #ffffff;
+        }
 
         /* Buttons Container */
         .action-buttons {
-            margin-top: 30px; 
+            margin-top: 30px;
             display: flex; 
             justify-content: flex-end; 
             gap: 15px;
@@ -47,15 +59,17 @@
 
         /* Action Buttons */
         .btn-save { 
-            padding: 12px 30px; border: none; border-radius: 8px; 
+            padding: 12px 30px;
+            border: none; border-radius: 8px; 
             background: var(--navy-accent); color: white; font-size: 14px; font-weight: 600; 
-            cursor: pointer; transition: 0.2s; 
+            cursor: pointer; transition: 0.2s;
         }
-        .btn-save:hover { background: #2a2e45; box-shadow: 0 4px 15px rgba(18, 20, 32, 0.2); }
+        .btn-save:hover { background: #2a2e45; box-shadow: 0 4px 15px rgba(18, 20, 32, 0.2);
+        }
 
         /* New Modern Logout Button */
         .btn-logout {
-            padding: 12px 25px; 
+            padding: 12px 25px;
             border: none; 
             border-radius: 8px; 
             background: #ffeaea; 
@@ -70,7 +84,7 @@
             gap: 8px;
         }
         .btn-logout:hover { 
-            background: #ffcece; 
+            background: #ffcece;
             color: #c0392b; 
         }
     </style>
