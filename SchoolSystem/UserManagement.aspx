@@ -2,100 +2,18 @@
     AutoEventWireup="true" CodeBehind="UserManagement.aspx.cs" Inherits="SchoolSystem.UserManagement" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <style>
-        /* ── Sidebar nav-link fixes ── */
-        #sidebar .nav-link {
-            display:flex !important; align-items:center !important;
-            padding:14px 25px !important; margin-bottom:0 !important;
-            color:rgba(18,20,32,0.6) !important; text-decoration:none !important;
-            font-size:14px !important; font-weight:600 !important;
-            border-radius:0 !important; transition:0.3s !important;
-            background:transparent !important; border:none !important; width:100% !important;
-        }
-        #sidebar .nav-link i { min-width:35px !important; font-size:17px !important; color:#7d8aff !important; }
-        #sidebar .nav-link:hover { color:#121420 !important; background:rgba(197,160,89,0.05) !important; }
-        #sidebar .nav-link.active { background:rgba(197,160,89,0.1) !important; color:#121420 !important; box-shadow:inset 4px 0 0 #c5a059 !important; }
-        #sidebar .nav-link.active i { color:#c5a059 !important; }
-
-        .stat-box { background:#fff; border-radius:12px; border:1px solid rgba(18,20,32,.08); padding:20px 24px; min-height:95px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
-        .stat-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:rgba(18,20,32,.45); margin-bottom:6px; }
-        .stat-num  { font-size:2rem; font-weight:800; line-height:1; }
-        .c-yellow  { color:#d97706; }
-        .c-green   { color:#16a34a; }
-        .c-red-stat{ color:#dc2626; }
-
-        .nav-tabs .nav-link        { color:#121420 !important; font-weight:600; border:none; padding:10px 18px; background:transparent !important; }
-        .nav-tabs .nav-link.active { color:#fff !important; background-color:#121420 !important; border-radius:8px 8px 0 0; }
-        #umTabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-        #umTabs .nav-item { flex-shrink:0; }
-        #umTabs .nav-link { padding:10px 22px !important; font-size:14px; }
-
-        /* Table — thead always visible, header row never moves */
-        .table thead th { background-color:#121420; color:#fff; font-size:12px; font-weight:700; }
-        .table td, .table th { vertical-align:middle !important; }
-        .table td:last-child, .table th:last-child { text-align:center; }
-        .table thead { display:table-header-group !important; visibility:visible !important; }
-        .table { display:table !important; }
-        /* If GridView puts header row in tbody, keep it pinned at top */
-        .table tbody tr:first-child th { background-color:#121420 !important; color:#fff !important; position:sticky; top:0; z-index:1; }
-        .table-responsive { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-
-        .act-icon { background:none !important; border:none !important; box-shadow:none !important; padding:3px 6px; font-size:15px; cursor:pointer; opacity:.65; transition:opacity .15s; line-height:1; display:inline-flex; align-items:center; text-decoration:none !important; }
-        .act-icon:hover,.act-icon:focus { opacity:1; text-decoration:none !important; outline:none !important; }
-        .act-icon.c-blue { color:#2563eb !important; }
-        .act-icon.c-org  { color:#d97706 !important; }
-        .act-icon.c-red  { color:#dc2626 !important; }
-        a.act-icon,a.act-icon:visited,a.act-icon:hover,a.act-icon:focus { text-decoration:none !important; outline:none !important; }
-
-        .view-overlay { display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(18,20,32,.55); backdrop-filter:blur(3px); align-items:center; justify-content:center; }
-        .view-overlay.show { display:flex !important; }
-        .view-card { background:#fff; border-radius:16px; width:580px; max-width:94vw; overflow:hidden; box-shadow:0 28px 56px rgba(0,0,0,.24); border-top:5px solid #121420; }
-        .view-card-header { padding:22px 30px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(18,20,32,.08); background:#121420; }
-        .view-card-header h5 { margin:0; font-weight:700; font-size:18px; color:#fff; }
-        .view-card-header .btn-close { filter:invert(1); opacity:.8; }
-        .view-row { display:flex; padding:13px 30px; border-bottom:1px solid rgba(18,20,32,.05); align-items:baseline; }
-        .view-row:last-child { border-bottom:none; padding-bottom:22px; }
-        .view-lbl { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:rgba(18,20,32,.45); width:36%; flex-shrink:0; }
-        .view-val { font-size:14px; font-weight:600; color:#121420; word-break:break-word; }
-
-        .modal-content { border-radius:14px; }
-        .pw-wrapper { position:relative; }
-        .pw-wrapper input { padding-right:40px; }
-        .pw-toggle { position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; color:#6c757d; font-size:14px; border:none; background:none; padding:0; }
-
-        /* ── Sort panel ── */
-        .sort-panel { position:absolute; right:0; top:calc(100% + 6px); z-index:1050; background:#fff; border:1px solid rgba(18,20,32,.12); border-radius:10px; padding:10px 12px; min-width:160px; box-shadow:0 8px 24px rgba(0,0,0,.12); }
-        .sort-group-lbl { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:rgba(18,20,32,.4); margin-bottom:4px; padding:0 2px; }
-        .sort-opt { display:block; width:100%; text-align:left; background:none; border:none; padding:7px 10px; font-size:13px; font-weight:600; color:#121420; border-radius:6px; cursor:pointer; transition:background .15s; }
-        .sort-opt:hover { background:rgba(18,20,32,.06); }
-        .sort-opt.active { background:#121420; color:#fff; }
-
-        .no-results-row td { text-align:center; color:#888; padding:36px !important; font-size:15px; font-weight:600; }
-
-        .um-toast { position:fixed; bottom:28px; right:28px; z-index:10000; background:#121420; color:#fff; padding:13px 22px; border-radius:10px; font-size:14px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,.25); opacity:0; transform:translateY(10px); transition:opacity .3s, transform .3s; pointer-events:none; }
-        .um-toast.show { opacity:1; transform:translateY(0); }
-        .um-toast.success { border-left:4px solid #16a34a; }
-        .um-toast.error   { border-left:4px solid #dc2626; }
-
-        .search-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-
-        @media(max-width:767px){
-            .stat-box { padding:14px 16px; min-height:76px; }
-            .stat-num { font-size:1.5rem; }
-            .search-row { flex-direction:column; align-items:stretch; }
-            .search-row input, .search-row select { width:100% !important; }
-            .modal { padding-left:0 !important; }
-            .modal-dialog { margin:16px auto !important; width:calc(100% - 32px) !important; max-width:100% !important; }
-        }
-        @media(max-width:480px){
-            .stat-num { font-size:1.2rem; }
-            #umTabs .nav-link { padding:9px 14px !important; font-size:13px; }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="Admin.css" rel="stylesheet" type="text/css" />
+    
 </asp:Content>
 
+
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+    
+    <div class="user-mgmt-page">
+    <div class="header"><h1><i class="fas fa-users"></i>User Management</h1></div>
 
     <asp:HiddenField ID="hfReopenModal"  runat="server" />
     <asp:HiddenField ID="hfActiveTab"    runat="server" Value="students" />
@@ -117,7 +35,6 @@
     <asp:Literal ID="litDropdownData" runat="server" />
     <div id="umToast" class="um-toast"></div>
 
-    <h2 class="mb-4"><i class="fas fa-users me-2"></i>User Management</h2>
 
     <div class="row mb-4 g-3">
         <div class="col-md-4 col-6">
@@ -760,4 +677,5 @@
     });
 
     </script>
+    </div>
 </asp:Content>

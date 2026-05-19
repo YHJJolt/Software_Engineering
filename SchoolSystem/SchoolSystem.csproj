@@ -128,9 +128,13 @@
     <Content Include="Enrollment.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+<<<<<<< HEAD
     <Content Include="LecturerDashboard.aspx" />
     <Content Include="LecturerProfile.aspx" />
     <Content Include="LecturerStyle.css" />
+=======
+    <Content Include="Admin.css" />
+>>>>>>> a72db36c9a946b810e2d267460e9bfaf31b2e3f0
     <Content Include="Login.aspx" />
     <Content Include="ManageAttendance.aspx" />
     <Content Include="ManagePayments.aspx" />

@@ -9,9 +9,16 @@ namespace SchoolSystem
     public partial class CreateCourses : System.Web.UI.Page
     {
         private readonly string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+        protected global::System.Web.UI.WebControls.FileUpload fuCourseImage;
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Ensures the form allows file uploads when inside a Master Page
+            if (Page.Form != null)
+            {
+                Page.Form.Enctype = "multipart/form-data";
+            }
+
             if (!IsPostBack)
             {
                 PopulatePrograms();
@@ -24,13 +31,9 @@ namespace SchoolSystem
             try
             {
                 ddlProgram.Items.Clear();
-
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string query = @"SELECT DISTINCT program_id, program_name 
-                             FROM Program 
-                             ORDER BY program_name ASC";
-
+                    string query = "SELECT DISTINCT program_id, program_name FROM Program ORDER BY program_name ASC";
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         conn.Open();
@@ -85,17 +88,25 @@ namespace SchoolSystem
 
             try
             {
+                // 1. Process the Image Upload
+                byte[] imageBytes = null;
+                if (fuCourseImage.HasFile)
+                {
+                    // Extracts the file directly into a byte array
+                    imageBytes = fuCourseImage.FileBytes;
+                }
+
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, course_status, Lecturer_id, Program_id, Calendar_id) 
-                                   VALUES (@Code, @Name, @Credits, @Fee, @Status, @LecID, @ProgID, 1)";
+                    // 2. Added course_img to the INSERT statement
+                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, course_status, Lecturer_id, Program_id, Calendar_id, course_img) 
+                                   VALUES (@Code, @Name, @Credits, @Fee, @Status, @LecID, @ProgID, 1, @Image)";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@Code", txtCode.Text.Trim());
                         cmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
 
-                        // Safely parse numbers from the text boxes
                         int credits = 0;
                         int.TryParse(txtCreditHours.Text, out credits);
                         cmd.Parameters.AddWithValue("@Credits", credits);
@@ -107,6 +118,17 @@ namespace SchoolSystem
                         cmd.Parameters.AddWithValue("@Status", ddlStatus.SelectedValue);
                         cmd.Parameters.AddWithValue("@LecID", ddlLecturer.SelectedValue);
                         cmd.Parameters.AddWithValue("@ProgID", ddlProgram.SelectedValue);
+
+                        // 3. Handle the Image Parameter
+                        if (imageBytes != null)
+                        {
+                            cmd.Parameters.AddWithValue("@Image", imageBytes);
+                        }
+                        else
+                        {
+                            // If no file uploaded, insert NULL into the DB
+                            cmd.Parameters.Add("@Image", System.Data.SqlDbType.VarBinary, -1).Value = DBNull.Value;
+                        }
 
                         conn.Open();
                         cmd.ExecuteNonQuery();

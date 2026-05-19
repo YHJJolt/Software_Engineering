@@ -1,182 +1,15 @@
 ﻿<%@ Page Title="Program Management" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="Program.aspx.cs" Inherits="SchoolSystem.Program" %>
 
 <asp:Content ID="Styling" ContentPlaceHolderID="head" runat="server">
-    <style>
-        /* General styles */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .search-box {
-            padding: 8px 12px;
-            width: 250px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            width: 100%;
-        }
-
-        .search-group, .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .header-button-grp {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Paging */
-        .paging-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #444;
-        }
-
-        .page-dropdown {
-            padding: 4px 8px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            outline: none;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 9px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn-primary   { background: #C5A059; color: white; }
-        .btn-primary:hover   { background: #CCB68B; }
-        .btn-secondary { background: #7D8AFF; color: white; }
-        .btn-secondary:hover { background: #B4B9F0; }
-        .btn-tertiary  { background: #90B3D1; color: white; }
-        .btn-tertiary:hover  { background: #C2D6F0; }
-        .btn-warning   { background: #CC4343; color: white; }
-        .btn-warning:hover   { background: #ff5c5c; }
-
-        /* Table */
-        .course-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .course-table th {
-            background: #2c3e50;
-            color: white;
-            padding: 14px 16px;
-            text-align: center;
-            font-size: 14px;
-        }
-        .course-table td {
-            padding: 13px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            color: #444;
-        }
-        .course-table tr:last-child td { border-bottom: none; }
-        .course-table tr:hover td     { background: #f8fafc; }
-
-        /* Status badges */
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-active   { background: #d4edda; color: #155724; }
-        .badge-discontinued { background: #f8d7da; color: #721c24; }
-
-        /* Action buttons */
-        .action-container {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        /* Edit Program */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.65);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-        }
-        .modal-form {
-            background: #fff;
-            padding: 35px 40px;
-            border-radius: 12px;
-            width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: fadeInModal 0.3s ease;
-        }
-        @keyframes fadeInModal {
-            from { opacity: 0; transform: scale(0.95); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-        .modal-form h3 {
-            margin: 0 0 25px 0;
-            color: #2c3e50;
-            font-size: 24px;
-            font-weight: 600;
-            text-align: center;
-        }
-        .form-group { margin-bottom: 22px; }
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-        .form-control:focus {
-            border-color: #C5A059;
-            box-shadow: 0 0 0 3px rgba(197,160,89,0.15);
-            outline: none;
-        }
-        /* Filter */
-        .filter-dropdown {
-            padding: 8px 12px;
-            width: 140px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="Admin.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+    <div class="program-mgmt-page">
     <%-- Header --%>
     <div class="header">
-        <h1>Program Management</h1>
+        <h1><i class="fas fa-graduation-cap"></i>Program Management</h1>
     </div>
 
     <%-- Action Bar --%>
@@ -351,5 +184,5 @@
         checkboxes.forEach(function (cb) { cb.checked = checkAll.checked; });
     }
 </script>
-
+</div>
 </asp:Content>

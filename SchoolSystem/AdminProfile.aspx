@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/AdminMaster.Master" AutoEventWireup="true" CodeBehind="AdminProfile.aspx.cs" Inherits="SchoolSystem.AdminProfile" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+<<<<<<< HEAD
     <style>
         /* Profile Panel Styling - Jingliu Light Theme */
         .profile-container { 
@@ -91,6 +92,13 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+=======
+        <link href="Admin.css" rel="stylesheet" type="text/css" />
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+    <div class="user-profile-page">
+>>>>>>> a72db36c9a946b810e2d267460e9bfaf31b2e3f0
     <h1 style="margin-bottom: 30px; color: var(--navy-accent); font-weight: 800;">My Profile</h1>
     
     <div class="profile-container">
@@ -120,4 +128,8 @@
             </div>
         </div>
     </div>
+<<<<<<< HEAD
+=======
+</div>
+>>>>>>> a72db36c9a946b810e2d267460e9bfaf31b2e3f0
 </asp:Content>

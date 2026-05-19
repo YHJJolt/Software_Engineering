@@ -3,79 +3,15 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="Admin.css" rel="stylesheet" type="text/css" />
 
-    <style>
-        .announcement-container { width: 900px; margin: 20px auto; font-family: 'Inter', sans-serif; }
-        
-        /* Header & Main UI */
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-create { background: #121420; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .btn-create:hover { background: #2a2e45; }
-
-        .filter-section { background: white; border: 1px solid #eee; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .search-wrapper { position: relative; margin-bottom: 15px; }
-        .search-input { width: 100%; padding: 12px 40px 12px 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        .search-icon { position: absolute; right: 15px; top: 13px; color: #aaa; }
-
-        .tab-group { display: flex; gap: 8px; }
-        .nav-tab { padding: 8px 16px; cursor: pointer; font-size: 14px; font-weight: 600; color: #666; border-radius: 20px; transition: 0.2s; background: #f5f5f5; }
-        .nav-tab.active { background: #121420; color: white; }
-
-        /* Announcement Cards */
-        .announcement-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; display: flex; gap: 20px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .announcement-card:hover { transform: translateY(-3px); }
-        .announcement-avatar { width: 50px; height: 50px; background: #e0e0e0; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #888; }
-        .cat-tag { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px; display: inline-block; }
-        .cat-General { background: #e8f0fe; color: #1967d2; }
-        .cat-Academic { background: #fce8e6; color: #d93025; }
-        .cat-Finance { background: #e6ffed; color: #1e8e3e; }
-        .cat-Co-curriculum { background: #f3e8fd; color: #9334e6; }
-        .announcement-title { font-weight: 700; font-size: 1.1rem; color: #121420; }
-        .announcement-body { color: #555; font-size: 14px; line-height: 1.5; }
-        .announcement-meta { font-size: 11px; color: #999; margin-top: 10px; }
-        .card-actions { position: absolute; right: 20px; top: 20px; display: flex; gap: 12px; }
-        .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.4; }
-        .action-btn:hover { opacity: 1; }
-        .btn-edit { color: #1967d2; }
-        .btn-delete { color: #d93025; }
-
-        /* MODAL UPGRADES (Google Calendar Style) */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); }
-        .modal-content { background: white; width: 440px; margin: 10% auto; padding: 24px; border-radius: 8px; box-shadow: 0 24px 38px 3px rgba(0,0,0,0.14); }
-        
-        .modal-header { margin-bottom: 20px; }
-        .modal-header h3 { margin: 0; font-size: 22px; font-weight: 600; color: #3c4043; }
-
-        .form-row { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px; }
-        .form-row i { color: #5f6368; font-size: 18px; margin-top: 10px; width: 20px; text-align: center; }
-        .input-container { flex-grow: 1; }
-
-        .google-input { 
-            width: 100%; border: none; border-bottom: 1px solid #ddd; 
-            padding: 8px 0; font-size: 16px; outline: none; transition: 0.2s;
-            font-family: inherit; color: #3c4043;
-        }
-        .google-input:focus { border-bottom: 2px solid #121420; }
-        
-        /* Category Pills */
-        .type-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
-        .type-pill { padding: 6px 14px; border: 1px solid #dadce0; border-radius: 20px; cursor: pointer; font-size: 13px; color: #3c4043; transition: 0.2s; }
-        .type-pill.active[data-cat="General"] { background: #e8f0fe; color: #1967d2; border-color: #1967d2; }
-        .type-pill.active[data-cat="Academic"] { background: #fce8e6; color: #d93025; border-color: #d93025; }
-        .type-pill.active[data-cat="Finance"] { background: #e6ffed; color: #1e8e3e; border-color: #1e8e3e; }
-        .type-pill.active[data-cat="Co-curriculum"] { background: #f3e8fd; color: #9334e6; border-color: #9334e6; }
-
-        .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 30px; }
-        .btn-flat { background: none; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 500; color: #5f6368; }
-        .btn-flat:hover { background: #f1f3f4; }
-    </style>
-
+    <div class="announcement-page">
+    <div class="header">
+        <h1><i class="fas fa-bullhorn"></i>Announcements</h1>
+    </div>
+    <button type="button" class="btn-create" onclick="openAnnounceModal()">+ New Announcement</button>
     <div class="announcement-container">
-        <div class="page-header">
-            <h2>Announcements</h2>
-            <button type="button" class="btn-create" onclick="openAnnounceModal()">+ New Announcement</button>
-        </div>
-
+        
         <div class="filter-section">
             <div class="search-wrapper">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -262,4 +198,5 @@
             }
         }
     </script>
+    </div>
 </asp:Content>
