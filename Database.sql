@@ -421,4 +421,8 @@ VALUES
 	(3, 3, 'Pending');
 GO
 
+
 SELECT * FROM Course;
+SELECT * FROM Enrollment;
+SELECT * FROM Lecturer;
+SELECT * FROM CourseGrade;

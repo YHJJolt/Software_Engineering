@@ -128,8 +128,12 @@
     <Content Include="Enrollment.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="LecturerDashboard.aspx" />
+    <Content Include="LecturerProfile.aspx" />
+    <Content Include="LecturerStyle.css" />
     <Content Include="Admin.css" />
     <Content Include="Login.aspx" />
+    <Content Include="ManageAttendance.aspx" />
     <Content Include="ManagePayments.aspx" />
     <Content Include="Performance.aspx" />
     <Content Include="Program.aspx" />
@@ -163,6 +167,8 @@
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="AdminMaster.Master" />
+    <Content Include="LecturerMaster.Master" />
+    <Content Include="LecturerCourseMaster.Master" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -243,6 +249,13 @@
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
+    <Compile Include="LecturerCourseMaster.Master.cs">
+      <DependentUpon>LecturerCourseMaster.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LecturerCourseMaster.Master.designer.cs">
+      <DependentUpon>LecturerCourseMaster.Master</DependentUpon>
+    </Compile>
     <Compile Include="Courses.aspx.cs">
       <DependentUpon>Courses.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -281,12 +294,40 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="LecturerDashboard.aspx.cs">
+      <DependentUpon>LecturerDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LecturerDashboard.aspx.designer.cs">
+      <DependentUpon>LecturerDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LecturerMaster.Master.cs">
+      <DependentUpon>LecturerMaster.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LecturerMaster.Master.designer.cs">
+      <DependentUpon>LecturerMaster.Master</DependentUpon>
+    </Compile>
+    <Compile Include="LecturerProfile.aspx.cs">
+      <DependentUpon>LecturerProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LecturerProfile.aspx.designer.cs">
+      <DependentUpon>LecturerProfile.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ManageAttendance.aspx.cs">
+      <DependentUpon>ManageAttendance.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ManageAttendance.aspx.designer.cs">
+      <DependentUpon>ManageAttendance.aspx</DependentUpon>
     </Compile>
     <Compile Include="ManagePayments.aspx.cs">
       <DependentUpon>ManagePayments.aspx</DependentUpon>
