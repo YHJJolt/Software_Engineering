@@ -81,17 +81,22 @@ namespace SchoolSystem
                             Session["UserName"] = reader[nameColumn].ToString();
                             Session["UserRole"] = selectedRole;
 
-                            // NEW FIX: Redirect to the correct Dashboard based on Role
+                            //  FIX: Dynamic extraction of Database IDs for each role
                             if (selectedRole == "HOP")
                             {
+                                Session["AdminID"] = Convert.ToInt32(reader["admin_id"]);
                                 Response.Redirect("AdminDashboard.aspx");
                             }
                             else if (selectedRole == "Lecturer")
                             {
+                                // This key will match what LecturerCalender.aspx.cs expects!
+                                Session["LecturerID"] = Convert.ToInt32(reader["lecturer_id"]);
                                 Response.Redirect("LecturerDashboard.aspx");
                             }
-                            else
+                            else if (selectedRole == "Student")
                             {
+                                Session["StudentID"] = Convert.ToInt32(reader["student_id"]);
+                                // Keep your fallback or update when student dashboard is ready
                                 ShowErrorMessage($"Login Successful! Welcome {Session["UserName"]}. {selectedRole} Dashboard is under maintenance.", false);
                             }
                         }

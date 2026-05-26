@@ -5,8 +5,7 @@
     <meta charset="utf-8" />
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-<link href="Admin.css" rel="stylesheet" type="text/css" />
-    
+    <link rel="stylesheet" type="text/css" href="Admin.css" />
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>

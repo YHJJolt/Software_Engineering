@@ -91,6 +91,7 @@
     </div>
 
     <script>
+        // @ts-nocheck
         // Real-time Hub Filter
         function filterHub() {
             let val = document.getElementById("hubSearch").value.toLowerCase();

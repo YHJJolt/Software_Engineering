@@ -15,7 +15,7 @@
     <div class="action-bar">
         <div class="filter-group">
             <asp:DropDownList ID="ddlStatusFilter" runat="server" CssClass="filter-dropdown" AutoPostBack="true"
-                OnSelectedIndexChanged="ddlStatusFilter_SelectedIndexChanged">
+                OnSelectedIndexChanged="DdlStatusFilter_SelectedIndexChanged">
                 <asp:ListItem Value="">All Status</asp:ListItem>
                 <asp:ListItem Value="Pending">Pending</asp:ListItem>
                 <asp:ListItem Value="Approved">Approved</asp:ListItem>
@@ -42,14 +42,6 @@
                 CssClass="btn btn-delete" OnClick="BtnDeleteSelected_Click"
                 OnClientClick="return confirmBulkDelete(this);" UseSubmitBehavior="false" />
         </div>
-    </div>
-
-    <asp:HiddenField ID="hdnActiveTab" runat="server" Value="Students" />
-    <div class="tab-container">
-        <asp:LinkButton ID="tabStudents" runat="server" CssClass="tab-btn tab-active"
-            CommandArgument="Students" OnClick="Tab_Click">Students</asp:LinkButton>
-        <asp:LinkButton ID="tabLecturers" runat="server" CssClass="tab-btn"
-            CommandArgument="Lecturers" OnClick="Tab_Click">Lecturers</asp:LinkButton>
     </div>
 
     <asp:UpdatePanel ID="upGridView" runat="server" UpdateMode="Conditional">
@@ -144,6 +136,7 @@
     </div>
 
     <script>
+    // @ts-nocheck
         // Show changes made message for 3 seconds
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
             var msg = document.getElementById('<%= lblMessage.ClientID %>');

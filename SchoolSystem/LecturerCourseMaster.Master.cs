@@ -45,6 +45,7 @@ namespace SchoolSystem
                     {
                         litCourseCode.Text = rdr["course_code"].ToString();
                         linkAttendance.HRef = "ManageAttendance.aspx?id=" + cid;
+                        linkAnnouncements.HRef = "LecturerAnnouncement.aspx?id=" + cid; // ✅ ADD THIS
                         linkSidebarProfile.HRef = "LecturerProfile.aspx?course_id=" + cid;
                     }
                 }
@@ -81,6 +82,8 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
+                // FIXED: Traced course assignments directly through c.Lecturer_id 
+                // to remove any references to the dropped LecturerEnrollment table.
                 string sql = @"
                     SELECT 'Announcement' as Type, title + ' - ' + content as Message, 'announcement' as CssClass 
                     FROM Announcement 
@@ -91,8 +94,7 @@ namespace SchoolSystem
                     FROM Enrollment e
                     JOIN Student s ON e.student_id = s.student_id
                     JOIN Course c ON e.course_id = c.course_id
-                    JOIN LecturerEnrollment le ON c.course_id = le.course_id
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id
+                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
                     JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
                     WHERE l.lecturer_email = @Email AND cg.letter_grade = 'F'";
 
@@ -105,6 +107,7 @@ namespace SchoolSystem
             litNotifCount.Text = dtNotifs.Rows.Count.ToString();
             if (dtNotifs.Rows.Count > 0)
             {
+                noNotifs.Visible = false; // FIXED: Explicitly hide empty state row when notifications exist
                 rptNotifications.DataSource = dtNotifs;
                 rptNotifications.DataBind();
             }

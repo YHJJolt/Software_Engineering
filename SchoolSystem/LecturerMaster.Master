@@ -17,7 +17,7 @@
             </div>
             <div class="nav-links">
                 <a id="linkDashboard" runat="server" href="LecturerDashboard.aspx" class="nav-link"><i class="fas fa-home"></i> <span>Dashboard</span></a>
-                <a id="linkCalendar" runat="server" href="Calendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
+                <a id="linkCalendar" runat="server" href="LecturerCalender.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
                 <a id="linkCourses" runat="server" href="LecturerCourses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Courses</span></a>
             </div>
             <a href="LecturerProfile.aspx" class="sidebar-profile">

@@ -113,6 +113,7 @@
     </asp:UpdatePanel>
 
     <script>
+    // @ts-nocheck
         function confirmDelete(btn, courseId) {
             Swal.fire({
                 title: 'Delete Course?',
