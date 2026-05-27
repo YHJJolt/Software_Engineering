@@ -11,61 +11,61 @@ namespace SchoolSystem
 {
 
 
-    public partial class LecturerDashboard
+    public partial class LecturerAnnouncementDetail
     {
 
         /// <summary>
-        /// litCourseCount control.
+        /// lblCategory control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litCourseCount;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblCategory;
 
         /// <summary>
-        /// litStudentCount control.
+        /// lblTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStudentCount;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblTitle;
 
         /// <summary>
-        /// litPassRate control.
+        /// lblLecturerName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litPassRate;
+        protected global::System.Web.UI.WebControls.Literal lblLecturerName;
 
         /// <summary>
-        /// rptCourses control.
+        /// lblDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCourses;
+        protected global::System.Web.UI.WebControls.Literal lblDate;
 
         /// <summary>
-        /// noFavsPanel control.
+        /// lblTime control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl noFavsPanel;
+        protected global::System.Web.UI.WebControls.Literal lblTime;
 
         /// <summary>
-        /// rptCourseRates control.
+        /// lblContent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCourseRates;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblContent;
     }
 }

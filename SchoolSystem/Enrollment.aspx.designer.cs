@@ -69,33 +69,6 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.Button btnDeleteSelected;
 
         /// <summary>
-        /// hdnActiveTab control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hdnActiveTab;
-
-        /// <summary>
-        /// tabStudents control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton tabStudents;
-
-        /// <summary>
-        /// tabLecturers control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton tabLecturers;
-
-        /// <summary>
         /// upGridView control.
         /// </summary>
         /// <remarks>

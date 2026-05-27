@@ -1,8 +1,6 @@
 ﻿<%@ Page Title="Course Assignments" Language="C#" MasterPageFile="~/LecturerCourseMaster.Master" AutoEventWireup="true" CodeBehind="CourseAssignments.aspx.cs" Inherits="SchoolSystem.CourseAssignments" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <asp:ScriptManager runat="server"></asp:ScriptManager> 
-    
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <div class="toast-container position-fixed top-0 end-0 p-4" style="z-index: 1100;">

@@ -69,8 +69,11 @@
             </div>
         </div>
     </div>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+    // @ts-nocheck
         let rawData = [];
 
         $(document).ready(function () {
@@ -93,8 +96,8 @@
             const query = $("#announceSearch").val().toLowerCase();
             const tab = $(".nav-tab.active").data("filter");
             const filtered = rawData.filter(a => {
-                const matchSearch = a.title.toLowerCase().includes(query);
-                const matchTab = (tab === "All" || a.category === tab);
+                const matchSearch = a.Title.toLowerCase().includes(query);      
+                const matchTab = (tab === "All" || a.Category === tab);         
                 return matchSearch && matchTab;
             });
             renderList(filtered);
@@ -119,18 +122,28 @@
                 html = '<div style="text-align:center; padding:50px; color:#999;">No announcements found.</div>';
             } else {
                 data.forEach(a => {
+                    const maxLen = 120;
+                    const isLong = a.Content.length > maxLen;                                          
+                    const shortContent = isLong ? a.Content.substring(0, maxLen) + '...' : a.Content; 
+                    const postedBy = a.Lecturer_name ? a.Lecturer_name : 'Admin';                      
+
                     html += `
-                    <div class="announcement-card">
+                    <div class="announcement-card" onclick="window.location.href='AdminAnnouncementDetail.aspx?id=${a.Announcement_id}'" style="cursor:pointer;">
                         <div class="announcement-avatar"><i class="fa-solid fa-bullhorn"></i></div>
                         <div class="announcement-content">
-                            <span class="cat-tag cat-${a.category}">${a.category}</span>
-                            <div class="announcement-title">${a.title}</div>
-                            <div class="announcement-body">${a.content}</div>
-                            <div class="announcement-meta">Posted on: ${a.created_at} • Admin ID: ${a.admin_id}</div>
+                            <span class="cat-tag cat-${a.Category}">${a.Category}</span>              
+                            <div class="announcement-title">${a.Title}</div>                          
+                            <div class="announcement-body">
+                                ${shortContent}
+                                ${isLong ? `<span style="color:#1967d2; font-weight:600;"> View more</span>` : ''}
+                            </div>
+                            <div class="announcement-meta">
+                                <strong>${postedBy}</strong> &nbsp;·&nbsp; ${a.Created_at} at ${a.Created_time}
+                            </div>
                         </div>
                         <div class="card-actions">
-                            <button type="button" class="action-btn btn-edit" onclick="editAnnouncement(${a.announcement_id}, event)"><i class="fa-solid fa-pencil"></i></button>
-                            <button type="button" class="action-btn btn-delete" onclick="deleteAnnouncement(${a.announcement_id}, event)"><i class="fa-solid fa-trash-can"></i></button>
+                            <button type="button" class="action-btn btn-edit" onclick="editAnnouncement(${a.Announcement_id}, event)"><i class="fa-solid fa-pencil"></i></button>
+                            <button type="button" class="action-btn btn-delete" onclick="deleteAnnouncement(${a.Announcement_id}, event)"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>`;
                 });
@@ -151,13 +164,17 @@
         function closeAnnounceModal() { $("#announceModal").fadeOut(200); }
 
         function saveAnnouncement() {
+            const editId = parseInt($("#editId").val()) || 0; 
             const payload = {
-                id: parseInt($("#editId").val()) || 0,
+                id: editId,
                 title: $("#txtTitle").val(),
                 content: $("#txtContent").val(),
                 category: $("#selectedCategory").val()
             };
-            if (!payload.title || !payload.content) { alert("Please fill in all fields."); return; }
+            if (!payload.title || !payload.content) {
+                Swal.fire({ icon: 'warning', title: 'Missing Fields', text: 'Please fill in title and content.', confirmButtonColor: '#121420' });
+                return;
+            }
             $.ajax({
                 url: 'AdminAnnouncement.aspx/SaveAnnouncement',
                 type: 'POST',
@@ -165,37 +182,68 @@
                 data: JSON.stringify(payload),
                 success: function () {
                     closeAnnounceModal();
-                    loadAnnouncements();
+                    Swal.fire({
+                        icon: 'success',
+                        title: editId !== 0 ? 'Announcement Updated!' : 'Announcement Posted!',
+                        text: editId !== 0 ? 'The announcement has been updated successfully.' : 'The announcement has been posted successfully.',
+                        confirmButtonColor: '#121420',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => loadAnnouncements());
+                },
+                error: function () {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong. Please try again.', confirmButtonColor: '#121420' });
                 }
             });
         }
 
         function editAnnouncement(id, e) {
+            e.stopPropagation(); 
             e.preventDefault();
-            const item = rawData.find(x => x.announcement_id == id);
+            const item = rawData.find(x => x.Announcement_id == id);  
             if (!item) return;
             $("#editId").val(id);
-            $("#txtTitle").val(item.title);
-            $("#txtContent").val(item.content);
+            $("#txtTitle").val(item.Title);                            
+            $("#txtContent").val(item.Content);                        
             $(".type-pill").removeClass("active");
-            $(`.type-pill[data-cat='${item.category}']`).addClass("active");
-            $("#selectedCategory").val(item.category);
+            $(`.type-pill[data-cat='${item.Category}']`).addClass("active");  
+            $("#selectedCategory").val(item.Category);                 
             $("#modalTitle").text("Update Announcement");
             $("#btnSubmit").text("Update");
             $("#announceModal").fadeIn(200);
         }
 
         function deleteAnnouncement(id, e) {
+            e.stopPropagation(); 
             e.preventDefault();
-            if (confirm("Permanently delete this announcement?")) {
-                $.ajax({
-                    url: 'AdminAnnouncement.aspx/DeleteAnnouncement',
-                    type: 'POST',
-                    contentType: 'application/json; charset=utf-8',
-                    data: JSON.stringify({ id: id }),
-                    success: function () { loadAnnouncements(); }
-                });
-            }
+            Swal.fire({
+                title: 'Delete Announcement?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d93025',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Yes, delete it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'AdminAnnouncement.aspx/DeleteAnnouncement',
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({ id: id }),
+                        success: function () {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Announcement has been deleted.',
+                                confirmButtonColor: '#121420',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => loadAnnouncements());
+                        }
+                    });
+                }
+            });
         }
     </script>
     </div>

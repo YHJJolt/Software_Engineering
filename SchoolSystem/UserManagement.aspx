@@ -317,7 +317,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-
+    // @ts-nocheck
         function showToast(msg, type) { var t = document.getElementById('umToast'); t.textContent = msg; t.className = 'um-toast ' + (type || 'success'); t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 3200); }
 
         function initProgDropdown() {

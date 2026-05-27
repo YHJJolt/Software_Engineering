@@ -40,7 +40,7 @@ namespace SchoolSystem
                     litSidebarName.Text = rdr["lecturer_name"].ToString();
                     if (rdr["lecturer_img"] != DBNull.Value)
                     {
-                        byte[] bytes = (byte[])rdr["lecturer_img"];
+                        byte[] bytes = (rdr["lecturer_img"] as byte[]);
                         imgSidebar.ImageUrl = "data:image/png;base64," + Convert.ToBase64String(bytes);
                     }
                 }
@@ -56,7 +56,8 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Changed 'description' to 'content' to match the Announcement table
+                // FIXED: Refactored the 'Alert' query to trace ownership directly 
+                // through the Course table, bypassing LecturerEnrollment completely.
                 string sql = @"
                     SELECT 'Announcement' as Type, title + ' - ' + content as Message, 'announcement' as CssClass 
                     FROM Announcement 
@@ -69,8 +70,7 @@ namespace SchoolSystem
                     FROM Enrollment e
                     JOIN Student s ON e.student_id = s.student_id
                     JOIN Course c ON e.course_id = c.course_id
-                    JOIN LecturerEnrollment le ON c.course_id = le.course_id
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id
+                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
                     JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
                     WHERE l.lecturer_email = @Email AND cg.letter_grade = 'F'";
 
@@ -83,6 +83,7 @@ namespace SchoolSystem
             litNotifCount.Text = dtNotifs.Rows.Count.ToString();
             if (dtNotifs.Rows.Count > 0)
             {
+                noNotifs.Visible = false; // Ensure placeholder hidden if data exists
                 rptNotifications.DataSource = dtNotifs;
                 rptNotifications.DataBind();
             }

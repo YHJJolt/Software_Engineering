@@ -41,13 +41,13 @@
     </div>
 
     <div class="section-header">
-        <h3 class="section-title">My Assigned Courses</h3>
+        <h3 class="section-title">My Favourite Courses</h3>
     </div>
-    
+
     <div class="courses-grid">
         <asp:Repeater ID="rptCourses" runat="server">
             <ItemTemplate>
-                <div class="course-card" onclick="window.location.href='ManageAttendance.aspx?id=<%# Eval("course_id") %>'">
+                <div class="course-card" onclick="window.location.href='LecturerAnnouncement.aspx?id=<%# Eval("course_id") %>'">
                     <div class="course-badge">Active</div>
                     <div class="course-img-container">
                         <img src='<%# GetImageSrc(Eval("course_img")) %>' alt="Course Image" onerror="this.src='Images/default-course.png';" />
@@ -59,6 +59,12 @@
                 </div>
             </ItemTemplate>
         </asp:Repeater>
+
+        <%-- Empty state --%>
+        <div id="noFavsPanel" runat="server" style="display:flex; align-items:center; gap:10px; color:#94a3b8; font-size:14px; padding:20px 0;">
+            <i class="far fa-star" style="font-size:1.4rem;"></i>
+            <span>No favourite courses yet. Head to <a href="LecturerCourses.aspx" style="color:#f59e0b;">Courses</a> and star the ones you want pinned here.</span>
+        </div>
     </div>
 
     <div id="rateModal" class="modal-overlay">
@@ -102,7 +108,6 @@
             document.getElementById(id).style.display = 'none';
         }
 
-        // Close modal if user clicks outside the white box
         window.onclick = function (event) {
             var modal = document.getElementById('rateModal');
             if (event.target == modal) {

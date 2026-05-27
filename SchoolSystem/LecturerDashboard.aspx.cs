@@ -27,26 +27,29 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
+                // FIXED: Query courses directly from Course table matching the Lecturer ID
                 string sqlCourses = @"
-                    SELECT COUNT(le.course_id) 
-                    FROM LecturerEnrollment le 
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id 
+                    SELECT COUNT(c.course_id) 
+                    FROM Course c 
+                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
                     WHERE l.lecturer_email = @Email";
 
+                // FIXED: Query student enrollments linked directly via Course table ownership
                 string sqlStudents = @"
                     SELECT COUNT(e.student_id) 
                     FROM Enrollment e
-                    JOIN LecturerEnrollment le ON e.course_id = le.course_id
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id
+                    JOIN Course c ON e.course_id = c.course_id
+                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
                     WHERE l.lecturer_email = @Email";
 
+                // FIXED: Calculate passing rates by evaluating grades linked to assigned courses
                 string sqlPassRate = @"
                     SELECT 
                         CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
                     FROM CourseGrade cg
                     JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
-                    JOIN LecturerEnrollment le ON e.course_id = le.course_id
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id
+                    JOIN Course c ON e.course_id = c.course_id
+                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
                     WHERE l.lecturer_email = @Email";
 
                 conn.Open();
@@ -79,6 +82,7 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
+                // FIXED: Removed LecturerEnrollment tracking reference from data aggregates
                 string sql = @"
                     SELECT 
                         c.course_code, 
@@ -86,8 +90,7 @@ namespace SchoolSystem
                         COUNT(cg.letter_grade) as TotalGraded,
                         CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
                     FROM Course c
-                    JOIN LecturerEnrollment le ON c.course_id = le.course_id
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id
+                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
                     LEFT JOIN Enrollment e ON c.course_id = e.course_id
                     LEFT JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
                     WHERE l.lecturer_email = @Email
@@ -118,11 +121,14 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT c.course_id, c.course_code, c.course_name, c.course_img 
-                    FROM Course c
-                    JOIN LecturerEnrollment le ON c.course_id = le.course_id
-                    JOIN Lecturer l ON le.lecturer_id = l.lecturer_id
-                    WHERE l.lecturer_email = @Email";
+            SELECT c.course_id, c.course_code, c.course_name, c.course_img
+            FROM Course c
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            INNER JOIN LecturerCourseFavourite f
+                   ON f.course_id   = c.course_id
+                  AND f.lecturer_id = l.lecturer_id
+            WHERE l.lecturer_email = @Email
+            ORDER BY c.course_name ASC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
@@ -132,6 +138,10 @@ namespace SchoolSystem
 
                 rptCourses.DataSource = dt;
                 rptCourses.DataBind();
+
+                // Show/hide empty state
+                noFavsPanel.Visible = dt.Rows.Count == 0;
+                rptCourses.Visible = dt.Rows.Count > 0;
             }
         }
 

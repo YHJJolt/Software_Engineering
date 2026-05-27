@@ -488,6 +488,7 @@ VALUES
 	(3, 1, GETDATE(), 'Pending'),
 	(2, 5, GETDATE(), 'Pending'),
 	(1, 5, GETDATE(), 'Pending');
+    UPDATE Enrollment SET status = 'Approved' WHERE course_id = 2;
 GO
 
 
@@ -538,6 +539,7 @@ VALUES
 (@PastAssignId, 2, '~/Uploads/Submissions/David_Quiz1.docx', '2026-05-10 11:30:00', 15, 1);
 GO
 
+
 -- ============================================================
 -- VERIFICATION SELECTS
 -- ============================================================
@@ -549,3 +551,4 @@ SELECT * FROM CourseModule;
 SELECT * FROM ModuleFile;
 SELECT * FROM CourseAssignment;
 SELECT * FROM AssignmentSubmission;
+

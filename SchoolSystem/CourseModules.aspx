@@ -1,7 +1,6 @@
 ﻿<%@ Page Title="Course Modules" Language="C#" MasterPageFile="~/LecturerCourseMaster.Master" AutoEventWireup="true" CodeBehind="CourseModules.aspx.cs" Inherits="SchoolSystem.CourseModules" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 

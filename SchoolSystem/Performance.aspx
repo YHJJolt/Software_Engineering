@@ -188,6 +188,7 @@
 </div>
 
 <script>
+    // @ts-nocheck
     var student = <%=StudentMetaJson%>;
     var semData = <%=StudentJsonData%>;
     var allStudents = <%=AllStudentsJson%>;
