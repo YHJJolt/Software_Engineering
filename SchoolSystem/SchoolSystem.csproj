@@ -121,6 +121,8 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="CourseHome.aspx" />
+    <Content Include="CoursePeople.aspx" />
     <Content Include="Courses.aspx" />
     <Content Include="CreateCourses.aspx" />
     <Content Include="CreateProgram.aspx" />
@@ -201,8 +203,8 @@
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
-    <Content Include="UserManagement.aspx" />
     <Content Include="AdminProfile.aspx" />
+    <Content Include="UserManagement.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -252,6 +254,20 @@
     </Compile>
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CourseHome.aspx.cs">
+      <DependentUpon>CourseHome.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CourseHome.aspx.designer.cs">
+      <DependentUpon>CourseHome.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CoursePeople.aspx.cs">
+      <DependentUpon>CoursePeople.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CoursePeople.aspx.designer.cs">
+      <DependentUpon>CoursePeople.aspx</DependentUpon>
     </Compile>
     <Compile Include="LecturerCalender.aspx.cs">
       <DependentUpon>LecturerCalender.aspx</DependentUpon>
@@ -383,19 +399,19 @@
     <Compile Include="Site.Mobile.Master.designer.cs">
       <DependentUpon>Site.Mobile.Master</DependentUpon>
     </Compile>
-    <Compile Include="UserManagement.aspx.cs">
-      <DependentUpon>UserManagement.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="UserManagement.aspx.designer.cs">
-      <DependentUpon>UserManagement.aspx</DependentUpon>
-    </Compile>
     <Compile Include="AdminProfile.aspx.cs">
       <DependentUpon>AdminProfile.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="AdminProfile.aspx.designer.cs">
       <DependentUpon>AdminProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="UserManagement.aspx.cs">
+      <DependentUpon>UserManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="UserManagement.aspx.designer.cs">
+      <DependentUpon>UserManagement.aspx</DependentUpon>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>

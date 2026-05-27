@@ -92,11 +92,11 @@
                         </button>
                         <div id="studSortPanel" class="sort-panel" style="display:none;">
                             <div class="sort-group-lbl">Code</div>
-                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','code-asc',this)">Ascending</button>
-                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','code-desc',this)">Descending</button>
+                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','code-asc',this)"><i class="fas fa-arrow-up me-1"></i>Ascending</button>
+                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','code-desc',this)"><i class="fas fa-arrow-down me-1"></i>Descending</button>
                             <div class="sort-group-lbl mt-2">Name</div>
-                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','name-asc',this)">A → Z</button>
-                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','name-desc',this)">Z → A</button>
+                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','name-asc',this)"><i class="fas fa-arrow-up me-1"></i>A → Z</button>
+                            <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','name-desc',this)"><i class="fas fa-arrow-down me-1"></i>Z → A</button>
                         </div>
                         <input type="hidden" id="ddlStudSort" value="code-asc" />
                     </div>
@@ -317,7 +317,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // @ts-nocheck
+        // @ts-nocheck
         function showToast(msg, type) { var t = document.getElementById('umToast'); t.textContent = msg; t.className = 'um-toast ' + (type || 'success'); t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 3200); }
 
         function initProgDropdown() {
@@ -483,16 +483,35 @@
         }
     }
 
-    function updateNoResults(tableId){
-        var table=document.getElementById(tableId);
-        if(!table)return;
-        table.style.display='';
-        var tbody=table.querySelector('tbody');if(!tbody)return;
-        var old=tbody.querySelector('.no-results-row');
-        var vis=Array.from(tbody.querySelectorAll('tr:not(.no-results-row)')).filter(function(r){return r.style.display!=='none';});
-        if(vis.length===0){
-            if(!old){var tr=document.createElement('tr');tr.className='no-results-row';var td=document.createElement('td');td.colSpan=99;td.innerHTML='<i class="fas fa-search me-2"></i>No results found';tr.appendChild(td);tbody.appendChild(tr);}
-        } else {if(old)old.remove();}
+    function updateNoResults(tableId) {
+        var table = document.getElementById(tableId);
+        if (!table) return;
+        var tbody = table.querySelector('tbody');
+        if (!tbody) return;
+
+        var old = tbody.querySelector('.no-results-row');
+        var allRows = Array.from(tbody.querySelectorAll('tr:not(.no-results-row)')).filter(function (r) {
+            return r.querySelector('td') && !r.querySelector('th');
+        });
+        var visRows = allRows.filter(function (r) {
+            return r.style.display !== 'none';
+        });
+
+        if (visRows.length === 0) {
+            table.classList.add('hide-thead');   // always hide header when nothing visible
+            if (!old) {
+                var tr = document.createElement('tr');
+                tr.className = 'no-results-row';
+                var td = document.createElement('td');
+                td.colSpan = 99;
+                td.innerHTML = '<i class="fas fa-search me-2"></i>No results found';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
+        } else {
+            table.classList.remove('hide-thead');
+            if (old) old.remove();
+        }
     }
 
     function saveFilters(){
@@ -520,37 +539,39 @@
         if(ls||ld||lt)filterLecturers();
     }
 
-    function filterStudents(){
-        var search=document.getElementById('txtSrchStud').value.toLowerCase();
-        var prog=document.getElementById('ddlProgFilter').value.toLowerCase();
-        var status=document.getElementById('ddlStudStatus').value.toLowerCase();
-        var gvId='<%=gvStudents.ClientID%>';
-        var table=document.getElementById(gvId);if(!table)return;
-        table.style.display='';
-        document.querySelectorAll('#'+gvId+' tbody tr').forEach(function(row){
-            var c=row.cells;if(!c||c.length<6)return;
-            var ms=!search||[0,1,2].some(function(i){return c[i].textContent.trim().toLowerCase().includes(search);});
-            var mp=!prog||c[4].textContent.trim().toLowerCase().includes(prog);
-            var mt=!status||c[5].textContent.trim().toLowerCase()===status;
-            row.style.display=(ms&&mp&&mt)?'':'none';
-        });
-        updateNoResults(gvId);saveFilters();
+    function filterStudents() {
+        var search = document.getElementById('txtSrchStud').value.toLowerCase();
+        var prog = document.getElementById('ddlProgFilter').value.toLowerCase();
+        var status = document.getElementById('ddlStudStatus').value.toLowerCase();
+        var gvId = '<%=gvStudents.ClientID%>';
+    var table = document.getElementById(gvId); if (!table) return;
+    document.querySelectorAll('#' + gvId + ' tbody tr').forEach(function (row) {
+        if (row.classList.contains('no-results-row')) return;
+        if (row.querySelector('th')) return;
+        var c = row.cells; if (!c || c.length < 6) return;
+        var ms = !search || [0, 1, 2].some(function (i) { return c[i].textContent.trim().toLowerCase().includes(search); });
+        var mp = !prog || c[4].textContent.trim().toLowerCase().includes(prog);
+        var mt = !status || c[5].textContent.trim().toLowerCase() === status;
+        row.style.display = (ms && mp && mt) ? '' : 'none';
+    });
+    updateNoResults(gvId); saveFilters();
     }
-    function filterLecturers(){
-        var search=document.getElementById('txtSrchLect').value.toLowerCase();
-        var dept=document.getElementById('ddlDeptFilter').value.toLowerCase();
-        var status=document.getElementById('ddlLectStatus').value.toLowerCase();
-        var gvId='<%=gvLecturers.ClientID%>';
-        var table=document.getElementById(gvId);if(!table)return;
-        table.style.display='';
-        document.querySelectorAll('#'+gvId+' tbody tr').forEach(function(row){
-            var c=row.cells;if(!c||c.length<6)return;
-            var ms=!search||[0,1,2].some(function(i){return c[i].textContent.trim().toLowerCase().includes(search);});
-            var mp=!dept||c[4].textContent.trim().toLowerCase().includes(dept);
-            var mt=!status||c[5].textContent.trim().toLowerCase()===status;
-            row.style.display=(ms&&mp&&mt)?'':'none';
-        });
-        updateNoResults(gvId);saveFilters();
+    function filterLecturers() {
+        var search = document.getElementById('txtSrchLect').value.toLowerCase();
+        var dept = document.getElementById('ddlDeptFilter').value.toLowerCase();
+        var status = document.getElementById('ddlLectStatus').value.toLowerCase();
+        var gvId = '<%=gvLecturers.ClientID%>';
+    var table = document.getElementById(gvId); if (!table) return;
+    document.querySelectorAll('#' + gvId + ' tbody tr').forEach(function (row) {
+        if (row.classList.contains('no-results-row')) return;
+        if (row.querySelector('th')) return;
+        var c = row.cells; if (!c || c.length < 6) return;
+        var ms = !search || [0, 1, 2].some(function (i) { return c[i].textContent.trim().toLowerCase().includes(search); });
+        var mp = !dept || c[4].textContent.trim().toLowerCase().includes(dept);
+        var mt = !status || c[5].textContent.trim().toLowerCase() === status;
+        row.style.display = (ms && mp && mt) ? '' : 'none';
+    });
+    updateNoResults(gvId); saveFilters();
     }
 
     // ── Sort panel ───────────────────────────────────────────────────

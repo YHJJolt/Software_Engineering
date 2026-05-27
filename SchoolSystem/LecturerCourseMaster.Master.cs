@@ -44,8 +44,10 @@ namespace SchoolSystem
                     if (rdr.Read())
                     {
                         litCourseCode.Text = rdr["course_code"].ToString();
+                        linkHome.HRef = "CourseHome.aspx?id=" + cid;
+                        linkPeople.HRef = "CoursePeople.aspx?id=" + cid;
                         linkAttendance.HRef = "ManageAttendance.aspx?id=" + cid;
-                        linkAnnouncements.HRef = "LecturerAnnouncement.aspx?id=" + cid; // ✅ ADD THIS
+                        linkAnnouncements.HRef = "LecturerAnnouncement.aspx?id=" + cid; 
                         linkSidebarProfile.HRef = "LecturerProfile.aspx?course_id=" + cid;
                     }
                 }
@@ -117,7 +119,11 @@ namespace SchoolSystem
         private void HighlightActiveSideBar()
         {
             string currentPage = System.IO.Path.GetFileName(Request.Url.AbsolutePath).ToLower();
+
+            if (currentPage.Contains("coursehome")) linkHome.Attributes["class"] += " active";
+            if (currentPage.Contains("coursepeople")) linkPeople.Attributes["class"] += " active";
             if (currentPage.Contains("attendance")) linkAttendance.Attributes["class"] += " active";
+            if (currentPage.Contains("announcement")) linkAnnouncements.Attributes["class"] += " active";
         }
     }
 }

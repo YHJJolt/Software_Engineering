@@ -3891,7 +3891,21 @@ body.sidebar-collapsed .p-img {
     gap: 8px;
 }
 
-    .user-profile-page .btn-logout:hover {
-        background: #ffcece;
-        color: #c0392b;
-    }
+.user-profile-page .btn-logout:hover {
+background: #ffcece;
+color: #c0392b;
+}fi
+
+
+/* ── No Results / Empty Table ── */
+.hide-thead thead {
+    display: none !important;
+}
+
+.no-results-row td {
+    text-align: center !important;
+    padding: 36px 0 !important;
+    color: #6c757d;
+    font-size: 14px;
+    border: none !important;
+}

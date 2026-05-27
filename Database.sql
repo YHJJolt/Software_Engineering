@@ -1,4 +1,4 @@
-USE master;
+ USE master;
 GO
 
 -- 1. Create the Database FIRST
@@ -16,10 +16,10 @@ GO
 IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
 IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
 IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
-IF OBJECT_ID('[LecturerEnrollment]', 'U') IS NOT NULL DROP TABLE LecturerEnrollment;
 IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
 IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
 IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('[LecturerCalendar]', 'U') IS NOT NULL DROP TABLE LecturerCalendar;
 IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
 IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
 IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
@@ -119,7 +119,7 @@ CREATE TABLE [Grades] (
 );
 
 -- ============================================================
--- 6. Table: Calendar
+-- 6. Table: Admin Calendar
 -- ============================================================
 CREATE TABLE [Calendar] (
     [calendar_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -133,7 +133,27 @@ CREATE TABLE [Calendar] (
 );
 
 -- ============================================================
--- 7. Table: Course
+-- 7. Table: Lecturer Calendar
+-- ============================================================
+CREATE TABLE LecturerCalendar (
+    calendar_id   INT           IDENTITY(1,1) PRIMARY KEY,
+    event_title   NVARCHAR(200) NOT NULL,
+    event_desc    NVARCHAR(MAX) NULL,
+    start_date    DATE          NOT NULL,
+    end_date      DATE          NULL,
+    event_type    NVARCHAR(50)  NOT NULL DEFAULT 'Class',
+        -- Allowed values: 'Class', 'Assignment', 'Meeting', 'Personal'
+    visibility    NVARCHAR(50)  NOT NULL DEFAULT 'Private',
+    lecturer_id   INT           NOT NULL,
+    created_at    DATETIME      NOT NULL DEFAULT GETDATE(),
+ 
+    CONSTRAINT FK_LecCalendar_Lecturer
+        FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id)
+        ON DELETE CASCADE
+);
+
+-- ============================================================
+-- 8. Table: Course
 -- ============================================================
 CREATE TABLE [Course] (
   [course_code] NVARCHAR(20) NULL, 
@@ -154,7 +174,7 @@ CREATE TABLE [Course] (
 GO
 
 -- ============================================================
--- 8. Table: Enrolment
+-- 9. Table: Enrolment
 -- ============================================================
 CREATE TABLE [Enrollment] (
     [enrollment_id] INT IDENTITY(1,1) PRIMARY KEY,
@@ -169,21 +189,6 @@ CREATE TABLE [Enrollment] (
         FOREIGN KEY ([course_id])
         REFERENCES [Course]([course_id])
 );
-
--- ============================================================
--- 9. Table: Lecturer Enrolment
--- ============================================================
-CREATE TABLE LecturerEnrollment (
-    lecturer_enrollment_id INT IDENTITY(1,1) PRIMARY KEY,
-    lecturer_id INT NOT NULL,
-    course_id   INT NOT NULL,
-    enrollment_date DATETIME DEFAULT GETDATE(),
-    status VARCHAR(20) DEFAULT 'Pending',
-    CONSTRAINT FK_LecturerEnrollment_Lecturer
-        FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id),
-    CONSTRAINT FK_LecturerEnrollment_Course
-        FOREIGN KEY (course_id) REFERENCES Course(course_id)
-)
 
 -- ============================================================
 -- 10. Table: Payment
@@ -225,7 +230,7 @@ GO
 -- ============================================================
 CREATE TABLE [CourseGrade] (
     [cg_id]          INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    [letter_grade]   NVARCHAR(5) NOT NULL,
+    [letter_grade]   NVARCHAR(5) NULL,
     [grade_point]    DECIMAL(3,2) NOT NULL,
     [total_hours]    INT NOT NULL DEFAULT 0,
     [attended_hours] INT NOT NULL DEFAULT 0,
@@ -387,10 +392,8 @@ INSERT INTO [Enrollment]
 VALUES 
 	(1, 2, GETDATE(), 'Pending'),
 	(2, 2, GETDATE(), 'Pending'), 
-	(1, 2, GETDATE(), 'Pending'),
 	(3, 4, GETDATE(), 'Pending'),
 	(1, 4, GETDATE(), 'Pending'),
-	(3, 4, GETDATE(), 'Pending'),
 	(2, 1, GETDATE(), 'Pending'),
 	(3, 1, GETDATE(), 'Pending'),
 	(2, 5, GETDATE(), 'Pending'),
@@ -408,21 +411,9 @@ INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hour
 ('C-', 1.70, 48, 20, 5); 
 GO
 
--- ============================================================
--- LecturerEnrollment
--- ============================================================
-INSERT INTO [LecturerEnrollment] 
-	(lecturer_id, course_id, status)
-VALUES 
-	(1, 1, 'Pending'),
-	(2, 2, 'Pending'),
-	(1, 3, 'Pending'),
-	(2, 4, 'Pending'),
-	(3, 3, 'Pending');
-GO
-
 
 SELECT * FROM Course;
 SELECT * FROM Enrollment;
 SELECT * FROM Lecturer;
 SELECT * FROM CourseGrade;
+SELECT * FROM Announcement;

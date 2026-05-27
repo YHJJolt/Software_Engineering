@@ -394,10 +394,19 @@ namespace SchoolSystem
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
                         conn.Open();
-                        foreach (string t in new[] { "[Grades]", "[Payment]", "[Course]" })
-                            new SqlCommand("DELETE FROM " + t + " WHERE Student_id=@id", conn)
-                            { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
-                        new SqlCommand("DELETE FROM [Student] WHERE student_id=@id", conn)
+                        new SqlCommand(@"DELETE cg FROM [CourseGrade] cg INNER JOIN [Enrollment] e ON cg.Enrollment_id = e.enrollment_id WHERE e.student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        new SqlCommand("DELETE FROM [Enrollment] WHERE student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        new SqlCommand("DELETE FROM [Payment] WHERE Student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        new SqlCommand("DELETE FROM [Grades] WHERE Student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        new SqlCommand("DELETE FROM [Student] WHERE student_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
                     }
                     SetToast("✓ Student deleted.", "success");
@@ -467,11 +476,19 @@ namespace SchoolSystem
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
                         conn.Open();
-                        new SqlCommand("DELETE FROM [Announcement] WHERE Lecturer_id=@id", conn)
+                        new SqlCommand(@"DELETE cg FROM [CourseGrade] cg INNER JOIN [Enrollment] e ON cg.Enrollment_id = e.enrollment_id INNER JOIN [Course] c ON e.course_id = c.course_id WHERE c.Lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
-                        new SqlCommand("DELETE FROM [Course] WHERE Lecturer_id=@id", conn)
+
+                        new SqlCommand(@"DELETE e FROM [Enrollment] e INNER JOIN [Course] c ON e.course_id = c.course_id WHERE c.Lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
-                        new SqlCommand("DELETE FROM [Lecturer] WHERE lecturer_id=@id", conn)
+
+                        new SqlCommand("DELETE FROM [Course] WHERE Lecturer_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        new SqlCommand("DELETE FROM [Announcement] WHERE Lecturer_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        new SqlCommand("DELETE FROM [Lecturer] WHERE lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
                     }
                     SetToast("✓ Lecturer deleted.", "success");
