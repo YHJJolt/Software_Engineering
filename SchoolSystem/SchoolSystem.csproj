@@ -130,6 +130,7 @@
     <Content Include="Global.asax" />
     <Content Include="LecturerCalender.aspx" />
     <Content Include="LecturerDashboard.aspx" />
+    <Content Include="LecturerGrades.aspx" />
     <Content Include="LecturerProfile.aspx" />
     <Content Include="LecturerStyle.css" />
     <Content Include="Admin.css" />
@@ -173,6 +174,7 @@
     <Content Include="LecturerAnnouncement.aspx" />
     <Content Include="LecturerAnnouncementDetail.aspx" />
     <Content Include="AdminAnnouncementDetail.aspx" />
+    <Content Include="LecturerCourses.aspx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -312,6 +314,13 @@
     <Compile Include="LecturerDashboard.aspx.designer.cs">
       <DependentUpon>LecturerDashboard.aspx</DependentUpon>
     </Compile>
+    <Compile Include="LecturerGrades.aspx.cs">
+      <DependentUpon>LecturerGrades.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LecturerGrades.aspx.designer.cs">
+      <DependentUpon>LecturerGrades.aspx</DependentUpon>
+    </Compile>
     <Compile Include="LecturerMaster.Master.cs">
       <DependentUpon>LecturerMaster.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -424,6 +433,13 @@
     </Compile>
     <Compile Include="AdminAnnouncementDetail.aspx.designer.cs">
       <DependentUpon>AdminAnnouncementDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LecturerCourses.aspx.cs">
+      <DependentUpon>LecturerCourses.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LecturerCourses.aspx.designer.cs">
+      <DependentUpon>LecturerCourses.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

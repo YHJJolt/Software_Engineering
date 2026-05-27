@@ -46,6 +46,7 @@ namespace SchoolSystem
                         litCourseCode.Text = rdr["course_code"].ToString();
                         linkAttendance.HRef = "ManageAttendance.aspx?id=" + cid;
                         linkAnnouncements.HRef = "LecturerAnnouncement.aspx?id=" + cid; // ✅ ADD THIS
+                        linkGrades.HRef = "LecturerGrades.aspx?id=" + cid;
                         linkSidebarProfile.HRef = "LecturerProfile.aspx?course_id=" + cid;
                     }
                 }

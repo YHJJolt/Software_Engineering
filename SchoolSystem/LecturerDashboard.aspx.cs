@@ -120,12 +120,15 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Simplified query track targeting direct course ownership fields
                 string sql = @"
-                    SELECT c.course_id, c.course_code, c.course_name, c.course_img 
-                    FROM Course c
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    WHERE l.lecturer_email = @Email";
+            SELECT c.course_id, c.course_code, c.course_name, c.course_img
+            FROM Course c
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            INNER JOIN LecturerCourseFavourite f
+                   ON f.course_id   = c.course_id
+                  AND f.lecturer_id = l.lecturer_id
+            WHERE l.lecturer_email = @Email
+            ORDER BY c.course_name ASC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
@@ -135,6 +138,10 @@ namespace SchoolSystem
 
                 rptCourses.DataSource = dt;
                 rptCourses.DataBind();
+
+                // Show/hide empty state
+                noFavsPanel.Visible = dt.Rows.Count == 0;
+                rptCourses.Visible = dt.Rows.Count > 0;
             }
         }
 
