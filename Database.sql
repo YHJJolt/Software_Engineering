@@ -12,14 +12,19 @@ GO
 USE SchoolSystemDB;
 GO
 
--- 3. Drop existing tables if they exist
+-- 3. Drop existing tables if they exist (ORDER MATTERS FOR FOREIGN KEYS)
+IF OBJECT_ID('[LecturerCourseFavourite]', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite]; 
+IF OBJECT_ID('[AssignmentSubmission]', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
+IF OBJECT_ID('[CourseAssignment]', 'U') IS NOT NULL DROP TABLE [CourseAssignment];
+IF OBJECT_ID('[ModuleFile]', 'U') IS NOT NULL DROP TABLE [ModuleFile];
+IF OBJECT_ID('[CourseModule]', 'U') IS NOT NULL DROP TABLE [CourseModule];
 IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
 IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
 IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
-IF OBJECT_ID('[LecturerEnrollment]', 'U') IS NOT NULL DROP TABLE LecturerEnrollment;
 IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
 IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
 IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('[LecturerCalendar]', 'U') IS NOT NULL DROP TABLE LecturerCalendar;
 IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
 IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
 IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
@@ -86,14 +91,14 @@ CREATE TABLE [Program] (
 -- ============================================================
 CREATE TABLE [Student] (
     [student_id]       INT            NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    [student_code]     NVARCHAR(10)   NULL,                        
+    [student_code]     NVARCHAR(10)   NULL,                         
     [student_name]     NVARCHAR(45)   NOT NULL,
     [student_pw]       NVARCHAR(45)   NOT NULL DEFAULT 'stud123',
-    [student_email]    NVARCHAR(45)   NOT NULL,                    
-    [student_contact]  NVARCHAR(45)   NULL,                        
-    [student_address]  NVARCHAR(45)   NULL,                        
-    [date_of_birth]    DATETIME       NULL,                        
-    [student_sem]      INT            NOT NULL,                    
+    [student_email]    NVARCHAR(45)   NOT NULL,                     
+    [student_contact]  NVARCHAR(45)   NULL,                         
+    [student_address]  NVARCHAR(45)   NULL,                         
+    [date_of_birth]    DATETIME       NULL,                         
+    [student_sem]      INT            NOT NULL,                     
     [student_isactive] NVARCHAR(45)   NOT NULL,
     [student_bio]      NVARCHAR(MAX)  NULL,
     [student_img]      VARBINARY(MAX) NULL,
@@ -119,7 +124,7 @@ CREATE TABLE [Grades] (
 );
 
 -- ============================================================
--- 6. Table: Calendar
+-- 6. Table: Admin Calendar
 -- ============================================================
 CREATE TABLE [Calendar] (
     [calendar_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -133,7 +138,27 @@ CREATE TABLE [Calendar] (
 );
 
 -- ============================================================
--- 7. Table: Course
+-- 7. Table: Lecturer Calendar
+-- ============================================================
+CREATE TABLE LecturerCalendar (
+    calendar_id   INT           IDENTITY(1,1) PRIMARY KEY,
+    event_title   NVARCHAR(200) NOT NULL,
+    event_desc    NVARCHAR(MAX) NULL,
+    start_date    DATE          NOT NULL,
+    end_date      DATE          NULL,
+    event_type    NVARCHAR(50)  NOT NULL DEFAULT 'Class',
+        -- Allowed values: 'Class', 'Assignment', 'Meeting', 'Personal'
+    visibility    NVARCHAR(50)  NOT NULL DEFAULT 'Private',
+    lecturer_id   INT           NOT NULL,
+    created_at    DATETIME      NOT NULL DEFAULT GETDATE(),
+ 
+    CONSTRAINT FK_LecCalendar_Lecturer
+        FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id)
+        ON DELETE CASCADE
+);
+
+-- ============================================================
+-- 8. Table: Course
 -- ============================================================
 CREATE TABLE [Course] (
   [course_code] NVARCHAR(20) NULL, 
@@ -154,7 +179,7 @@ CREATE TABLE [Course] (
 GO
 
 -- ============================================================
--- 8. Table: Enrolment
+-- 9. Table: Enrolment
 -- ============================================================
 CREATE TABLE [Enrollment] (
     [enrollment_id] INT IDENTITY(1,1) PRIMARY KEY,
@@ -169,21 +194,6 @@ CREATE TABLE [Enrollment] (
         FOREIGN KEY ([course_id])
         REFERENCES [Course]([course_id])
 );
-
--- ============================================================
--- 9. Table: Lecturer Enrolment
--- ============================================================
-CREATE TABLE LecturerEnrollment (
-    lecturer_enrollment_id INT IDENTITY(1,1) PRIMARY KEY,
-    lecturer_id INT NOT NULL,
-    course_id   INT NOT NULL,
-    enrollment_date DATETIME DEFAULT GETDATE(),
-    status VARCHAR(20) DEFAULT 'Pending',
-    CONSTRAINT FK_LecturerEnrollment_Lecturer
-        FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id),
-    CONSTRAINT FK_LecturerEnrollment_Course
-        FOREIGN KEY (course_id) REFERENCES Course(course_id)
-)
 
 -- ============================================================
 -- 10. Table: Payment
@@ -225,7 +235,7 @@ GO
 -- ============================================================
 CREATE TABLE [CourseGrade] (
     [cg_id]          INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    [letter_grade]   NVARCHAR(5) NOT NULL,
+    [letter_grade]   NVARCHAR(5) NULL,
     [grade_point]    DECIMAL(3,2) NOT NULL,
     [total_hours]    INT NOT NULL DEFAULT 0,
     [attended_hours] INT NOT NULL DEFAULT 0,
@@ -234,8 +244,93 @@ CREATE TABLE [CourseGrade] (
 );
 GO
 
+-- ============================================================
+-- 13. Table: CourseModule 
+-- ============================================================
+CREATE TABLE [CourseModule] (
+    [module_id]          INT IDENTITY(1,1) PRIMARY KEY,
+    [course_id]          INT NOT NULL, 
+    [module_name]        NVARCHAR(255) NOT NULL,
+    [module_description] NVARCHAR(MAX) NULL, 
+    [lock_until_date]    DATETIME NULL, 
+    [created_at]         DATETIME DEFAULT GETDATE(),
+    CONSTRAINT [fk_CourseModule_Course] FOREIGN KEY ([course_id]) REFERENCES [Course]([course_id])
+);
+GO
+
+-- ============================================================
+-- 14. Table: ModuleFile 
+-- ============================================================
+CREATE TABLE [ModuleFile] (
+    [file_id]          INT IDENTITY(1,1) PRIMARY KEY,
+    [module_id]        INT NOT NULL, 
+    [file_title]       NVARCHAR(255) NOT NULL, 
+    [file_description] NVARCHAR(MAX) NULL, 
+    [file_name]        NVARCHAR(255) NOT NULL, 
+    [file_path]        NVARCHAR(MAX) NOT NULL, 
+    [upload_date]      DATETIME DEFAULT GETDATE(),
+    CONSTRAINT [fk_ModuleFile_Module] FOREIGN KEY ([module_id]) REFERENCES [CourseModule]([module_id])
+);
+GO
+
+-- ============================================================
+-- 15. Table: CourseAssignment 
+-- ============================================================
+CREATE TABLE [CourseAssignment] (
+    [assignment_id]   INT IDENTITY(1,1) PRIMARY KEY,
+    [course_id]       INT NOT NULL,  
+    [title]           NVARCHAR(255) NOT NULL,
+    [description]     NVARCHAR(MAX) NULL,
+    [assignment_type] NVARCHAR(50) NOT NULL, 
+    [due_date]        DATETIME NOT NULL,
+    [max_marks]       INT NOT NULL DEFAULT 100, 
+    [attachment_path] NVARCHAR(MAX) NULL, 
+    [created_at]      DATETIME DEFAULT GETDATE(),
+    CONSTRAINT [fk_CourseAssignment_Course] FOREIGN KEY ([course_id]) REFERENCES [Course]([course_id])
+);
+GO
+
+-- ============================================================
+-- 16. Table: AssignmentSubmission
+-- ============================================================
+CREATE TABLE [AssignmentSubmission] (
+    [submission_id]   INT IDENTITY(1,1) PRIMARY KEY,
+    [assignment_id]   INT NOT NULL,
+    [student_id]      INT NOT NULL,  
+    
+    -- === THE STUDENT'S HALF ===
+    [submission_file] NVARCHAR(MAX) NULL,   -- The file the student uploaded
+    [submitted_at]    DATETIME NULL,        -- To calculate On-Time vs. Late
+    
+    -- === THE LECTURER'S HALF ===
+    [marks_awarded]   DECIMAL(5,2) NULL,        
+    [is_published]    BIT NOT NULL DEFAULT 0,   
+    [feedback]        NVARCHAR(MAX) NULL,       
+    [graded_date]     DATETIME NULL,
+
+    CONSTRAINT [fk_Sub_Assignment] FOREIGN KEY ([assignment_id]) REFERENCES [CourseAssignment]([assignment_id]),
+    CONSTRAINT [fk_Sub_Student] FOREIGN KEY ([student_id]) REFERENCES [Student]([student_id])
+);
+GO
+
+-- ============================================================
+-- 17. Table: LecturerCourseFavourite
+-- ============================================================
+CREATE TABLE [LecturerCourseFavourite] (
+    [fav_id]      INT      NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [lecturer_id] INT      NOT NULL,
+    [course_id]   INT      NOT NULL,
+    [created_at]  DATETIME DEFAULT GETDATE(),
+    CONSTRAINT [UQ_LecFav]          UNIQUE      ([lecturer_id], [course_id]),
+    CONSTRAINT [FK_LecFav_Lecturer] FOREIGN KEY ([lecturer_id])
+        REFERENCES [Lecturer] ([lecturer_id]),
+    CONSTRAINT [FK_LecFav_Course]   FOREIGN KEY ([course_id])
+        REFERENCES [Course]   ([course_id])
+);
+GO
+
 -- ===================================================================================
--- 13. Trigger: Auto Generate Payment (This must run seperately when creating table)
+-- 18. Trigger: Auto Generate Payment (This must run seperately when creating table)
 -- ===================================================================================
 CREATE TRIGGER trg_GeneratePayment
 ON [Enrollment]
@@ -317,15 +412,15 @@ INSERT INTO [Student]
      student_contact, student_address, date_of_birth,
      student_sem, student_isactive, Admin_admin_id, Program_id)
 VALUES
-('Charlie Brown', 'stud123', 'charliebrown0005@stud.com', NULL, NULL, NULL, 3, 'Active', 1, 2),
-('David Miller',  'stud123', 'davidmiller0006@stud.com',  NULL, NULL, NULL, 3, 'Active', 1, 2);
+('Charlie Brown', 'stud123', 'charliebrown0001@stud.com', NULL, NULL, NULL, 3, 'Active', 1, 2),
+('David Miller',  'stud123', 'davidmiller0002@stud.com',  NULL, NULL, NULL, 3, 'Active', 1, 2);
 
 INSERT INTO [Student]
     (student_name, student_pw, student_email,
      student_contact, student_address, date_of_birth,
      student_sem, student_isactive, Admin_admin_id, Program_id)
 VALUES
-('Eve Adams', 'stud123', 'eveadams0007@stud.com', NULL, NULL, NULL, 1, 'Active', 1, 3);
+('Eve Adams', 'stud123', 'eveadams0003@stud.com', NULL, NULL, NULL, 1, 'Active', 1, 3);
 
 UPDATE [Student]
 SET student_code = 'S' + RIGHT('0000' + CAST(student_id AS NVARCHAR(4)), 4);
@@ -372,7 +467,7 @@ GO
 -- ============================================================
 INSERT INTO [Announcement] (title, content, category, Admin_id)
 VALUES
-('Welcome to the New System', 'The portal is now live.',                      'General',       1),
+('Welcome to the New System', 'The portal is now live.',                       'General',       1),
 ('Exam Venue Update',         'Check your portal for the new hall numbers.',  'Academic',      1),
 ('Library Closing Early',     'Closing at 6 PM this Friday for renovations.', 'General',       1),
 ('Scholarship Open',          'Apply now for the 2026 intake.',               'Finance',       1),
@@ -387,15 +482,14 @@ INSERT INTO [Enrollment]
 VALUES 
 	(1, 2, GETDATE(), 'Pending'),
 	(2, 2, GETDATE(), 'Pending'), 
-	(1, 2, GETDATE(), 'Pending'),
 	(3, 4, GETDATE(), 'Pending'),
 	(1, 4, GETDATE(), 'Pending'),
-	(3, 4, GETDATE(), 'Pending'),
 	(2, 1, GETDATE(), 'Pending'),
 	(3, 1, GETDATE(), 'Pending'),
 	(2, 5, GETDATE(), 'Pending'),
 	(1, 5, GETDATE(), 'Pending');
 GO
+
 
 -- ============================================================
 -- CourseGrade 
@@ -409,20 +503,49 @@ INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hour
 GO
 
 -- ============================================================
--- LecturerEnrollment
+-- NEW DUMMY DATA FOR PROTOTYPING
 -- ============================================================
-INSERT INTO [LecturerEnrollment] 
-	(lecturer_id, course_id, status)
-VALUES 
-	(1, 1, 'Pending'),
-	(2, 2, 'Pending'),
-	(1, 3, 'Pending'),
-	(2, 4, 'Pending'),
-	(3, 3, 'Pending');
+
+-- Insert Dummy Module
+INSERT INTO [CourseModule] (course_id, module_name, module_description)
+VALUES (2, 'Week 1 - Introduction to Databases', 'This week we will cover the fundamentals of relational databases. Please ensure you have SQL Server installed.');
 GO
 
+-- Insert Dummy File
+INSERT INTO [ModuleFile] (module_id, file_title, file_description, file_name, file_path)
+VALUES (1, 'Chapter 1 Slides', 'Read pages 15-30 before our next lecture.', 'Chapter1.pdf', '~/Uploads/Modules/Chapter1.pdf');
+GO
 
+-- Insert Dummy Assignments
+-- 1. Create ACTIVE Assignments (Due Dates in June/July 2026)
+INSERT INTO [CourseAssignment] (course_id, title, description, assignment_type, due_date, max_marks, attachment_path)
+VALUES 
+(2, 'Database Design Project', 'Design an ERD for a library management system.', 'Coursework', '2026-06-15 23:59:00', 100, NULL),
+(2, 'Midterm Examination', 'Covers chapters 1 to 5. Download the guidelines attached.', 'Midterm', '2026-07-01 10:00:00', 50, '~/Uploads/Assignments/Midterm_Instructions.pdf');
+
+-- 2. Create a PAST Assignment (Due Date in May 2026)
+INSERT INTO [CourseAssignment] (course_id, title, description, assignment_type, due_date, max_marks)
+VALUES 
+(2, 'Week 1 Quiz: Intro to DB', 'Initial assessment on SQL fundamentals.', 'Coursework', '2026-05-10 12:00:00', 20);
+
+-- Grab the ID of the Past Assignment we just created
+DECLARE @PastAssignId INT = SCOPE_IDENTITY();
+
+-- 3. Inject Past Submissions for Charlie and David (using .docx directly)
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published)
+VALUES 
+(@PastAssignId, 1, '~/Uploads/Submissions/Charlie_Quiz1.docx', '2026-05-09 15:00:00', 18, 1),
+(@PastAssignId, 2, '~/Uploads/Submissions/David_Quiz1.docx', '2026-05-10 11:30:00', 15, 1);
+GO
+
+-- ============================================================
+-- VERIFICATION SELECTS
+-- ============================================================
 SELECT * FROM Course;
 SELECT * FROM Enrollment;
 SELECT * FROM Lecturer;
 SELECT * FROM CourseGrade;
+SELECT * FROM CourseModule;
+SELECT * FROM ModuleFile;
+SELECT * FROM CourseAssignment;
+SELECT * FROM AssignmentSubmission;
