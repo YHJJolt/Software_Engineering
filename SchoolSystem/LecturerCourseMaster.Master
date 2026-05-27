@@ -4,8 +4,11 @@
 <head runat="server">
     <meta charset="utf-8" />
     <title>Course Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <link rel="stylesheet" type="text/css" href="LecturerStyle.css" />
+
+    <link href="LecturerStyle.css" rel="stylesheet" runat="server" />
     
     <style>
         .back-btn { background-color: rgba(18, 20, 32, 0.05); margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
@@ -29,10 +32,10 @@
                 <a id="linkHome" runat="server" href="CourseHome.aspx" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
                 <a id="linkPeople" runat="server" href="CoursePeople.aspx" class="nav-link"><i class="fas fa-users"></i> <span>People</span></a>
                 <a id="linkAttendance" runat="server" href="ManageAttendance.aspx" class="nav-link"><i class="fas fa-user-check"></i> <span>Manage Attendance</span></a>
-                <a id="linkGrades" runat="server" href="#" class="nav-link"><i class="fas fa-star"></i> <span>Grades</span></a>
-                <a id="linkModules" runat="server" href="#" class="nav-link"><i class="fas fa-layer-group"></i> <span>Modules</span></a>
-                <a id="linkAssignments" runat="server" href="#" class="nav-link"><i class="fas fa-file-alt"></i> <span>Assignments</span></a>
-                <a id="linkAnnouncements" runat="server" href="LecturerAnnouncement.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
+                <a id="linkGrades" runat="server" href="LecturerGrades.aspx" class="nav-link"><i class="fas fa-star"></i> <span>Grades</span></a>
+                <a id="linkModules" runat="server" href="CourseModules.aspx" class="nav-link"><i class="fas fa-layer-group"></i> <span>Modules</span></a>
+                <a id="linkAssignments" runat="server" href="CourseAssignments.aspx" class="nav-link"><i class="fas fa-file-alt"></i> <span>Assignments</span></a>
+                <a id="linkAnnouncements" runat="server" href="LecturerAnnouncements.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a>
             </div>
             <a id="linkSidebarProfile" runat="server" href="LecturerProfile.aspx" class="sidebar-profile">
                 <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
@@ -108,5 +111,6 @@
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
