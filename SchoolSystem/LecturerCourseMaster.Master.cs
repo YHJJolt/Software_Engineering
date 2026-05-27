@@ -76,49 +76,77 @@ namespace SchoolSystem
 
         private void LoadNotifications()
         {
-            DataTable dtNotifs = new DataTable();
-            dtNotifs.Columns.Add("Type");
-            dtNotifs.Columns.Add("Message");
-            dtNotifs.Columns.Add("CssClass");
-
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Traced course assignments directly through c.Lecturer_id 
-                // to remove any references to the dropped LecturerEnrollment table.
-                string sql = @"
-                    SELECT 'Announcement' as Type, title + ' - ' + content as Message, 'announcement' as CssClass 
-                    FROM Announcement 
-                    UNION ALL 
-                    SELECT 'Alert' as Type, 
-                           s.student_name + ' is failing ' + c.course_name + ' (Grade: ' + cg.letter_grade + ')' as Message, 
-                           'alert' as CssClass
-                    FROM Enrollment e
-                    JOIN Student s ON e.student_id = s.student_id
-                    JOIN Course c ON e.course_id = c.course_id
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
-                    WHERE l.lecturer_email = @Email AND cg.letter_grade = 'F'";
+                DataTable dtNotifs = new DataTable();
 
-                SqlCommand cmd = new SqlCommand(sql, conn);
+                string sql = @"
+            -- 1. Failing Student Alerts
+            SELECT 'Failing Student' as Type, 
+                   s.student_name + ' is failing ' + c.course_name + ' (Grade: ' + cg.letter_grade + ')' as Message, 
+                   'alert' as CssClass
+            FROM Enrollment e
+            JOIN Student s ON e.student_id = s.student_id
+            JOIN Course c ON e.course_id = c.course_id
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
+            WHERE l.lecturer_email = @Email AND cg.letter_grade = 'F'
+            
+            UNION ALL
+            
+            -- 2. Admin Announcements
+            SELECT 'Admin Announcement' as Type, 
+                   N'📢 [Posted by Admin] ' + title as Message,  -- CHANGE 'title' to your actual column name if it is different
+                   'info' as CssClass
+            FROM Announcement
+            WHERE admin_id IS NOT NULL"; 
+        
+        SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
                 da.Fill(dtNotifs);
-            }
 
-            litNotifCount.Text = dtNotifs.Rows.Count.ToString();
-            if (dtNotifs.Rows.Count > 0)
-            {
-                noNotifs.Visible = false; // FIXED: Explicitly hide empty state row when notifications exist
-                rptNotifications.DataSource = dtNotifs;
-                rptNotifications.DataBind();
+                litNotifCount.Text = dtNotifs.Rows.Count.ToString();
+                if (dtNotifs.Rows.Count > 0)
+                {
+                    noNotifs.Visible = false;
+                    rptNotifications.DataSource = dtNotifs;
+                    rptNotifications.DataBind();
+                }
+                else
+                {
+                    noNotifs.Visible = true;
+                }
             }
-            else noNotifs.Visible = true;
         }
 
         private void HighlightActiveSideBar()
         {
+            // Get the current page name in lowercase to make matching easier
             string currentPage = System.IO.Path.GetFileName(Request.Url.AbsolutePath).ToLower();
-            if (currentPage.Contains("attendance")) linkAttendance.Attributes["class"] += " active";
+
+            // Check the URL and highlight the matching sidebar link
+            if (currentPage.Contains("attendance"))
+            {
+                linkAttendance.Attributes["class"] += " active";
+            }
+            else if (currentPage.Contains("module"))
+            {
+                linkModules.Attributes["class"] += " active";
+            }
+            else if (currentPage.Contains("assignment"))
+            {
+                linkAssignments.Attributes["class"] += " active";
+            }
+            else if (currentPage.Contains("grade"))
+            {
+                linkGrades.Attributes["class"] += " active";
+            }
+            else if (currentPage.Contains("announcement"))
+            {
+                linkAnnouncements.Attributes["class"] += " active";
+            }
         }
     }
 }

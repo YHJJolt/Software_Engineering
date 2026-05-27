@@ -49,47 +49,48 @@ namespace SchoolSystem
 
         private void LoadNotifications()
         {
-            DataTable dtNotifs = new DataTable();
-            dtNotifs.Columns.Add("Type");
-            dtNotifs.Columns.Add("Message");
-            dtNotifs.Columns.Add("CssClass");
-
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Refactored the 'Alert' query to trace ownership directly 
-                // through the Course table, bypassing LecturerEnrollment completely.
-                string sql = @"
-                    SELECT 'Announcement' as Type, title + ' - ' + content as Message, 'announcement' as CssClass 
-                    FROM Announcement 
-                    
-                    UNION ALL 
-                    
-                    SELECT 'Alert' as Type, 
-                           s.student_name + ' is failing ' + c.course_name + ' (Grade: ' + cg.letter_grade + ')' as Message, 
-                           'alert' as CssClass
-                    FROM Enrollment e
-                    JOIN Student s ON e.student_id = s.student_id
-                    JOIN Course c ON e.course_id = c.course_id
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
-                    WHERE l.lecturer_email = @Email AND cg.letter_grade = 'F'";
+                DataTable dtNotifs = new DataTable();
 
-                SqlCommand cmd = new SqlCommand(sql, conn);
+                string sql = @"
+            -- 1. Failing Student Alerts
+            SELECT 'Failing Student' as Type, 
+                   s.student_name + ' is failing ' + c.course_name + ' (Grade: ' + cg.letter_grade + ')' as Message, 
+                   'alert' as CssClass
+            FROM Enrollment e
+            JOIN Student s ON e.student_id = s.student_id
+            JOIN Course c ON e.course_id = c.course_id
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
+            WHERE l.lecturer_email = @Email AND cg.letter_grade = 'F'
+            
+            UNION ALL
+            
+            -- 2. Admin Announcements
+            SELECT 'Admin Announcement' as Type, 
+                   N'📢 [Posted by Admin] ' + title as Message,  -- CHANGE 'title' to your actual column name if it is different
+                   'info' as CssClass
+            FROM Announcement
+            WHERE admin_id IS NOT NULL"; 
+        
+        SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
                 da.Fill(dtNotifs);
-            }
 
-            litNotifCount.Text = dtNotifs.Rows.Count.ToString();
-            if (dtNotifs.Rows.Count > 0)
-            {
-                noNotifs.Visible = false; // Ensure placeholder hidden if data exists
-                rptNotifications.DataSource = dtNotifs;
-                rptNotifications.DataBind();
-            }
-            else
-            {
-                noNotifs.Visible = true;
+                litNotifCount.Text = dtNotifs.Rows.Count.ToString();
+                if (dtNotifs.Rows.Count > 0)
+                {
+                    noNotifs.Visible = false;
+                    rptNotifications.DataSource = dtNotifs;
+                    rptNotifications.DataBind();
+                }
+                else
+                {
+                    noNotifs.Visible = true;
+                }
             }
         }
 

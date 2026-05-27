@@ -130,7 +130,7 @@
     <Content Include="Enrollment.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="LecturerCalender.aspx" />
+    <Content Include="LecturerCalendar.aspx" />
     <Content Include="LecturerDashboard.aspx" />
     <Content Include="LecturerGrades.aspx" />
     <Content Include="LecturerProfile.aspx" />
@@ -257,7 +257,6 @@
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
-
     <Compile Include="CourseAssignments.aspx.cs">
       <DependentUpon>CourseAssignments.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -272,12 +271,12 @@
     <Compile Include="CourseModules.aspx.designer.cs">
       <DependentUpon>CourseModules.aspx</DependentUpon>
     </Compile>
-    <Compile Include="LecturerCalender.aspx.cs">
-      <DependentUpon>LecturerCalender.aspx</DependentUpon>
+    <Compile Include="LecturerCalendar.aspx.cs">
+      <DependentUpon>LecturerCalendar.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="LecturerCalender.aspx.designer.cs">
-      <DependentUpon>LecturerCalender.aspx</DependentUpon>
+    <Compile Include="LecturerCalendar.aspx.designer.cs">
+      <DependentUpon>LecturerCalendar.aspx</DependentUpon>
     </Compile>
     <Compile Include="LecturerCourseMaster.Master.cs">
       <DependentUpon>LecturerCourseMaster.Master</DependentUpon>

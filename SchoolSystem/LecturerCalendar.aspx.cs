@@ -27,7 +27,8 @@ namespace SchoolSystem
             throw new Exception("Lecturer ID not found in session.");
         }
 
-        protected void Page_Load(object sender, EventArgs e) {
+        protected void Page_Load(object sender, EventArgs e)
+        {
             if (!IsPostBack)
             {
                 LecturerMaster master = (LecturerMaster)this.Master;

@@ -236,13 +236,14 @@ GO
 CREATE TABLE [CourseGrade] (
     [cg_id]          INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [letter_grade]   NVARCHAR(5) NULL,
-    [grade_point]    DECIMAL(3,2) NOT NULL,
+    [grade_point]    DECIMAL(3,2) NULL,
     [total_hours]    INT NOT NULL DEFAULT 0,
     [attended_hours] INT NOT NULL DEFAULT 0,
     [Enrollment_id]  INT NOT NULL,
     CONSTRAINT [fk_CG_Enrollment] FOREIGN KEY ([Enrollment_id]) REFERENCES [Enrollment]([enrollment_id])
 );
 GO
+
 
 -- ============================================================
 -- 13. Table: CourseModule 

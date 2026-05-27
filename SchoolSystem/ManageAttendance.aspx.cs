@@ -16,7 +16,6 @@ namespace SchoolSystem
 
             if (Request.QueryString["id"] == null) Response.Redirect("LecturerDashboard.aspx");
 
-            // Updated casting to LecturerCourseMaster
             if (this.Master is LecturerCourseMaster)
             {
                 ((LecturerCourseMaster)this.Master).PageTitle = "Manage Attendance";
@@ -28,6 +27,12 @@ namespace SchoolSystem
             }
         }
 
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            // Reload the grid based on the newly selected filters
+            LoadStudentAttendance();
+        }
+
         private void LoadStudentAttendance()
         {
             string courseId = Request.QueryString["id"];
@@ -35,40 +40,69 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT 
-                        e.Enrollment_id,
-                        s.student_id,
-                        s.student_name,
-                        ISNULL(cg.total_hours, 0) AS total_hours,
-                        ISNULL(cg.attended_hours, 0) AS attended_hours,
-                        CASE 
-                            WHEN ISNULL(cg.total_hours, 0) = 0 THEN 100.0 
-                            ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(ISNULL(cg.total_hours, 0) AS FLOAT)) * 100.0 
-                        END AS AttendancePercentage
-                    FROM Enrollment e
-                    JOIN Student s ON e.student_id = s.student_id
-                    LEFT JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
-                    WHERE e.course_id = @CourseID";
+                    WITH AttendanceData AS (
+                        SELECT 
+                            e.Enrollment_id,
+                            s.student_code, 
+                            s.student_name,
+                            ISNULL(cg.total_hours, 0) AS total_hours,
+                            ISNULL(cg.attended_hours, 0) AS attended_hours,
+                            CASE 
+                                WHEN ISNULL(cg.total_hours, 0) = 0 THEN 100.0
+                                ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(ISNULL(cg.total_hours, 0) AS FLOAT)) * 100.0
+                            END AS AttendancePercentage
+                        FROM Enrollment e
+                        JOIN Student s ON e.student_id = s.student_id
+                        LEFT JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
+                        WHERE e.course_id = @CourseID
+                    )
+                    SELECT * FROM AttendanceData 
+                    WHERE 1=1 ";
+
+                // Apply Search Filter
+                if (!string.IsNullOrEmpty(txtSearch.Text))
+                {
+                    sql += " AND student_name LIKE @SearchTerm ";
+                }
+
+                // Apply High/Low Filter
+                if (ddlAttendanceFilter.SelectedValue == "Low")
+                {
+                    sql += " AND AttendancePercentage < 75.0 ";
+                }
+                else if (ddlAttendanceFilter.SelectedValue == "High")
+                {
+                    sql += " AND AttendancePercentage >= 75.0 ";
+                }
+
+                // Apply alphabetical sorting by student code
+                sql += " ORDER BY student_code ASC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);
+
+                if (!string.IsNullOrEmpty(txtSearch.Text))
+                {
+                    cmd.Parameters.AddWithValue("@SearchTerm", "%" + txtSearch.Text.Trim() + "%");
+                }
 
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
-                rptStudents.DataSource = dt;
-                rptStudents.DataBind();
+                rptAttendance.DataSource = dt;
+                rptAttendance.DataBind();
             }
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
+            lblSuccessMsg.Visible = false;
+
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
-
-                foreach (RepeaterItem item in rptStudents.Items)
+                foreach (RepeaterItem item in rptAttendance.Items)
                 {
                     if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
                     {
@@ -102,6 +136,8 @@ namespace SchoolSystem
 
             lblSuccessMsg.Text = "<i class='fas fa-check-circle'></i> Attendance saved successfully! (+2 Total Hours applied to all).";
             lblSuccessMsg.Visible = true;
+
+            // Refresh grid to reflect the updated numbers and attendance percentages
             LoadStudentAttendance();
         }
     }

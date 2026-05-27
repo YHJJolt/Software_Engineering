@@ -10,42 +10,48 @@
         
         .status-dropdown { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-weight: 600; cursor: pointer; outline: none; }
         .status-dropdown:focus { border-color: var(--soft-glow); }
-        
-        .btn-save-attendance { background: var(--navy-accent); color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; float: right; margin-top: 20px; transition: 0.2s; }
-        .btn-save-attendance:hover { background: var(--antique-gold); }
-        
-        .warn-badge { display: inline-flex; align-items: center; gap: 5px; background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-left: 10px; }
-        .good-text { color: #10b981; font-weight: bold; }
-        .bad-text { color: #b91c1c; font-weight: bold; }
+        .warn-badge { color: red; font-size: 12px; margin-left: 5px; }
+        .bad-text { color: red; font-weight: bold; }
+        .good-text { color: green; font-weight: bold; }
+        .btn-save-attendance { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; float: right; font-weight: bold; }
+        .btn-save-attendance:hover { background-color: #218838; }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="attendance-container">
-        <h3 style="margin-top: 0; color: var(--navy-accent);">Weekly Session Attendance</h3>
-        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">
-            <i class="fas fa-info-circle"></i> Marking a student <strong>Present</strong> adds 2 Total Hours and 2 Attended Hours. 
-            Marking <strong>Absent</strong> adds 2 Total Hours and 0 Attended Hours.
-        </p>
+        <h2>Mark Attendance</h2>
         
-        <asp:Label ID="lblSuccessMsg" runat="server" Visible="false" ForeColor="#10b981" Font-Bold="true" style="display:block; margin-bottom: 15px;"></asp:Label>
+        <asp:Label ID="lblSuccessMsg" runat="server" Visible="false" ForeColor="Green" Font-Bold="true" style="display:block; margin-bottom: 15px;"></asp:Label>
+
+        <div class="filter-controls" style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+            <asp:TextBox ID="txtSearch" runat="server" Placeholder="Search student name..." style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; width: 250px; outline: none;"></asp:TextBox>
+            
+            <asp:DropDownList ID="ddlAttendanceFilter" runat="server" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; outline: none;">
+                <asp:ListItem Text="All Students" Value="All"></asp:ListItem>
+                <asp:ListItem Text="High Attendance (≥ 75%)" Value="High"></asp:ListItem>
+                <asp:ListItem Text="Low Attendance (< 75%)" Value="Low"></asp:ListItem>
+            </asp:DropDownList>
+            
+            <asp:Button ID="btnSearch" runat="server" Text="Search & Filter" OnClick="btnSearch_Click" style="padding: 8px 15px; background-color: #121420; color: white; border: none; border-radius: 6px; cursor: pointer;" />
+        </div>
 
         <table class="attendance-table">
             <thead>
                 <tr>
-                    <th>Student ID</th>
+                    <th>Student Code</th>
                     <th>Student Name</th>
                     <th>Total Hours</th>
                     <th>Attended Hours</th>
                     <th>Attendance %</th>
-                    <th>Record This Session</th>
+                    <th>Mark Today's Session</th>
                 </tr>
             </thead>
             <tbody>
-                <asp:Repeater ID="rptStudents" runat="server">
+                <asp:Repeater ID="rptAttendance" runat="server">
                     <ItemTemplate>
                         <tr>
-                            <td><strong><%# Eval("student_id") %></strong></td>
+                            <td><%# Eval("student_code") %></td>
                             <td><%# Eval("student_name") %></td>
                             <td><%# Eval("total_hours") %> hrs</td>
                             <td><%# Eval("attended_hours") %> hrs</td>
