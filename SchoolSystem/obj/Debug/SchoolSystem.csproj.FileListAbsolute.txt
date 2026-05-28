@@ -288,7 +288,6 @@ C:\Users\ameli\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.csp
 C:\Users\ameli\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSy.0567E2FD.Up2Date
 C:\Users\ameli\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.dll
 C:\Users\ameli\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.pdb
-<<<<<<< HEAD
 C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\bin\SchoolSystem.dll.config
 C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\bin\SchoolSystem.dll
 C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\bin\SchoolSystem.pdb
@@ -361,6 +360,5 @@ C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem
 C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSy.0567E2FD.Up2Date
 C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.dll
 C:\Users\Chloe Tan\source\repos\SchoolSystem\SchoolSystem\obj\Debug\SchoolSystem.pdb
-=======
 >>>>>>> ad8ca1a2a6243f39821b40374a5ad90a30187385
 >>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601

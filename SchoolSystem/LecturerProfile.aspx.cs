@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.Web.UI;
 
 namespace SchoolSystem
 {
@@ -12,7 +13,6 @@ namespace SchoolSystem
         {
             if (Request.QueryString["course_id"] != null)
             {
-                // Updated to point to the renamed Master File
                 this.MasterPageFile = "~/LecturerCourseMaster.Master";
             }
             else
@@ -27,12 +27,18 @@ namespace SchoolSystem
 
             if (this.Master is LecturerMaster)
                 ((LecturerMaster)this.Master).PageTitle = "My Profile";
-            // Updated casting
             else if (this.Master is LecturerCourseMaster)
                 ((LecturerCourseMaster)this.Master).PageTitle = "My Profile";
 
-            if (!IsPostBack) LoadUserData();
-            if (fileUploadImg.HasFile) UploadImage();
+            if (!IsPostBack)
+            {
+                LoadUserData();
+            }
+
+            if (fileUploadImg.HasFile)
+            {
+                UploadImage();
+            }
         }
 
         private void LoadUserData()
@@ -42,6 +48,7 @@ namespace SchoolSystem
                 string sql = "SELECT lecturer_name, lecturer_email, lecturer_bio, lecturer_img FROM [Lecturer] WHERE lecturer_email = @Email";
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+
                 conn.Open();
                 SqlDataReader rdr = cmd.ExecuteReader();
                 if (rdr.Read())
@@ -52,14 +59,15 @@ namespace SchoolSystem
 
                     if (rdr["lecturer_img"] != DBNull.Value)
                     {
-                        byte[] bytes = (byte[])rdr["lecturer_img"];
-                        imgBigProfile.ImageUrl = "data:image/png;base64," + Convert.ToBase64String(bytes);
+                        byte[] imgData = (byte[])rdr["lecturer_img"];
+                        string base64 = Convert.ToBase64String(imgData);
+                        imgBigProfile.ImageUrl = "data:image/jpeg;base64," + base64;
                     }
                 }
             }
         }
 
-        protected void btnSave_Click(object sender, EventArgs e)
+        protected void btnSaveBio_Click(object sender, EventArgs e)
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
@@ -70,6 +78,9 @@ namespace SchoolSystem
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }
+
+            // Show a quick success popup
+            ScriptManager.RegisterStartupScript(this, GetType(), "showalert", "alert('Biography saved successfully!');", true);
         }
 
         private void UploadImage()

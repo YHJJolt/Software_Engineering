@@ -121,13 +121,10 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
-<<<<<<< HEAD
     <Content Include="CourseHome.aspx" />
     <Content Include="CoursePeople.aspx" />
-=======
     <Content Include="CourseAssignments.aspx" />
     <Content Include="CourseModules.aspx" />
->>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601
     <Content Include="Courses.aspx" />
     <Content Include="CreateCourses.aspx" />
     <Content Include="CreateProgram.aspx" />
@@ -262,7 +259,6 @@
     <Compile Include="Contact.aspx.designer.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
-<<<<<<< HEAD
     <Compile Include="CourseHome.aspx.cs">
       <DependentUpon>CourseHome.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -277,12 +273,8 @@
     <Compile Include="CoursePeople.aspx.designer.cs">
       <DependentUpon>CoursePeople.aspx</DependentUpon>
     </Compile>
-    <Compile Include="LecturerCalender.aspx.cs">
-      <DependentUpon>LecturerCalender.aspx</DependentUpon>
-=======
     <Compile Include="CourseAssignments.aspx.cs">
       <DependentUpon>CourseAssignments.aspx</DependentUpon>
->>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="CourseAssignments.aspx.designer.cs">

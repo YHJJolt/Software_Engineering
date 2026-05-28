@@ -1,186 +1,7 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/LecturerMaster.Master" AutoEventWireup="true"
     CodeBehind="LecturerCourses.aspx.cs" Inherits="SchoolSystem.LecturerCourses" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <style>
-        /* ── Page ── */
-        .courses-page { padding: 24px 28px; }
-
-        /* ── Topbar ── */
-        .courses-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .courses-topbar h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin: 0;
-        }
-        .topbar-controls { display: flex; align-items: center; gap: 10px; }
-
-        /* ── Search ── */
-        .search-wrap { position: relative; }
-        .search-wrap i {
-            position: absolute; left: 10px; top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px; color: #94a3b8;
-        }
-        .search-wrap input {
-            padding: 7px 12px 7px 32px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 13px;
-            width: 210px;
-            outline: none;
-            background: #fff;
-            color: #1e293b;
-        }
-        .search-wrap input:focus { border-color: #94a3b8; }
-
-        /* ── View toggle ── */
-        .view-toggle {
-            display: flex;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .view-btn {
-            background: #fff;
-            border: none;
-            padding: 7px 12px;
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 16px;
-            transition: background 0.15s;
-            line-height: 1;
-        }
-        .view-btn.active { background: #f1f5f9; color: #334155; }
-
-        /* ── Table ── */
-        .table-wrap {
-            background: #fff;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
-        }
-        .courses-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .courses-table thead tr { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-        .courses-table th {
-            padding: 11px 14px;
-            text-align: left;
-            font-weight: 600;
-            color: #64748b;
-            white-space: nowrap;
-            user-select: none;
-        }
-        .courses-table th.sortable { cursor: pointer; }
-        .courses-table th.sortable:hover { color: #1e293b; }
-        .sort-icon { margin-left: 4px; font-size: 11px; color: #cbd5e1; }
-        .sort-icon.asc::after  { content: ' ▲'; }
-        .sort-icon.desc::after { content: ' ▼'; }
-        .sort-icon.none::after { content: ' ⇅'; }
-
-        .courses-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.12s; }
-        .courses-table tbody tr:last-child { border-bottom: none; }
-        .courses-table tbody tr:hover { background: #f8fafc; }
-        .courses-table td { padding: 11px 14px; color: #334155; vertical-align: middle; }
-
-        /* ── Star ── */
-        .star-btn {
-            background: none; border: none; cursor: pointer;
-            font-size: 1rem; color: #cbd5e1; padding: 0;
-            transition: color 0.2s, transform 0.15s; line-height: 1;
-        }
-        .star-btn:hover { transform: scale(1.2); }
-        .star-btn.starred { color: #f59e0b; }
-
-        /* ── Course dot ── */
-        .course-dot {
-            display: inline-block; width: 9px; height: 9px;
-            border-radius: 50%; margin-right: 7px; flex-shrink: 0;
-        }
-        .dot-open { background: #22c55e; }
-        .dot-ongoing { background: #f97316; }
-        .dot-closed { background: #94a3b8; }
-
-        .course-link { color: #3b82f6; text-decoration: none; display: inline-flex; align-items: center; }
-        .course-link:hover { text-decoration: underline; }
-
-        /* ── Badges ── */
-        .badge-code {
-            display: inline-block; padding: 2px 8px; border-radius: 20px;
-            font-size: 11px; font-weight: 500;
-            background: #f1f5f9; color: #475569;
-        }
-        .badge-role {
-            display: inline-block; padding: 2px 9px; border-radius: 20px;
-            font-size: 11px; font-weight: 500;
-            background: #ede9fe; color: #7c3aed;
-        }
-        .badge-yes {
-            display: inline-block; padding: 2px 9px; border-radius: 20px;
-            font-size: 11px; font-weight: 500;
-            background: #dcfce7; color: #16a34a;
-        }
-        .badge-no {
-            display: inline-block; padding: 2px 9px; border-radius: 20px;
-            font-size: 11px; font-weight: 500;
-            background: #fee2e2; color: #dc2626;
-        }
-        .student-count { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #64748b; }
-        .student-count i { font-size: 14px; }
-
-        /* ── Grid ── */
-        .grid-view {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 14px;
-        }
-        .course-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: border-color 0.15s;
-        }
-        .course-card:hover { border-color: #94a3b8; }
-        .card-img-wrap {
-            width: 100%; height: 110px;
-            background: #f1f5f9;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; color: #cbd5e1;
-            overflow: hidden;
-        }
-        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .card-body { padding: 12px 14px; }
-        .card-top {
-            display: flex; align-items: center;
-            justify-content: space-between; margin-bottom: 6px;
-        }
-        .card-name { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 8px; line-height: 1.3; }
-        .card-meta { display: flex; flex-direction: column; gap: 5px; }
-        .card-row {
-            display: flex; align-items: center;
-            justify-content: space-between; font-size: 12px; color: #64748b;
-        }
-        .card-row span { display: flex; align-items: center; gap: 4px; }
-        .card-row i { font-size: 13px; }
-
-        /* ── Empty ── */
-        .empty-state { text-align: center; padding: 50px 20px; color: #94a3b8; }
-        .empty-state i { font-size: 2rem; margin-bottom: 10px; display: block; }
-
-        .hidden { display: none !important; }
-    </style>
-</asp:Content>
-
-<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="courses-page">
 
         <div class="courses-topbar">
@@ -363,7 +184,7 @@
                 return '<tr>'
                     + '<td style="text-align:center">' + starHtml(c.fav, c.id) + '</td>'
                     + '<td><span class="course-dot ' + dotClass(c.status) + '"></span>'
-                    + '<a href="LecturerAnnouncement.aspx?id=' + c.id + '" class="course-link">' + c.name + '</a></td>'
+                    + '<a href="CourseHome.aspx?id=' + c.id + '" class="course-link">' + c.name + '</a></td>'
                     + '<td><span class="badge-code">' + c.code + '</span></td>'
                     + '<td>' + c.sem + '</td>'
                     + '<td><span class="student-count"><i class="fas fa-users"></i>' + c.students + '</span></td>'
@@ -380,7 +201,7 @@
             gv.innerHTML = list.map(function (c) {
                 var imgSrc = c.img ? c.img : 'Images/default-course.png';
                 var imgHtml = '<img src="' + imgSrc + '" alt="' + c.name + '" onerror="this.src=\'Images/default-course.png\';" />';
-                return '<div class="course-card" onclick="window.location.href=\'LecturerAnnouncement.aspx?id=' + c.id + '\'">'
+                return '<div class="course-card" onclick="window.location.href=\'CourseHome.aspx?id=' + c.id + '\'">'
                     + '<div class="card-img-wrap">' + imgHtml + '</div>'
                     + '<div class="card-body">'
                     + '<div class="card-top">'

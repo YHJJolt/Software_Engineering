@@ -47,12 +47,7 @@
     <div class="courses-grid">
         <asp:Repeater ID="rptCourses" runat="server">
             <ItemTemplate>
-<<<<<<< HEAD
-                <!-- Determine 1 landing page when clicked -->
                 <div class="course-card" onclick="window.location.href='CourseHome.aspx?id=<%# Eval("course_id") %>'">
-=======
-                <div class="course-card" onclick="window.location.href='LecturerAnnouncement.aspx?id=<%# Eval("course_id") %>'">
->>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601
                     <div class="course-badge">Active</div>
                     <div class="course-img-container">
                         <img src='<%# GetImageSrc(Eval("course_img")) %>' alt="Course Image" onerror="this.src='Images/default-course.png';" />
