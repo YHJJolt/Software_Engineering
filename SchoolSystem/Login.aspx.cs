@@ -14,7 +14,7 @@ namespace SchoolSystem
             // If someone tries to access Login without picking a role, send them back
             if (!IsPostBack && Session["SelectedRole"] == null)
             {
-                Response.Redirect("RoleSelect.aspx");
+                Response.Redirect("~/RoleSelect.aspx");
             }
         }
 
@@ -85,13 +85,13 @@ namespace SchoolSystem
                             if (selectedRole == "HOP")
                             {
                                 Session["AdminID"] = Convert.ToInt32(reader["admin_id"]);
-                                Response.Redirect("AdminDashboard.aspx");
+                                Response.Redirect("~/Admin/AdminDashboard.aspx");
                             }
                             else if (selectedRole == "Lecturer")
                             {
                                 // This key will match what LecturerCalender.aspx.cs expects!
                                 Session["LecturerID"] = Convert.ToInt32(reader["lecturer_id"]);
-                                Response.Redirect("LecturerDashboard.aspx");
+                                Response.Redirect("~/Lecturer/LecturerDashboard.aspx");
                             }
                             else if (selectedRole == "Student")
                             {

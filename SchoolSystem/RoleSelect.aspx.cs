@@ -20,7 +20,7 @@ namespace SchoolSystem
             Session["SelectedRole"] = selectedRole;
 
             // Redirect to the universal Login page
-            Response.Redirect("Login.aspx");
+            Response.Redirect("~/Login.aspx");
         }
     }
 }

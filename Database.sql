@@ -236,11 +236,7 @@ GO
 CREATE TABLE [CourseGrade] (
     [cg_id]          INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [letter_grade]   NVARCHAR(5) NULL,
-<<<<<<< HEAD
-    [grade_point]    DECIMAL(3,2) NOT NULL,
-=======
     [grade_point]    DECIMAL(3,2) NULL,
->>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601
     [total_hours]    INT NOT NULL DEFAULT 0,
     [attended_hours] INT NOT NULL DEFAULT 0,
     [Enrollment_id]  INT NOT NULL,
@@ -508,8 +504,6 @@ INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hour
 ('C-', 1.70, 48, 20, 5); 
 GO
 
-<<<<<<< HEAD
-=======
 -- ============================================================
 -- NEW DUMMY DATA FOR PROTOTYPING
 -- ============================================================
@@ -546,7 +540,6 @@ VALUES
 (@PastAssignId, 2, '~/Uploads/Submissions/David_Quiz1.docx', '2026-05-10 11:30:00', 15, 1);
 GO
 
->>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601
 
 -- ============================================================
 -- VERIFICATION SELECTS
@@ -555,12 +548,9 @@ SELECT * FROM Course;
 SELECT * FROM Enrollment;
 SELECT * FROM Lecturer;
 SELECT * FROM CourseGrade;
-<<<<<<< HEAD
 SELECT * FROM Announcement;
-=======
 SELECT * FROM CourseModule;
 SELECT * FROM ModuleFile;
 SELECT * FROM CourseAssignment;
 SELECT * FROM AssignmentSubmission;
 
->>>>>>> b2b300e3b44176f94a8f1ceef0bdaae7ee425601
