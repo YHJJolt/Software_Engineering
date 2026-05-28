@@ -13,6 +13,7 @@
         .warn-badge { color: red; font-size: 12px; margin-left: 5px; }
         .bad-text { color: red; font-weight: bold; }
         .good-text { color: green; font-weight: bold; }
+        .neutral-text { color: #64748b; font-weight: bold; } /* Added for 0 hours state */
         .btn-save-attendance { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; float: right; font-weight: bold; }
         .btn-save-attendance:hover { background-color: #218838; }
     </style>
@@ -56,10 +57,10 @@
                             <td><%# Eval("total_hours") %> hrs</td>
                             <td><%# Eval("attended_hours") %> hrs</td>
                             <td>
-                                <span class='<%# Convert.ToDouble(Eval("AttendancePercentage")) < 75.0 ? "bad-text" : "good-text" %>'>
+                                <span class='<%# Convert.ToInt32(Eval("total_hours")) == 0 ? "neutral-text" : (Convert.ToDouble(Eval("AttendancePercentage")) < 75.0 ? "bad-text" : "good-text") %>'>
                                     <%# Eval("AttendancePercentage", "{0:0.0}") %>%
                                 </span>
-                                <%# Convert.ToDouble(Eval("AttendancePercentage")) < 75.0 ? "<span class='warn-badge'><i class='fas fa-exclamation-triangle'></i> Critical</span>" : "" %>
+                                <%# (Convert.ToInt32(Eval("total_hours")) > 0 && Convert.ToDouble(Eval("AttendancePercentage")) < 75.0) ? "<span class='warn-badge'><i class='fas fa-exclamation-triangle'></i> Critical</span>" : "" %>
                             </td>
                             <td>
                                 <asp:HiddenField ID="hfEnrollmentId" runat="server" Value='<%# Eval("Enrollment_id") %>' />

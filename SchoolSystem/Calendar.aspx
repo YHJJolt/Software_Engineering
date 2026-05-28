@@ -373,6 +373,42 @@ function deleteEvent(id) {
             });
         }
     });
-}
+    }
+    $(document).ready(function () {
+        // Wait a brief moment for FullCalendar to pull events from the database
+        setTimeout(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetDate = urlParams.get('date');
+
+            if (targetDate && typeof calendar !== 'undefined') {
+                // 1. Navigate the calendar to the correct month
+                calendar.gotoDate(targetDate);
+
+                // 2. Simulate a human mouse click to automatically open your right sidebar
+                setTimeout(function () {
+                    // Look for an event element on that specific date first
+                    const eventElement = document.querySelector(`.fc-daygrid-day[data-date="${targetDate}"] .fc-event`);
+                    // Look for the day cell itself as a backup
+                    const dayCell = document.querySelector(`.fc-daygrid-day[data-date="${targetDate}"]`);
+
+                    // Create a realistic mouse click event
+                    const clickEvent = new MouseEvent('click', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window
+                    });
+
+                    // If there's an event on that day, click it. Otherwise, click the day block.
+                    // This triggers your existing sidebar code automatically!
+                    if (eventElement) {
+                        eventElement.dispatchEvent(clickEvent);
+                    } else if (dayCell) {
+                        dayCell.dispatchEvent(clickEvent);
+                    }
+
+                }, 300); // 300ms delay gives the calendar time to visually render the month
+            }
+        }, 600); // 600ms delay gives the page time to load completely
+    });
 </script>
 </asp:Content>

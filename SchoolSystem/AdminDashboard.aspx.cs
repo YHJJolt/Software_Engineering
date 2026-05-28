@@ -66,10 +66,10 @@ namespace SchoolSystem
             {
                 string sortDir = ddlSort.SelectedValue;
 
-                // Fetching 'Content' for the announcement modal and 'event_desc' for calendar popups
+                // FIXED: Changed 'event_id' to 'calendar_id' to match your database schema!
                 string sql = (ActiveTab == "Announce")
-                    ? $"SELECT TOP 5 title as Title, created_at as DisplayDate, content as Content, 'Announce' as Type FROM [Announcement] ORDER BY created_at {sortDir}"
-                    : $"SELECT TOP 5 event_title as Title, start_date as DisplayDate, event_desc as Content, event_type as Type FROM [Calendar] ORDER BY start_date {sortDir}";
+                    ? $"SELECT TOP 5 announcement_id as ID, title as Title, created_at as DisplayDate, content as Content, 'Announce' as Type FROM [Announcement] ORDER BY created_at {sortDir}"
+                    : $"SELECT TOP 5 calendar_id as ID, event_title as Title, start_date as DisplayDate, event_desc as Content, event_type as Type FROM [Calendar] ORDER BY start_date {sortDir}";
 
                 SqlDataAdapter da = new SqlDataAdapter(sql, conn);
                 DataTable dt = new DataTable();

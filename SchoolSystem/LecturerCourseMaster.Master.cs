@@ -83,42 +83,34 @@ namespace SchoolSystem
             DataTable dtNotifs = new DataTable();
             using (SqlConnection conn = new SqlConnection(connStr))
             {
+                // SQL query updated to ONLY fetch Admin Announcements, 
+                // completely removing the "Low Marks" union section.
                 string sql = @"
-                    SELECT 'Failing Student' AS Type,
-                           s.student_name + ' is failing ' + c.course_name +
-                           ' (Grade: ' + cg.letter_grade + ')' AS Message,
-                           'alert' AS CssClass
-                    FROM Enrollment e
-                    JOIN Student s     ON e.student_id     = s.student_id
-                    JOIN Course c      ON e.course_id      = c.course_id
-                    JOIN Lecturer l    ON c.Lecturer_id    = l.lecturer_id
-                    JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
-                    WHERE l.lecturer_email = @Email
-                      AND cg.letter_grade = 'F'
-
-                    UNION ALL
-
-                    SELECT 'Admin Announcement' AS Type,
-                           N'📢 [Admin] ' + title AS Message,
-                           'announcement' AS CssClass
-                    FROM Announcement
-                    WHERE Admin_id IS NOT NULL";
+            SELECT 'Admin Announcement' as Type, 
+                   N'📢 [Posted by Admin] ' + title as Message,
+                   'info' as CssClass
+            FROM Announcement
+            WHERE admin_id IS NOT NULL";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
-                new SqlDataAdapter(cmd).Fill(dtNotifs);
-            }
 
-            litNotifCount.Text = dtNotifs.Rows.Count.ToString();
-            if (dtNotifs.Rows.Count > 0)
-            {
-                noNotifs.Visible = false;
-                rptNotifications.DataSource = dtNotifs;
-                rptNotifications.DataBind();
-            }
-            else
-            {
-                noNotifs.Visible = true;
+                // If your original code had parameters for other things, they are no longer needed here 
+                // since we are only fetching global admin announcements.
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(dtNotifs);
+
+                litNotifCount.Text = dtNotifs.Rows.Count.ToString();
+                if (dtNotifs.Rows.Count > 0)
+                {
+                    noNotifs.Visible = false;
+                    rptNotifications.DataSource = dtNotifs;
+                    rptNotifications.DataBind();
+                }
+                else
+                {
+                    noNotifs.Visible = true;
+                }
             }
         }
 

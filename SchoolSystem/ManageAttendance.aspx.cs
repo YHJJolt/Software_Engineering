@@ -48,7 +48,7 @@ namespace SchoolSystem
                             ISNULL(cg.total_hours, 0) AS total_hours,
                             ISNULL(cg.attended_hours, 0) AS attended_hours,
                             CASE 
-                                WHEN ISNULL(cg.total_hours, 0) = 0 THEN 100.0
+                                WHEN ISNULL(cg.total_hours, 0) = 0 THEN 0.0  -- CHANGED: 0 total hours now equals 0.0%
                                 ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(ISNULL(cg.total_hours, 0) AS FLOAT)) * 100.0
                             END AS AttendancePercentage
                         FROM Enrollment e
@@ -68,7 +68,8 @@ namespace SchoolSystem
                 // Apply High/Low Filter
                 if (ddlAttendanceFilter.SelectedValue == "Low")
                 {
-                    sql += " AND AttendancePercentage < 75.0 ";
+                    // Ensure total_hours > 0 so unstarted classes aren't flagged as "Low"
+                    sql += " AND AttendancePercentage < 75.0 AND total_hours > 0 ";
                 }
                 else if (ddlAttendanceFilter.SelectedValue == "High")
                 {
@@ -137,7 +138,6 @@ namespace SchoolSystem
             lblSuccessMsg.Text = "<i class='fas fa-check-circle'></i> Attendance saved successfully! (+2 Total Hours applied to all).";
             lblSuccessMsg.Visible = true;
 
-            // Refresh grid to reflect the updated numbers and attendance percentages
             LoadStudentAttendance();
         }
     }
