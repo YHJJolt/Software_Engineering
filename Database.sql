@@ -313,7 +313,7 @@ CREATE TABLE [LecturerCourseFavourite] (
 GO
 
 -- ===================================================================================
--- 20. STORED PROCEDURE: Process Graduations Only (Controlled from C#)
+-- 18. STORED PROCEDURE: Process Graduations Only (Controlled from C#)
 -- ===================================================================================
 CREATE PROCEDURE sp_ProcessGraduations
 AS
@@ -331,7 +331,7 @@ END
 GO
 
 -- ===================================================================================
--- 18. Trigger: Auto Generate Payment
+-- 19. Trigger: Auto Generate Payment
 -- ===================================================================================
 CREATE TRIGGER trg_GeneratePayment
 ON [Enrollment]
@@ -367,7 +367,7 @@ END
 GO
 
 -- ===================================================================================
--- 19. Trigger: Auto Calculate GPA & CGPA (NEW)
+-- 20. Trigger: Auto Calculate GPA & CGPA (NEW)
 -- ===================================================================================
 CREATE TRIGGER trg_CalculateGradesAndGPA
 ON [AssignmentSubmission]
