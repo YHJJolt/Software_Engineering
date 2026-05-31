@@ -73,11 +73,15 @@
                                 CssClass='<%# IsSameName(Container.DataItemIndex, Eval("name").ToString()) ? "name-dim" : "name-primary" %>' />
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:BoundField DataField="email"        HeaderText="Email" />
-                    <asp:BoundField DataField="program_name"     HeaderText="Program Name" />
-                    <asp:BoundField DataField="course_code"      HeaderText="Course Code" />
-                    <asp:BoundField DataField="course_name"      HeaderText="Course Name" />
-                    <asp:BoundField DataField="enrollment_date"  HeaderText="Enrollment Date" DataFormatString="{0:dd MMM yyyy}" />
+                    <asp:BoundField DataField="email"             HeaderText="Email" />
+                    <asp:BoundField DataField="program_name"      HeaderText="Program Name" />
+    
+                    <%-- ADDED SEMESTER FIELD --%>
+                    <asp:BoundField DataField="enrolled_semester" HeaderText="Sem" ItemStyle-HorizontalAlign="Center" />
+    
+                    <asp:BoundField DataField="course_code"       HeaderText="Course Code" />
+                    <asp:BoundField DataField="course_name"       HeaderText="Course Name" />
+                    <asp:BoundField DataField="enrollment_date"   HeaderText="Enrollment Date" DataFormatString="{0:dd MMM yyyy}" />
 
                     <asp:TemplateField HeaderText="Status">
                         <ItemTemplate>

@@ -231,14 +231,16 @@ namespace SchoolSystem
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 string query = @"
-                    SELECT DISTINCT s.student_id, s.student_code, s.student_name, 
-                           sub.submission_file, sub.submitted_at, sub.marks_awarded, sub.feedback, sub.is_published,
-                           ca.due_date
-                    FROM Enrollment e
-                    JOIN Student s ON e.student_id = s.student_id
-                    JOIN CourseAssignment ca ON ca.assignment_id = @aid
-                    LEFT JOIN AssignmentSubmission sub ON s.student_id = sub.student_id AND sub.assignment_id = @aid
-                    WHERE e.course_id = @cid AND e.status = 'Approved'";
+            SELECT DISTINCT s.student_id, s.student_code, s.student_name, 
+                   sub.submission_file, sub.submitted_at, sub.marks_awarded, sub.feedback, sub.is_published,
+                   ca.due_date
+            FROM Enrollment e
+            JOIN Student s ON e.student_id = s.student_id
+            JOIN CourseAssignment ca ON ca.assignment_id = @aid
+            LEFT JOIN AssignmentSubmission sub ON s.student_id = sub.student_id AND sub.assignment_id = @aid
+            WHERE e.course_id = @cid 
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem"; // <--- THIS FILTERS OUT OLD STUDENTS
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {

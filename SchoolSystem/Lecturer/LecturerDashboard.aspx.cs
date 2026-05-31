@@ -27,22 +27,25 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Query courses directly from Course table matching the Lecturer ID
+                // Query courses directly from Course table matching the Lecturer ID
                 string sqlCourses = @"
                     SELECT COUNT(c.course_id) 
                     FROM Course c 
                     JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
                     WHERE l.lecturer_email = @Email";
 
-                // FIXED: Query student enrollments linked directly via Course table ownership
+                // FIXED: Query student enrollments filtering by approved status and current semester cohort
                 string sqlStudents = @"
                     SELECT COUNT(e.student_id) 
                     FROM Enrollment e
                     JOIN Course c ON e.course_id = c.course_id
                     JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    WHERE l.lecturer_email = @Email";
+                    JOIN Student s ON e.student_id = s.student_id
+                    WHERE l.lecturer_email = @Email
+                      AND e.status = 'Approved'
+                      AND e.enrolled_semester = s.student_sem";
 
-                // FIXED: Calculate passing rates by evaluating grades linked to assigned courses
+                // FIXED: Calculate average passing rates filtering out historical students
                 string sqlPassRate = @"
                     SELECT 
                         CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
@@ -50,7 +53,10 @@ namespace SchoolSystem
                     JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
                     JOIN Course c ON e.course_id = c.course_id
                     JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    WHERE l.lecturer_email = @Email";
+                    JOIN Student s ON e.student_id = s.student_id
+                    WHERE l.lecturer_email = @Email
+                      AND e.status = 'Approved'
+                      AND e.enrolled_semester = s.student_sem";
 
                 conn.Open();
 
@@ -82,7 +88,7 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Removed LecturerEnrollment tracking reference from data aggregates
+                // FIXED: Subqueries and joins now strictly evaluate grades matching active cohort records
                 string sql = @"
                     SELECT 
                         c.course_code, 
@@ -91,7 +97,8 @@ namespace SchoolSystem
                         CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
                     FROM Course c
                     JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    LEFT JOIN Enrollment e ON c.course_id = e.course_id
+                    LEFT JOIN Enrollment e ON c.course_id = e.course_id AND e.status = 'Approved'
+                    LEFT JOIN Student s ON e.student_id = s.student_id AND e.enrolled_semester = s.student_sem
                     LEFT JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
                     WHERE l.lecturer_email = @Email
                     GROUP BY c.course_code, c.course_name";
@@ -139,7 +146,6 @@ namespace SchoolSystem
                 rptCourses.DataSource = dt;
                 rptCourses.DataBind();
 
-                // Show/hide empty state
                 noFavsPanel.Visible = dt.Rows.Count == 0;
                 rptCourses.Visible = dt.Rows.Count > 0;
             }

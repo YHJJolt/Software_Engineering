@@ -31,17 +31,19 @@ namespace SchoolSystem
             {
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(@"
-                    SELECT
-                        s.student_code,
-                        s.student_name,
-                        s.student_email,
-                        s.student_sem,
-                        p.program_name
-                    FROM [Enrollment] e
-                    JOIN [Student] s      ON e.student_id  = s.student_id
-                    LEFT JOIN [Program] p ON s.Program_id  = p.program_id
-                    WHERE e.course_id = @id
-                    ORDER BY s.student_name", conn);
+            SELECT
+                s.student_code,
+                s.student_name,
+                s.student_email,
+                s.student_sem,
+                p.program_name
+            FROM [Enrollment] e
+            JOIN [Student] s      ON e.student_id  = s.student_id
+            LEFT JOIN [Program] p ON s.Program_id  = p.program_id
+            WHERE e.course_id = @id
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem -- <--- Filters to ONLY current semester students
+            ORDER BY s.student_name", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
 
                 DataTable dt = new DataTable();

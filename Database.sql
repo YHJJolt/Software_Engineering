@@ -1,4 +1,4 @@
- USE master;
+USE master;
 GO
 
 -- 1. Create the Database FIRST
@@ -13,6 +13,7 @@ USE SchoolSystemDB;
 GO
 
 -- 3. Drop existing tables if they exist (ORDER MATTERS FOR FOREIGN KEYS)
+IF OBJECT_ID('sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE sp_ProcessGraduations;
 IF OBJECT_ID('[LecturerCourseFavourite]', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite]; 
 IF OBJECT_ID('[AssignmentSubmission]', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
 IF OBJECT_ID('[CourseAssignment]', 'U') IS NOT NULL DROP TABLE [CourseAssignment];
@@ -24,7 +25,7 @@ IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
 IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
 IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
 IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
-IF OBJECT_ID('[LecturerCalendar]', 'U') IS NOT NULL DROP TABLE LecturerCalendar;
+IF OBJECT_ID('LecturerCalendar', 'U') IS NOT NULL DROP TABLE LecturerCalendar;
 IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
 IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
 IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
@@ -111,16 +112,17 @@ CREATE TABLE [Student] (
 );
 
 -- ============================================================
--- 5. Table: Grades
+-- 5. Table: Grades (UPDATED)
 -- ============================================================
 CREATE TABLE [Grades] (
     [grades_id]   INT          NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [semester]    INT          NOT NULL DEFAULT 1,
     [gpa]         DECIMAL(3,2) NULL,
     [cgpa]        DECIMAL(3,2) NULL,
-    [grade_marks] DECIMAL(5,2) NULL,
     [Student_id]  INT          NOT NULL,
     CONSTRAINT [fk_Grades_Student] FOREIGN KEY ([Student_id])
-        REFERENCES [Student] ([student_id])
+        REFERENCES [Student] ([student_id]),
+    CONSTRAINT [UQ_Student_Semester] UNIQUE ([Student_id], [semester])
 );
 
 -- ============================================================
@@ -147,14 +149,10 @@ CREATE TABLE LecturerCalendar (
     start_date    DATE          NOT NULL,
     end_date      DATE          NULL,
     event_type    NVARCHAR(50)  NOT NULL DEFAULT 'Class',
-        -- Allowed values: 'Class', 'Assignment', 'Meeting', 'Personal'
     visibility    NVARCHAR(50)  NOT NULL DEFAULT 'Private',
     lecturer_id   INT           NOT NULL,
     created_at    DATETIME      NOT NULL DEFAULT GETDATE(),
- 
-    CONSTRAINT FK_LecCalendar_Lecturer
-        FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id)
-        ON DELETE CASCADE
+    CONSTRAINT FK_LecCalendar_Lecturer FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id) ON DELETE CASCADE
 );
 
 -- ============================================================
@@ -171,7 +169,6 @@ CREATE TABLE [Course] (
   [Lecturer_id] INT NOT NULL,
   [Calendar_id] INT NOT NULL,
   [Program_id] INT NOT NULL DEFAULT 1,
-  
   CONSTRAINT [fk_Course_Lecturer] FOREIGN KEY ([Lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
   CONSTRAINT [fk_Course_Calendar] FOREIGN KEY ([Calendar_id]) REFERENCES [Calendar] ([calendar_id]),
   CONSTRAINT [fk_Course_Program] FOREIGN KEY ([Program_id]) REFERENCES [Program] ([program_id])
@@ -179,20 +176,17 @@ CREATE TABLE [Course] (
 GO
 
 -- ============================================================
--- 9. Table: Enrolment
+-- 9. Table: Enrollment (UPDATED WITH SEMESTER)
 -- ============================================================
 CREATE TABLE [Enrollment] (
     [enrollment_id] INT IDENTITY(1,1) PRIMARY KEY,
     [student_id] INT NOT NULL,
     [course_id] INT NOT NULL,
+    [enrolled_semester] INT NOT NULL,
     [enrollment_date] DATETIME DEFAULT GETDATE(),
     [status] VARCHAR(20) DEFAULT 'Pending',
-    CONSTRAINT [FK_Enrollment_Student]
-        FOREIGN KEY ([student_id])
-        REFERENCES [Student]([student_id]),
-    CONSTRAINT [FK_Enrollment_Course]
-        FOREIGN KEY ([course_id])
-        REFERENCES [Course]([course_id])
+    CONSTRAINT [FK_Enrollment_Student] FOREIGN KEY ([student_id]) REFERENCES [Student]([student_id]),
+    CONSTRAINT [FK_Enrollment_Course] FOREIGN KEY ([course_id]) REFERENCES [Course]([course_id])
 );
 
 -- ============================================================
@@ -205,8 +199,7 @@ CREATE TABLE [Payment] (
     [payment_paydate] DATETIME       NULL,
     [payment_method]  NVARCHAR(45)   NULL,
     [Student_id]      INT            NOT NULL,
-    CONSTRAINT [fk_Payment_Student] FOREIGN KEY ([Student_id])
-        REFERENCES [Student] ([student_id])
+    CONSTRAINT [fk_Payment_Student] FOREIGN KEY ([Student_id]) REFERENCES [Student] ([student_id])
 );
 
 -- ============================================================
@@ -221,12 +214,9 @@ CREATE TABLE [Announcement] (
     [Admin_id]        INT            NULL,
     [Lecturer_id]     INT            NULL,
     [Course_id]       INT            NULL,
-    CONSTRAINT [fk_Rule_Admin]    FOREIGN KEY ([Admin_id])
-        REFERENCES [Admin (HoP)] ([admin_id]),
-    CONSTRAINT [fk_Rule_Lecturer] FOREIGN KEY ([Lecturer_id])
-        REFERENCES [Lecturer] ([lecturer_id]),
-    CONSTRAINT [fk_Rule_Course]   FOREIGN KEY ([Course_id])
-        REFERENCES [Course] ([course_id])
+    CONSTRAINT [fk_Rule_Admin]    FOREIGN KEY ([Admin_id]) REFERENCES [Admin (HoP)] ([admin_id]),
+    CONSTRAINT [fk_Rule_Lecturer] FOREIGN KEY ([Lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
+    CONSTRAINT [fk_Rule_Course]   FOREIGN KEY ([Course_id]) REFERENCES [Course] ([course_id])
 );
 GO
 
@@ -243,7 +233,6 @@ CREATE TABLE [CourseGrade] (
     CONSTRAINT [fk_CG_Enrollment] FOREIGN KEY ([Enrollment_id]) REFERENCES [Enrollment]([enrollment_id])
 );
 GO
-
 
 -- ============================================================
 -- 13. Table: CourseModule 
@@ -298,17 +287,12 @@ CREATE TABLE [AssignmentSubmission] (
     [submission_id]   INT IDENTITY(1,1) PRIMARY KEY,
     [assignment_id]   INT NOT NULL,
     [student_id]      INT NOT NULL,  
-    
-    -- === THE STUDENT'S HALF ===
-    [submission_file] NVARCHAR(MAX) NULL,   -- The file the student uploaded
-    [submitted_at]    DATETIME NULL,        -- To calculate On-Time vs. Late
-    
-    -- === THE LECTURER'S HALF ===
+    [submission_file] NVARCHAR(MAX) NULL,   
+    [submitted_at]    DATETIME NULL,        
     [marks_awarded]   DECIMAL(5,2) NULL,        
     [is_published]    BIT NOT NULL DEFAULT 0,   
     [feedback]        NVARCHAR(MAX) NULL,       
     [graded_date]     DATETIME NULL,
-
     CONSTRAINT [fk_Sub_Assignment] FOREIGN KEY ([assignment_id]) REFERENCES [CourseAssignment]([assignment_id]),
     CONSTRAINT [fk_Sub_Student] FOREIGN KEY ([student_id]) REFERENCES [Student]([student_id])
 );
@@ -323,15 +307,31 @@ CREATE TABLE [LecturerCourseFavourite] (
     [course_id]   INT      NOT NULL,
     [created_at]  DATETIME DEFAULT GETDATE(),
     CONSTRAINT [UQ_LecFav]          UNIQUE      ([lecturer_id], [course_id]),
-    CONSTRAINT [FK_LecFav_Lecturer] FOREIGN KEY ([lecturer_id])
-        REFERENCES [Lecturer] ([lecturer_id]),
-    CONSTRAINT [FK_LecFav_Course]   FOREIGN KEY ([course_id])
-        REFERENCES [Course]   ([course_id])
+    CONSTRAINT [FK_LecFav_Lecturer] FOREIGN KEY ([lecturer_id]) REFERENCES [Lecturer] ([lecturer_id]),
+    CONSTRAINT [FK_LecFav_Course]   FOREIGN KEY ([course_id]) REFERENCES [Course]   ([course_id])
 );
 GO
 
 -- ===================================================================================
--- 18. Trigger: Auto Generate Payment (This must run seperately when creating table)
+-- 20. STORED PROCEDURE: Process Graduations Only (Controlled from C#)
+-- ===================================================================================
+CREATE PROCEDURE sp_ProcessGraduations
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Graduate students who have reached or exceeded their program's max semester
+    UPDATE s
+    SET s.student_isactive = 'Graduated'
+    FROM Student s
+    INNER JOIN Program p ON s.Program_id = p.program_id
+    WHERE s.student_isactive = 'Active' 
+      AND s.student_sem >= p.program_semester;
+END
+GO
+
+-- ===================================================================================
+-- 18. Trigger: Auto Generate Payment
 -- ===================================================================================
 CREATE TRIGGER trg_GeneratePayment
 ON [Enrollment]
@@ -366,20 +366,113 @@ BEGIN
 END
 GO
 
+-- ===================================================================================
+-- 19. Trigger: Auto Calculate GPA & CGPA (NEW)
+-- ===================================================================================
+CREATE TRIGGER trg_CalculateGradesAndGPA
+ON [AssignmentSubmission]
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF UPDATE(marks_awarded)
+    BEGIN
+        -- Phase 1: Find Affected Enrollments
+        SELECT DISTINCT 
+            i.student_id, 
+            ca.course_id,
+            e.enrollment_id
+        INTO #AffectedEnrollments
+        FROM inserted i
+        INNER JOIN CourseAssignment ca ON i.assignment_id = ca.assignment_id
+        INNER JOIN Enrollment e ON i.student_id = e.student_id AND ca.course_id = e.course_id;
+
+        -- Phase 2: Calculate Course Grade Points
+        MERGE INTO CourseGrade AS target
+        USING (
+            SELECT 
+                ae.enrollment_id,
+                CASE 
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 80 THEN 'A'
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 75 THEN 'A-'
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 70 THEN 'B+'
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 65 THEN 'B'
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 60 THEN 'B-'
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 55 THEN 'C+'
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 50 THEN 'C'
+                    ELSE 'F'
+                END AS LetterGrade,
+                CASE 
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 80 THEN 4.00
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 75 THEN 3.70
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 70 THEN 3.30
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 65 THEN 3.00
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 60 THEN 2.70
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 55 THEN 2.30
+                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 50 THEN 2.00
+                    ELSE 0.00
+                END AS GradePoint
+            FROM #AffectedEnrollments ae
+            INNER JOIN CourseAssignment ca ON ae.course_id = ca.course_id
+            LEFT JOIN AssignmentSubmission sub ON ca.assignment_id = sub.assignment_id AND sub.student_id = ae.student_id
+            GROUP BY ae.enrollment_id
+        ) AS source
+        ON target.Enrollment_id = source.enrollment_id
+        
+        WHEN MATCHED THEN
+            UPDATE SET letter_grade = source.LetterGrade, grade_point = source.GradePoint
+            
+        WHEN NOT MATCHED THEN
+            INSERT (Enrollment_id, letter_grade, grade_point, total_hours, attended_hours)
+            VALUES (source.enrollment_id, source.LetterGrade, source.GradePoint, 0, 0);
+
+        -- Phase 3A: Calculate the GPA based on the Enrolled Semester
+        MERGE INTO Grades AS target
+        USING (
+            SELECT 
+                s.student_id,
+                e.enrolled_semester AS semester,
+                SUM(cg.grade_point * c.credit_hours) / NULLIF(SUM(c.credit_hours), 0) AS CalculatedGPA
+            FROM (SELECT DISTINCT student_id FROM #AffectedEnrollments) af
+            INNER JOIN Student s ON af.student_id = s.student_id
+            INNER JOIN Enrollment e ON s.student_id = e.student_id
+            INNER JOIN Course c ON e.course_id = c.course_id
+            INNER JOIN CourseGrade cg ON e.enrollment_id = cg.Enrollment_id
+            GROUP BY s.student_id, e.enrolled_semester
+        ) AS source
+        ON target.Student_id = source.student_id AND target.semester = source.semester
+        
+        WHEN MATCHED THEN
+            UPDATE SET gpa = source.CalculatedGPA
+            
+        WHEN NOT MATCHED THEN
+            INSERT (Student_id, semester, gpa)
+            VALUES (source.student_id, source.semester, source.CalculatedGPA);
+
+        -- Phase 3B: Calculate the Cumulative GPA (CGPA)
+        UPDATE g
+        SET cgpa = cgpaCalc.CumulativeGPA
+        FROM Grades g
+        INNER JOIN (
+            SELECT Student_id, AVG(gpa) as CumulativeGPA
+            FROM Grades
+            GROUP BY Student_id
+        ) cgpaCalc ON g.Student_id = cgpaCalc.Student_id
+        WHERE g.Student_id IN (SELECT DISTINCT student_id FROM #AffectedEnrollments);
+        
+        DROP TABLE #AffectedEnrollments;
+    END
+END
+GO
 
 -- ============
 -- INSERT DATA
 -- ============
 
--- ============================================================
--- Admin Account
--- ============================================================
 INSERT INTO [Admin (HoP)] (admin_email, admin_name, admin_pw, admin_isactive, admin_bio)
 VALUES ('admin@school.com', 'Justin Tan Hao Ren', 'admin123', 1, 'Senior Head of Program');
 
--- ============================================================
--- Lecturers
--- ============================================================
 INSERT INTO [Lecturer]
     (lecturer_name, lecturer_pw, lecturer_email,
      lecturer_contact, lecturer_address, date_of_birth,
@@ -389,13 +482,9 @@ VALUES
 ('Ada Lovelace',   'lect123', 'adalovelace0002@lect.com',   NULL, NULL, NULL, 'School of Design', 'Active', 1),
 ('Warren Buffett', 'lect123', 'warrenbuffett0003@lect.com', NULL, NULL, NULL, 'School of Business',  'Active', 1);
 
-UPDATE [Lecturer]
-SET lecturer_code = 'L' + RIGHT('0000' + CAST(lecturer_id AS NVARCHAR(4)), 4);
+UPDATE [Lecturer] SET lecturer_code = 'L' + RIGHT('0000' + CAST(lecturer_id AS NVARCHAR(4)), 4);
 GO
 
--- ============================================================
--- Programs
--- ============================================================
 INSERT INTO [Program]
 	(program_code, program_name, program_level, program_fee,
 	 program_semester, program_credits, Lecturer_id, Admin_admin_id)
@@ -405,9 +494,6 @@ VALUES
 ('DCS', 'Computer Science','Diploma', 44000, 6, 90, 2, 1);
 GO
 
--- ============================================================
--- Students
--- ============================================================
 INSERT INTO [Student]
     (student_name, student_pw, student_email,
      student_contact, student_address, date_of_birth,
@@ -423,36 +509,24 @@ INSERT INTO [Student]
 VALUES
 ('Eve Adams', 'stud123', 'eveadams0003@stud.com', NULL, NULL, NULL, 1, 'Active', 1, 3);
 
-UPDATE [Student]
-SET student_code = 'S' + RIGHT('0000' + CAST(student_id AS NVARCHAR(4)), 4);
+UPDATE [Student] SET student_code = 'S' + RIGHT('0000' + CAST(student_id AS NVARCHAR(4)), 4);
 GO
 
--- ============================================================
--- Calendar
--- ============================================================
 INSERT INTO [Calendar] (event_title, event_desc, start_date, end_date, event_type, Admin_id)
 VALUES
--- Multiple Events on May 20th (Testing Sidebar & Badges)
 ('Java Workshop', 'Intro to Spring Boot', '2026-05-20', '2026-05-20', 'General', 1),
 ('Midterm Consultation', 'Room 302', '2026-05-20', '2026-05-20', 'Exam', 1),
 ('Club Recruitment', 'Main Hall', '2026-05-20', '2026-05-20', 'Enrollment', 1),
 ('Guest Lecturer Visit', 'Dr. Alan Turing', '2026-05-20', '2026-05-20', 'General', 1),
 ('Library Book Return', 'Final Deadline', '2026-05-20', '2026-05-20', 'Holiday', 1),
-
--- Additional Spread Out Events
 ('Database Lab Exam', 'Practical Assessment', '2026-05-28', '2026-05-28', 'Exam', 1),
 ('Sports Day', 'Stadium Complex', '2026-06-05', '2026-06-05', 'General', 1),
 ('Convocation Ceremony', 'Class of 2026', '2026-07-15', '2026-07-15', 'General', 1),
-
---Existing Events
 ('Final Exam Week', 'All levels', '2026-06-15', '2026-06-30', 'Exam', 1),
 ('Semester Break', 'Summer holiday', '2026-07-01', '2026-08-31', 'Holiday', 1),
 ('Course Registration', 'New Semester', '2026-08-20', '2026-08-25', 'Enrollment', 1),
 ('System Maintenance', 'Portal Offline', '2026-05-10', '2026-05-11', 'General', 1);
 
--- ============================================================
--- Courses 
--- ============================================================
 INSERT INTO [Course] 
 	(course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_fee, course_status, Program_id)
 VALUES 
@@ -463,9 +537,6 @@ VALUES
     ('DS204', 'Data Structures', 2, 1, 4, '2567', 'Ongoing', 3);
 GO
 
--- ============================================================
--- Announcements 
--- ============================================================
 INSERT INTO [Announcement] (title, content, category, Admin_id)
 VALUES
 ('Welcome to the New System', 'The portal is now live.',                       'General',       1),
@@ -475,27 +546,20 @@ VALUES
 ('Club Recruitment',          'Join the Robotics club today!',                'Co-curriculum', 1);
 GO
 
--- ============================================================
--- Enrollment 
--- ============================================================
-INSERT INTO [Enrollment] 
-	(student_id, course_id, enrollment_date, [status])
+-- UPDATED ENROLLMENTS WITH SEMESTERS
+INSERT INTO [Enrollment] (student_id, course_id, enrolled_semester, enrollment_date, [status])
 VALUES 
-	(1, 2, GETDATE(), 'Pending'),
-	(2, 2, GETDATE(), 'Pending'), 
-	(3, 4, GETDATE(), 'Pending'),
-	(1, 4, GETDATE(), 'Pending'),
-	(2, 1, GETDATE(), 'Pending'),
-	(3, 1, GETDATE(), 'Pending'),
-	(2, 5, GETDATE(), 'Pending'),
-	(1, 5, GETDATE(), 'Pending');
-    UPDATE Enrollment SET status = 'Approved' WHERE course_id = 2;
+	(1, 2, 3, GETDATE(), 'Pending'),
+	(2, 2, 3, GETDATE(), 'Pending'), 
+	(3, 4, 1, GETDATE(), 'Pending'),
+	(1, 4, 3, GETDATE(), 'Pending'),
+	(2, 1, 3, GETDATE(), 'Pending'),
+	(3, 1, 1, GETDATE(), 'Pending'),
+	(2, 5, 3, GETDATE(), 'Pending'),
+	(1, 5, 3, GETDATE(), 'Pending');
+UPDATE Enrollment SET status = 'Approved' WHERE course_id IN (2, 4, 5);
 GO
 
-
--- ============================================================
--- CourseGrade 
--- ============================================================
 INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hours, Enrollment_id) VALUES
 ('A',  4.00, 42, 38, 1), 
 ('B+', 3.50, 48, 44, 2), 
@@ -504,53 +568,41 @@ INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hour
 ('C-', 1.70, 48, 20, 5); 
 GO
 
--- ============================================================
--- NEW DUMMY DATA FOR PROTOTYPING
--- ============================================================
-
--- Insert Dummy Module
 INSERT INTO [CourseModule] (course_id, module_name, module_description)
 VALUES (2, 'Week 1 - Introduction to Databases', 'This week we will cover the fundamentals of relational databases. Please ensure you have SQL Server installed.');
 GO
 
--- Insert Dummy File
 INSERT INTO [ModuleFile] (module_id, file_title, file_description, file_name, file_path)
 VALUES (1, 'Chapter 1 Slides', 'Read pages 15-30 before our next lecture.', 'Chapter1.pdf', '~/Uploads/Modules/Chapter1.pdf');
 GO
 
--- Insert Dummy Assignments
--- 1. Create ACTIVE Assignments (Due Dates in June/July 2026)
 INSERT INTO [CourseAssignment] (course_id, title, description, assignment_type, due_date, max_marks, attachment_path)
 VALUES 
 (2, 'Database Design Project', 'Design an ERD for a library management system.', 'Coursework', '2026-06-15 23:59:00', 100, NULL),
 (2, 'Midterm Examination', 'Covers chapters 1 to 5. Download the guidelines attached.', 'Midterm', '2026-07-01 10:00:00', 50, '~/Uploads/Assignments/Midterm_Instructions.pdf');
 
--- 2. Create a PAST Assignment (Due Date in May 2026)
 INSERT INTO [CourseAssignment] (course_id, title, description, assignment_type, due_date, max_marks)
 VALUES 
 (2, 'Week 1 Quiz: Intro to DB', 'Initial assessment on SQL fundamentals.', 'Coursework', '2026-05-10 12:00:00', 20);
 
--- Grab the ID of the Past Assignment we just created
 DECLARE @PastAssignId INT = SCOPE_IDENTITY();
 
--- 3. Inject Past Submissions for Charlie and David (using .docx directly)
+-- TRIGGER WILL FIRE HERE AND AUTOMATICALLY POPULATE GRADES TABLE
 INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published)
 VALUES 
 (@PastAssignId, 1, '~/Uploads/Submissions/Charlie_Quiz1.docx', '2026-05-09 15:00:00', 18, 1),
 (@PastAssignId, 2, '~/Uploads/Submissions/David_Quiz1.docx', '2026-05-10 11:30:00', 15, 1);
 GO
-
-
 -- ============================================================
 -- VERIFICATION SELECTS
 -- ============================================================
 SELECT * FROM Course;
 SELECT * FROM Enrollment;
 SELECT * FROM Lecturer;
+SELECT * FROM Student;
 SELECT * FROM CourseGrade;
 SELECT * FROM Announcement;
 SELECT * FROM CourseModule;
 SELECT * FROM ModuleFile;
 SELECT * FROM CourseAssignment;
 SELECT * FROM AssignmentSubmission;
-

@@ -8,13 +8,11 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="grades-page">
 
-        <!-- Print-only header -->
         <div class="print-header">
             <h1>Grades Report</h1>
             <p id="printSubtitle">Student Performance</p>
         </div>
 
-        <!-- Header -->
         <div class="grades-header">
             <h2 id="gradesTitle">Grades</h2>
             <a href="#" class="btn-print" onclick="window.print(); return false;">
@@ -22,10 +20,8 @@
             </a>
         </div>
 
-        <!-- Filters -->
         <div class="filters-row">
 
-            <!-- Searchable student picker -->
             <div class="filter-group">
                 <label>Student</label>
                 <div class="student-search-wrap" id="studentSearchWrap">
@@ -40,7 +36,6 @@
                         <div class="student-options-list" id="studentOptionsList"></div>
                     </div>
                 </div>
-                <!-- Hidden real ASP.NET dropdown that owns the AutoPostBack -->
                 <asp:DropDownList ID="ddlStudents" runat="server" CssClass="filter-select"
                     AutoPostBack="true" OnSelectedIndexChanged="ddlStudents_Changed"
                     style="display:none;">
@@ -48,7 +43,6 @@
                 </asp:DropDownList>
             </div>
 
-            <!-- Search assignments -->
             <div class="filter-group">
                 <label>Search Assignment</label>
                 <div class="search-wrap">
@@ -58,7 +52,6 @@
                 </div>
             </div>
 
-            <!-- Sort -->
             <div class="filter-group">
                 <label>Sort By</label>
                 <div class="sort-group">
@@ -68,12 +61,8 @@
             </div>
         </div>
 
-        <!-- ══════════════════════════════════════════════
-             PERFORMANCE BANNER  (hidden until student selected)
-        ══════════════════════════════════════════════ -->
         <div id="perfBanner" class="perf-banner perf-banner-none hidden">
 
-            <!-- Left: tier label + legend -->
             <div class="perf-left" id="perfLeft">
                 <div class="perf-label">Performance</div>
                 <div class="perf-pill-row">
@@ -93,10 +82,7 @@
 
             <div class="perf-divider"></div>
 
-            <!-- Right: two bar metrics -->
             <div class="perf-right">
-
-                <!-- Tier 1: graded only -->
                 <div class="perf-metric-row">
                     <div class="perf-metric-label">Graded only</div>
                     <div class="perf-bar-track">
@@ -106,7 +92,6 @@
                     <div class="perf-metric-sub" id="perfSubGraded"></div>
                 </div>
 
-                <!-- Tier 2: overall total (including unsubmitted) -->
                 <div class="perf-metric-row">
                     <div class="perf-metric-label">Overall total</div>
                     <div class="perf-bar-track">
@@ -115,17 +100,14 @@
                     <div class="perf-metric-value" id="perfValOverall">—</div>
                     <div class="perf-metric-sub" id="perfSubOverall"></div>
                 </div>
-
             </div>
         </div>
 
-        <!-- Placeholder -->
         <div id="placeholderState" class="placeholder-state">
             <i class="fas fa-user-graduate"></i>
             <p>Select a student above to view their grades.</p>
         </div>
 
-        <!-- Table -->
         <div id="tableWrap" class="table-wrap hidden">
             <table class="grades-table">
                 <thead>
@@ -146,7 +128,6 @@
             </table>
         </div>
 
-        <!-- Empty state -->
         <div id="emptyState" class="empty-state hidden">
             <i class="fas fa-inbox"></i>
             <p id="emptyMsg">This student has no grades or assignments yet.</p>
@@ -159,9 +140,6 @@
         var allRows = [];
         var sortMode = localStorage.getItem('gradeSort') || 'name';
 
-        /* ══════════════════════════════════════════════
-           SEARCHABLE STUDENT DROPDOWN
-        ══════════════════════════════════════════════ */
         (function () {
             var wrap = document.getElementById('studentSearchWrap');
             var display = document.getElementById('studentDisplay');
@@ -226,12 +204,10 @@
                 dropdown.classList.contains('open') ? closeDropdown() : openDropdown();
             };
             window.filterStudentOptions = function () { buildOptions(searchBox.value); };
-
             document.addEventListener('click', function (e) {
                 if (!wrap.contains(e.target)) closeDropdown();
             });
 
-            /* Restore selected name after postback */
             window.addEventListener('DOMContentLoaded', function () {
                 if (realDdl.value && realDdl.value !== '') {
                     display.value = realDdl.options[realDdl.selectedIndex].text;
@@ -240,43 +216,33 @@
             });
         })();
 
-        /* ══════════════════════════════════════════════
-           PERFORMANCE TIER HELPER
-        ══════════════════════════════════════════════ */
         function getTier(pct) {
-            if (pct >= 90) return { key: 'excellent', label: 'Excellent',       icon: 'fa-circle-check' };
-            if (pct >= 70) return { key: 'good',      label: 'Good',            icon: 'fa-thumbs-up'    };
-            if (pct >= 60) return { key: 'average',   label: 'Average',         icon: 'fa-minus-circle' };
-            if (pct >= 50) return { key: 'atrisk',    label: 'At Risk \u2014 action needed', icon: 'fa-triangle-exclamation' };
-            return              { key: 'fail',       label: 'Fail \u2014 action needed',    icon: 'fa-circle-exclamation'   };
+            if (pct >= 90) return { key: 'excellent', label: 'Excellent', icon: 'fa-circle-check' };
+            if (pct >= 70) return { key: 'good', label: 'Good', icon: 'fa-thumbs-up' };
+            if (pct >= 60) return { key: 'average', label: 'Average', icon: 'fa-minus-circle' };
+            if (pct >= 50) return { key: 'atrisk', label: 'At Risk \u2014 action needed', icon: 'fa-triangle-exclamation' };
+            return { key: 'fail', label: 'Fail \u2014 action needed', icon: 'fa-circle-exclamation' };
         }
 
         function updatePerformanceBanner(gradedScore, gradedMax, overallScore, overallMax, gradedCount) {
-            var banner   = document.getElementById('perfBanner');
-            var pill     = document.getElementById('perfPill');
+            var banner = document.getElementById('perfBanner');
+            var pill = document.getElementById('perfPill');
             var pillText = document.getElementById('perfPillText');
 
-            var barGraded  = document.getElementById('perfBarGraded');
-            var valGraded  = document.getElementById('perfValGraded');
-            var subGraded  = document.getElementById('perfSubGraded');
-
-            var barOverall  = document.getElementById('perfBarOverall');
-            var valOverall  = document.getElementById('perfValOverall');
-            var subOverall  = document.getElementById('perfSubOverall');
+            var barGraded = document.getElementById('perfBarGraded');
+            var valGraded = document.getElementById('perfValGraded');
+            var subGraded = document.getElementById('perfSubGraded');
+            var barOverall = document.getElementById('perfBarOverall');
+            var valOverall = document.getElementById('perfValOverall');
+            var subOverall = document.getElementById('perfSubOverall');
 
             banner.classList.remove('hidden');
 
-            /* --- Graded-only % (primary tier) --- */
             var gradedPct = gradedMax > 0 ? (gradedScore / gradedMax) * 100 : null;
-
-            /* --- Overall % (including unsubmitted, scored as 0) --- */
             var overallPct = overallMax > 0 ? (overallScore / overallMax) * 100 : null;
-
-            /* Determine tier from graded %; fall back to overall if nothing graded */
             var tierPct = gradedPct !== null ? gradedPct : (overallPct !== null ? overallPct : null);
 
-            // Clear old tier classes from banner, pill, bars
-            ['excellent','good','average','atrisk','fail','none'].forEach(function(k){
+            ['excellent', 'good', 'average', 'atrisk', 'fail', 'none'].forEach(function (k) {
                 banner.classList.remove('perf-banner-' + k);
                 pill.classList.remove('perf-pill-' + k);
                 barGraded.classList.remove('perf-bar-' + k);
@@ -289,11 +255,11 @@
                 pill.innerHTML = '<i class="fas fa-circle-info"></i><span>No graded data</span>';
                 barGraded.classList.add('perf-bar-none');
                 barOverall.classList.add('perf-bar-none');
-                barGraded.style.width  = '0%';
+                barGraded.style.width = '0%';
                 barOverall.style.width = '0%';
-                valGraded.textContent  = '—';
+                valGraded.textContent = '—';
                 valOverall.textContent = '—';
-                subGraded.textContent  = '';
+                subGraded.textContent = '';
                 subOverall.textContent = '';
                 return;
             }
@@ -307,7 +273,6 @@
             barGraded.classList.add('perf-bar-' + tier.key);
             barOverall.classList.add('perf-bar-' + tier.key);
 
-            /* Graded bar */
             if (gradedPct !== null) {
                 barGraded.style.width = Math.min(gradedPct, 100).toFixed(1) + '%';
                 valGraded.textContent = gradedPct.toFixed(1) + '%';
@@ -318,7 +283,6 @@
                 subGraded.textContent = 'No graded assignments yet';
             }
 
-            /* Overall bar */
             if (overallPct !== null) {
                 barOverall.style.width = Math.min(overallPct, 100).toFixed(1) + '%';
                 valOverall.textContent = overallPct.toFixed(1) + '%';
@@ -330,9 +294,6 @@
             }
         }
 
-        /* ══════════════════════════════════════════════
-           GRADES TABLE
-        ══════════════════════════════════════════════ */
         window.addEventListener('DOMContentLoaded', function () {
             var raw = document.getElementById('<%= hfGradeData.ClientID %>').value;
             if (raw && raw !== '') {
@@ -372,7 +333,16 @@
             var emptyState = document.getElementById('emptyState');
             var body = document.getElementById('gradesBody');
 
-            placeholder.classList.add('hidden');
+            var realDdl = document.getElementById('<%= ddlStudents.ClientID %>');
+            if (!realDdl.value || realDdl.value === '') {
+                placeholder.classList.remove('hidden');
+                tableWrap.classList.add('hidden');
+                emptyState.classList.add('hidden');
+                document.getElementById('perfBanner').classList.add('hidden');
+                return;
+            } else {
+                placeholder.classList.add('hidden');
+            }
 
             if (rows.length === 0) {
                 tableWrap.classList.add('hidden');
@@ -381,18 +351,14 @@
                     ? 'This student has no grades or assignments yet.'
                     : 'No assignments match your search.';
                 emptyState.classList.remove('hidden');
-
-                // Update banner with all-rows data even if filtered view is empty
-                computeAndUpdateBanner(allRows);
+                computeAndUpdateBanner([]);
                 return;
             }
 
             emptyState.classList.add('hidden');
             tableWrap.classList.remove('hidden');
 
-            /* ── Score totals for footer ── */
             var totalScore = 0, totalMax = 0, hasAnyScore = false;
-
             body.innerHTML = rows.map(function (r) {
                 var scoreHtml;
                 if (r.score !== null && r.score !== '') {
@@ -421,7 +387,6 @@
                 var dueHtml = r.due
                     ? '<div class="date-cell">' + r.due + '</div>'
                     : '<span class="score-none">\u2014</span>';
-
                 return '<tr>' +
                     '<td><span class="assign-name">' + r.title + '</span>' +
                     '<span class="assign-type">' + r.type + '</span></td>' +
@@ -438,11 +403,9 @@
                 '</span>' +
                 (hasAnyScore ? '<span class="total-pct">(' + pct + ')</span>' : '');
 
-            /* ── Performance banner always uses ALL rows (not filtered) ── */
             computeAndUpdateBanner(allRows);
         }
 
-        /* Compute banner metrics from the full allRows dataset */
         function computeAndUpdateBanner(data) {
             var gradedScore = 0, gradedMax = 0, gradedCount = 0;
             var overallMax = 0, overallScore = 0;
@@ -458,7 +421,6 @@
                     overallScore += s;
                     gradedCount++;
                 }
-                // unsubmitted / ungraded contributes 0 to overallScore, full max to overallMax
             });
 
             updatePerformanceBanner(gradedScore, gradedMax, overallScore, overallMax, gradedCount);

@@ -27,7 +27,6 @@
 
     <div id="printable-area">
 
-        <!-- ══ PRINT-ONLY TITLE — sits above everything ══ -->
         <div class="print-title" id="printTitleBlock">
             <div class="print-title-text" id="printTitleText"></div>
             <div class="print-title-sub" id="printTitleSub"></div>
@@ -35,13 +34,11 @@
 
         <div class="card header-card">
 
-            <!-- ══ STUDENT PICKER ROW ══ -->
             <div class="picker-row">
                 <span class="picker-label">Viewing Student:</span>
                 <select class="student-picker" id="studentPicker" onchange="switchStudent(this.value)"></select>
             </div>
 
-            <!-- ══ STUDENT INFO ROW ══ -->
             <div class="top-row">
                 <div class="top-left">
                     <div class="info-group"><div class="info-label">Student Name:</div><div class="info-val large" id="studentName">—</div></div>
@@ -120,7 +117,6 @@
             </div>
         </div>
 
-        <!-- ══ ENROLLMENT VIEW ══════════════════════════════════════ -->
         <div id="vEnroll">
             <div class="card">
                 <div class="section-title">
@@ -153,7 +149,6 @@
             </div>
         </div>
 
-        <!-- ══ GRADES VIEW ═════════════════════════════════════════ -->
         <div id="vGrades" class="hidden">
             <div class="card">
                 <div class="section-title">
@@ -184,8 +179,7 @@
                 </div>
             </div>
         </div>
-    </div><!-- end #printable-area -->
-</div>
+    </div></div>
 
 <script>
     // @ts-nocheck
@@ -193,7 +187,6 @@
     var semData = <%=StudentJsonData%>;
     var allStudents = <%=AllStudentsJson%>;
     var currentSid  = <%=SelectedStudentId%>;
-
     var badgeClass = {
         'A': 'b-purple', 'A-': 'b-purple',
         'B+': 'b-blue', 'B': 'b-blue',
@@ -282,9 +275,8 @@
         else if (attRate >= 70) { pill.classList.add('stat-warn'); pill.textContent = 'WARNING'; }
         else { pill.classList.add('stat-crit'); pill.textContent = 'CRITICAL'; }
 
-        var gpas = d.gpa.map(function (g) { return parseFloat(g); });
-        var semGpa = gpas.length > 0 ? gpas.reduce(function (a, b) { return a + b; }, 0) / gpas.length : 0;
-        document.getElementById('gSemGpaBox').textContent = semGpa.toFixed(2);
+        // Grabs the real GPA computed safely from the database!
+        document.getElementById('gSemGpaBox').textContent = d.realGpa || '0.00';
 
         // Grade distribution counts — totalled across ALL semesters
         var exc = 0, good = 0, avg = 0, poor = 0;
@@ -297,17 +289,14 @@
                 else poor++;
             });
         });
+
         document.getElementById('gdExc').textContent = exc;
         document.getElementById('gdGood').textContent = good;
         document.getElementById('gdAvg').textContent = avg;
         document.getElementById('gdPoor').textContent = poor;
 
-        var allGpa = [];
-        Object.values(semData).forEach(function (sd) {
-            sd.gpa.forEach(function (g) { allGpa.push(parseFloat(g)); });
-        });
-        var cgpa = allGpa.length > 0 ? allGpa.reduce(function (a, b) { return a + b; }, 0) / allGpa.length : 0;
-        document.getElementById('gCgpaBox').textContent = cgpa.toFixed(2);
+        // Uses the true CGPA pulled directly from the Grades table!
+        document.getElementById('gCgpaBox').textContent = student.cgpa || '0.00';
 
         buildEnrollCourses(d); buildEnrollChart(d);
         buildGradeCourses(d); buildGradeChart(d);

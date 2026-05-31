@@ -45,14 +45,15 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(ConnStr))
             {
+                // ADDED: e.enrolled_semester to the SELECT statement
                 string sql = @"SELECT e.enrollment_id, s.student_name as name, s.student_email as email, 
-                              p.program_name, c.course_code, c.course_name, 
-                              e.enrollment_date, e.status 
-                       FROM Enrollment e
-                       INNER JOIN Student s ON e.student_id = s.student_id
-                       INNER JOIN Program p ON s.Program_id = p.program_id
-                       INNER JOIN Course c ON e.course_id = c.course_id
-                       WHERE 1=1 ";
+                      p.program_name, e.enrolled_semester, c.course_code, c.course_name, 
+                      e.enrollment_date, e.status 
+               FROM Enrollment e
+               INNER JOIN Student s ON e.student_id = s.student_id
+               INNER JOIN Program p ON s.Program_id = p.program_id
+               INNER JOIN Course c ON e.course_id = c.course_id
+               WHERE 1=1 ";
 
                 if (!string.IsNullOrEmpty(search))
                 {

@@ -132,7 +132,7 @@ namespace SchoolSystem
                 lblTotalStudents.Text = cmd.ExecuteScalar().ToString();
                 cmd.CommandText = "SELECT COUNT(*) FROM [Student] WHERE student_isactive='Active'";
                 lblActiveStudents.Text = cmd.ExecuteScalar().ToString();
-                cmd.CommandText = "SELECT COUNT(*) FROM [Student] WHERE student_isactive='Inactive'";
+                cmd.CommandText = "SELECT COUNT(*) FROM [Student] WHERE student_isactive='Inactive' OR student_isactive='Graduated'";
                 lblInactiveStudents.Text = cmd.ExecuteScalar().ToString();
                 cmd.CommandText = "SELECT COUNT(*) FROM [Lecturer]";
                 lblTotalLecturers.Text = cmd.ExecuteScalar().ToString();
@@ -140,6 +140,42 @@ namespace SchoolSystem
                 lblActiveLecturers.Text = cmd.ExecuteScalar().ToString();
                 cmd.CommandText = "SELECT COUNT(*) FROM [Lecturer] WHERE teacher_isactive='Inactive'";
                 lblInactiveLecturers.Text = cmd.ExecuteScalar().ToString();
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // ADVANCE SEMESTER (NEW LOGIC)
+        // ══════════════════════════════════════════════════════════════
+        protected void btnAdvanceSemester_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+
+                    // 1. Advance all active students by 1 semester
+                    string advanceSql = "UPDATE Student SET student_sem = student_sem + 1 WHERE student_isactive = 'Active'";
+                    using (SqlCommand cmdAdvance = new SqlCommand(advanceSql, conn))
+                    {
+                        cmdAdvance.ExecuteNonQuery();
+                    }
+
+                    // 2. The Sweeper: Run the stored procedure to graduate students who hit the program limit
+                    using (SqlCommand cmdGraduate = new SqlCommand("sp_ProcessGraduations", conn))
+                    {
+                        cmdGraduate.CommandType = CommandType.StoredProcedure;
+                        cmdGraduate.ExecuteNonQuery();
+                    }
+                }
+
+                SetToast("✓ Semester advanced and graduations processed successfully.", "success");
+                LoadStudents();
+                LoadAllStatistics();
+            }
+            catch (Exception ex)
+            {
+                SetToast("⚠ Error advancing semester: " + ex.Message, "error");
             }
         }
 
@@ -382,9 +418,10 @@ namespace SchoolSystem
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
                         conn.Open();
+                        // Allows toggling between Active and Inactive (Ignores Graduated so they don't accidentally get reactivated)
                         new SqlCommand(@"UPDATE [Student] SET student_isactive=
                             CASE WHEN student_isactive='Active' THEN 'Inactive' ELSE 'Active' END
-                            WHERE student_id=@id", conn)
+                            WHERE student_id=@id AND student_isactive != 'Graduated'", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
                     }
                     SetToast("✓ Status updated.", "success");

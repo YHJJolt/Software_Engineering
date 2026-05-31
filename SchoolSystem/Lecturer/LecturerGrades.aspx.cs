@@ -32,11 +32,14 @@ namespace SchoolSystem
             int courseId = GetCourseId();
             if (courseId == 0) return;
 
+            // FIXED: The only change needed. Filters by Active Semester and Approved Status.
             string sql = @"
                 SELECT s.student_id, s.student_name, s.student_code
                 FROM Student s
                 INNER JOIN Enrollment e ON s.student_id = e.student_id
                 WHERE e.course_id = @CourseId
+                  AND e.status = 'Approved'
+                  AND e.enrolled_semester = s.student_sem
                 ORDER BY s.student_name ASC";
 
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -85,7 +88,6 @@ namespace SchoolSystem
         // ─────────────────────────────────────────────────────────────
         private void LoadGrades(int studentId, int courseId)
         {
-            // Matches exactly the query your friend provided
             string sql = @"
                 SELECT
                     ca.assignment_id,
@@ -124,7 +126,7 @@ namespace SchoolSystem
                         score = rdr["marks_awarded"].ToString();
 
                     string dueRaw = rdr["due_date_raw"] != DBNull.Value
-                        ? Convert.ToDateTime(rdr["due_date_raw"]).ToString("o") // ISO8601 for JS
+                        ? Convert.ToDateTime(rdr["due_date_raw"]).ToString("o")
                         : null;
 
                     string dueFmt = rdr["due_date_raw"] != DBNull.Value
@@ -157,9 +159,6 @@ namespace SchoolSystem
             hfGradeData.Value = new JavaScriptSerializer().Serialize(list);
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // Helper: get course_id from query string (?id= or ?course_id=)
-        // ─────────────────────────────────────────────────────────────
         private int GetCourseId()
         {
             string raw = Request.QueryString["id"] ?? Request.QueryString["course_id"];

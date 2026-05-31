@@ -29,7 +29,6 @@ namespace SchoolSystem
             StudentJsonData = GetSemesterData(SelectedStudentId);
         }
 
-        // ── NEW: returns all active students for the picker ──────────
         private string GetAllStudents()
         {
             string connStr = GetConnectionString();
@@ -64,12 +63,17 @@ namespace SchoolSystem
             string name = "", email = "", programme = "";
             int currentSem = 1;
             int actualID = 0;
+            double cgpa = 0.0;
 
+            // Grabs the actual CGPA from the new Grades table
             string sql = @"
-                SELECT s.student_id, s.student_name, s.student_email, s.student_sem, p.program_name
+                SELECT TOP 1 s.student_id, s.student_name, s.student_email, s.student_sem, 
+                             p.program_name, ISNULL(g.cgpa, 0) AS cgpa
                 FROM   [Student]  s
                 JOIN   [Program]  p ON p.program_id = s.Program_id
-                WHERE  s.student_id = @sid";
+                LEFT JOIN [Grades] g ON s.student_id = g.Student_id
+                WHERE  s.student_id = @sid
+                ORDER BY g.semester DESC";
 
             using (var conn = new SqlConnection(connStr))
             using (var cmd = new SqlCommand(sql, conn))
@@ -85,13 +89,14 @@ namespace SchoolSystem
                         email = r["student_email"].ToString();
                         currentSem = r["student_sem"] != DBNull.Value ? Convert.ToInt32(r["student_sem"]) : 1;
                         programme = r["program_name"].ToString();
+                        cgpa = Convert.ToDouble(r["cgpa"]);
                     }
                 }
             }
 
             return string.Format(
-                "{{\"name\":\"{0}\",\"email\":\"{1}\",\"programme\":\"{2}\",\"currentSem\":{3},\"id\":{4}}}",
-                Escape(name), Escape(email), Escape(programme), currentSem, actualID
+                "{{\"name\":\"{0}\",\"email\":\"{1}\",\"programme\":\"{2}\",\"currentSem\":{3},\"id\":{4},\"cgpa\":\"{5:F2}\"}}",
+                Escape(name), Escape(email), Escape(programme), currentSem, actualID, cgpa
             );
         }
 
@@ -100,16 +105,18 @@ namespace SchoolSystem
             string connStr = GetConnectionString();
             var semMap = new Dictionary<int, List<CourseRow>>();
 
-            // Updated SQL: Joins the Student table to get 'student_sem' since it is no longer in Enrollment
+            // FIXED: Now accurately groups courses by enrolled_semester instead of student_sem
             string sql = @"
-                SELECT s.student_sem AS semester, c.course_name, c.credit_hours, 
-                       cg.letter_grade, cg.grade_point, cg.total_hours, cg.attended_hours
+                SELECT e.enrolled_semester AS semester, c.course_name, c.credit_hours, 
+                       ISNULL(cg.letter_grade, 'N/A') AS letter_grade, 
+                       ISNULL(cg.grade_point, 0) AS grade_point, 
+                       ISNULL(cg.total_hours, 0) AS total_hours, 
+                       ISNULL(cg.attended_hours, 0) AS attended_hours
                 FROM   [Enrollment]  e
                 JOIN   [Course]      c  ON c.course_id      = e.course_id
-                JOIN   [CourseGrade] cg ON cg.Enrollment_id = e.enrollment_id
-                JOIN   [Student]     s  ON s.student_id     = e.student_id
-                WHERE  e.student_id = @sid
-                ORDER  BY s.student_sem, c.course_name";
+                LEFT JOIN [CourseGrade] cg ON cg.Enrollment_id = e.enrollment_id
+                WHERE  e.student_id = @sid AND e.status = 'Approved'
+                ORDER  BY e.enrolled_semester, c.course_name";
 
             using (var conn = new SqlConnection(connStr))
             using (var cmd = new SqlCommand(sql, conn))
@@ -144,6 +151,9 @@ namespace SchoolSystem
                 var totals = new List<string>(); var attended = new List<string>();
                 var grades = new List<string>(); var gpas = new List<string>();
 
+                double sumPts = 0;
+                int sumCr = 0;
+
                 foreach (var row in kvp.Value)
                 {
                     courses.Add("\"" + Escape(row.CourseName) + "\"");
@@ -152,13 +162,21 @@ namespace SchoolSystem
                     attended.Add(row.AttendedHours.ToString());
                     grades.Add("\"" + Escape(row.LetterGrade) + "\"");
                     gpas.Add(row.GradePoint.ToString("F1"));
+
+                    // Accurately calculates true weighted GPA
+                    sumPts += row.GradePoint * row.CreditHours;
+                    sumCr += row.CreditHours;
                 }
+
+                double realSemGpa = sumCr > 0 ? sumPts / sumCr : 0.0;
+
                 sb.AppendFormat(
-                    "\"{0}\":{{\"courses\":[{1}],\"credits\":[{2}],\"total\":[{3}],\"attended\":[{4}],\"grades\":[{5}],\"gpa\":[{6}]}}",
+                    "\"{0}\":{{\"courses\":[{1}],\"credits\":[{2}],\"total\":[{3}],\"attended\":[{4}],\"grades\":[{5}],\"gpa\":[{6}],\"realGpa\":\"{7:F2}\"}}",
                     kvp.Key,
                     string.Join(",", courses), string.Join(",", credits),
                     string.Join(",", totals), string.Join(",", attended),
-                    string.Join(",", grades), string.Join(",", gpas));
+                    string.Join(",", grades), string.Join(",", gpas),
+                    realSemGpa);
             }
             sb.Append("}");
             return sb.ToString();

@@ -56,6 +56,8 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) return;
 
+            // FIXED: The subquery for student_count now joins the Student table 
+            // to filter out historical semesters and unapproved enrollments.
             string sql = @"
                 SELECT
                     c.course_id,
@@ -71,7 +73,10 @@ namespace SchoolSystem
                     END AS semester_label,
                     (SELECT COUNT(DISTINCT e.student_id)
                      FROM Enrollment e
-                     WHERE e.course_id = c.course_id) AS student_count,
+                     JOIN Student s ON e.student_id = s.student_id
+                     WHERE e.course_id = c.course_id 
+                       AND e.status = 'Approved'
+                       AND e.enrolled_semester = s.student_sem) AS student_count,
                     CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
                 FROM [Course] c
                 INNER JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id
@@ -118,7 +123,9 @@ namespace SchoolSystem
                 }
             }
 
-            hfCourseData.Value = new JavaScriptSerializer().Serialize(list);
+            var serializer = new JavaScriptSerializer();
+            serializer.MaxJsonLength = Int32.MaxValue;
+            hfCourseData.Value = serializer.Serialize(list);
         }
 
         [WebMethod]

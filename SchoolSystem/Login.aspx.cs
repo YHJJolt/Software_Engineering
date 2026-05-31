@@ -37,7 +37,7 @@ namespace SchoolSystem
             string passColumn = "";
             string nameColumn = "";
 
-            // Mapping based on your Database Schema
+            // Mapping based on your original working code
             switch (selectedRole)
             {
                 case "HOP":
@@ -81,7 +81,7 @@ namespace SchoolSystem
                             Session["UserName"] = reader[nameColumn].ToString();
                             Session["UserRole"] = selectedRole;
 
-                            //  FIX: Dynamic extraction of Database IDs for each role
+                            // Dynamic extraction of Database IDs for each role
                             if (selectedRole == "HOP")
                             {
                                 Session["AdminID"] = Convert.ToInt32(reader["admin_id"]);
@@ -89,15 +89,14 @@ namespace SchoolSystem
                             }
                             else if (selectedRole == "Lecturer")
                             {
-                                // This key will match what LecturerCalender.aspx.cs expects!
                                 Session["LecturerID"] = Convert.ToInt32(reader["lecturer_id"]);
                                 Response.Redirect("~/Lecturer/LecturerDashboard.aspx");
                             }
                             else if (selectedRole == "Student")
                             {
                                 Session["StudentID"] = Convert.ToInt32(reader["student_id"]);
-                                // Keep your fallback or update when student dashboard is ready
-                                ShowErrorMessage($"Login Successful! Welcome {Session["UserName"]}. {selectedRole} Dashboard is under maintenance.", false);
+                                // Redirects properly to the newly created dashboard
+                                Response.Redirect("~/Student/StudentDashboard.aspx");
                             }
                         }
                         else

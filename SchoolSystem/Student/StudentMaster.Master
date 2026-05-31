@@ -1,0 +1,106 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="StudentMaster.master.cs" Inherits="SchoolSystem.StudentMaster" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <meta charset="utf-8" />
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/Student/Student.css" />
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-user-graduate icon"></i>
+                <span>Student Panel</span>
+            </div>
+            
+            <div class="nav-links">
+                <a id="linkDashboard" runat="server" href="~/Student/StudentDashboard.aspx" class="nav-link"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+                <a id="linkCourses" runat="server" href="~/Student/StudentCourses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Courses</span></a>
+                <a id="linkAttendance" runat="server" href="~/Student/StudentAttendance.aspx" class="nav-link"><i class="fas fa-user-check"></i> <span>View Attendance</span></a>
+                <a id="linkGrades" runat="server" href="~/Student/StudentGrades.aspx" class="nav-link"><i class="fas fa-graduation-cap"></i> <span>Grades</span></a>
+                <a id="linkCalendar" runat="server" href="~/Student/StudentCalendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
+                <a id="linkEnrollment" runat="server" href="~/Student/CourseEnrolment.aspx" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Course Enrolment</span></a>
+                <a id="linkPayment" runat="server" href="~/Student/StudentPayment.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
+            </div>
+
+            <a runat="server" href="~/Student/StudentProfile.aspx" class="sidebar-profile">
+                <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
+                <div class="p-text">
+                    <span class="p-name"><asp:Literal ID="litSidebarName" runat="server"></asp:Literal></span>
+                </div>
+            </a>
+        </div>
+
+        <div id="main-wrapper">
+            <div id="topbar">
+                <div class="topbar-left">
+                    <button type="button" class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="page-title"><asp:Literal ID="litPageTitle" runat="server"></asp:Literal></h2>
+                </div>
+                
+                <div class="notif-container" onclick="toggleNotifs()">
+                    <div class="notif-bell-wrapper">
+                        <i class="fas fa-bell notif-bell"></i>
+                        <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                    </div>
+                    
+                    <div id="notifDropdown" class="notif-dropdown">
+                        <div class="notif-header">
+                            <h4>Notifications</h4>
+                        </div>
+                        <div class="notif-body">
+                            <asp:Repeater ID="rptNotifications" runat="server">
+                                <ItemTemplate>
+                                    <div class='notif-item <%# Eval("CssClass") %>'>
+                                        <div class="notif-icon">
+                                            <i class="fas fa-bullhorn"></i>
+                                        </div>
+                                        <div class="notif-content">
+                                            <strong><%# Eval("Type") %></strong> 
+                                            <span><%# Eval("Message") %></span>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                            <div id="noNotifs" runat="server" visible="false" style="padding:20px; text-align:center; color:#64748b;">No new notifications right now.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="main-content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
+        }
+        window.onload = function () {
+            if (localStorage.getItem('sidebarState') === 'collapsed') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        }
+        function toggleNotifs() {
+            var dropdown = document.getElementById('notifDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+        document.addEventListener('click', function (event) {
+            var isClickInside = document.querySelector('.notif-container').contains(event.target);
+            if (!isClickInside) {
+                var dd = document.getElementById('notifDropdown');
+                if (dd) dd.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -63,48 +63,66 @@ namespace SchoolSystem
         }
 
         // ── Stats: enrolled, approved, pass rate, at-risk ────────────
+        // ── Stats: enrolled, approved, pass rate, at-risk ────────────
         private void LoadStats()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
 
-                // Total enrolled
-                var c1 = new SqlCommand("SELECT COUNT(*) FROM [Enrollment] WHERE course_id=@id", conn);
+                // 1. Total enrolled (Current Semester & Approved)
+                var c1 = new SqlCommand(@"
+            SELECT COUNT(*) 
+            FROM [Enrollment] e
+            JOIN [Student] s ON e.student_id = s.student_id
+            WHERE e.course_id = @id 
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem", conn);
                 c1.Parameters.AddWithValue("@id", courseId);
                 litEnrolled.Text = c1.ExecuteScalar().ToString();
 
-                // Avg attendance % — average of each student's individual attendance rate
+                // 2. Avg attendance % (Current Semester)
                 var c2 = new SqlCommand(@"
-                    SELECT AVG(
-                        CAST(cg.attended_hours AS FLOAT) / CAST(NULLIF(cg.total_hours, 0) AS FLOAT) * 100.0
-                    )
-                    FROM CourseGrade cg
-                    JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
-                    WHERE e.course_id = @id
-                      AND cg.total_hours > 0", conn);
+            SELECT AVG(
+                CAST(cg.attended_hours AS FLOAT) / CAST(NULLIF(cg.total_hours, 0) AS FLOAT) * 100.0
+            )
+            FROM CourseGrade cg
+            JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
+            JOIN Student s ON e.student_id = s.student_id
+            WHERE e.course_id = @id
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem
+              AND cg.total_hours > 0", conn);
                 c2.Parameters.AddWithValue("@id", courseId);
                 object avg = c2.ExecuteScalar();
                 litAvgAttendance.Text = (avg != DBNull.Value && avg != null)
                     ? Math.Round(Convert.ToDouble(avg), 1, MidpointRounding.AwayFromZero).ToString("0.0") + "%" : "N/A";
 
-                // Pass rate
+                // 3. Pass rate (Current Semester)
                 var c3 = new SqlCommand(@"
-                    SELECT CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT)
-                           / NULLIF(COUNT(cg.letter_grade), 0) * 100
-                    FROM CourseGrade cg
-                    JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
-                    WHERE e.course_id = @id", conn);
+            SELECT CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT)
+                   / NULLIF(COUNT(cg.letter_grade), 0) * 100
+            FROM CourseGrade cg
+            JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
+            JOIN Student s ON e.student_id = s.student_id
+            WHERE e.course_id = @id
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem", conn);
                 c3.Parameters.AddWithValue("@id", courseId);
                 object rate = c3.ExecuteScalar();
                 litPassRate.Text = (rate != DBNull.Value && rate != null)
                     ? Convert.ToDouble(rate).ToString("0.0") + "%" : "N/A";
 
-                // At risk (failing grade F)
+                // 4. At risk (Failing grade F - Current Semester)
                 var c4 = new SqlCommand(@"
-                    SELECT COUNT(*) FROM CourseGrade cg
-                    JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
-                    WHERE e.course_id = @id AND cg.letter_grade = 'F'", conn);
+            SELECT COUNT(*) 
+            FROM CourseGrade cg
+            JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
+            JOIN Student s ON e.student_id = s.student_id
+            WHERE e.course_id = @id 
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem 
+              AND cg.letter_grade = 'F'", conn);
                 c4.Parameters.AddWithValue("@id", courseId);
                 litAtRisk.Text = c4.ExecuteScalar().ToString();
             }
@@ -117,15 +135,17 @@ namespace SchoolSystem
             {
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(@"
-                    SELECT TOP 5
-                        s.student_code, s.student_name,
-                        e.status,
-                        cg.letter_grade
-                    FROM [Enrollment] e
-                    JOIN [Student] s ON e.student_id = s.student_id
-                    LEFT JOIN [CourseGrade] cg ON e.enrollment_id = cg.Enrollment_id
-                    WHERE e.course_id = @id
-                    ORDER BY e.enrollment_date DESC", conn);
+            SELECT TOP 5
+                s.student_code, s.student_name,
+                e.status,
+                cg.letter_grade
+            FROM [Enrollment] e
+            JOIN [Student] s ON e.student_id = s.student_id
+            LEFT JOIN [CourseGrade] cg ON e.enrollment_id = cg.Enrollment_id
+            WHERE e.course_id = @id
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem
+            ORDER BY e.enrollment_date DESC", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
                 DataTable dt = new DataTable();
                 new SqlDataAdapter(cmd).Fill(dt);
