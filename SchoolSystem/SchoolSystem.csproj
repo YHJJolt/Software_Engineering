@@ -210,6 +210,7 @@
     <Content Include="Admin\AdminProfile.aspx" />
     <Content Include="Admin\UserManagement.aspx" />
     <Content Include="Student\Student.css" />
+    <Content Include="Student\StudentCourseModules.aspx" />
     <Content Include="Student\StudentDashboard.aspx" />
     <Content Include="Student\StudentProfile.aspx" />
     <Content Include="ViewSwitcher.ascx" />
@@ -441,6 +442,20 @@
     <Compile Include="Admin\UserManagement.aspx.designer.cs">
       <DependentUpon>UserManagement.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Student\StudentCourseMaster.Master.cs">
+      <DependentUpon>StudentCourseMaster.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\StudentCourseMaster.Master.designer.cs">
+      <DependentUpon>StudentCourseMaster.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Student\StudentCourseModules.aspx.cs">
+      <DependentUpon>StudentCourseModules.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\StudentCourseModules.aspx.designer.cs">
+      <DependentUpon>StudentCourseModules.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Student\StudentDashboard.aspx.cs">
       <DependentUpon>StudentDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -506,6 +521,7 @@
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
     <Content Include="Student\StudentMaster.Master" />
+    <Content Include="Student\StudentCourseMaster.Master" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -24,6 +24,7 @@
 
 body, html {
     height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* =========================================
@@ -520,3 +521,121 @@ body.sidebar-collapsed .sidebar-profile {
         background: #fecaca;
         color: #dc2626;
     }
+
+/* ============================================================== */
+/* STUDENT COURSE MODULES PAGE STYLES                             */
+/* ============================================================== */
+
+/* Empty State Styling (Fixes the DS204 screen) */
+.empty-state-container {
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 50px 20px;
+    margin-top: 20px;
+}
+
+/* Hover effect for clickable files */
+.hover-primary {
+    transition: color 0.2s ease;
+}
+
+    .hover-primary:hover {
+        color: #0d6efd !important;
+    }
+
+/* =========================================
+   CUSTOM MODULE ACCORDION
+   ========================================= */
+.custom-module-item {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.custom-module-header {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.custom-module-btn {
+    border: none;
+    padding: 1rem 1.25rem;
+    text-align: left;
+    color: #212529;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+    width: 100%; /* Ensures the button spans the full width of the card */
+}
+
+    .custom-module-btn:hover {
+        background-color: #e2e6ea !important;
+    }
+
+.custom-module-caret {
+    transition: transform 0.3s ease;
+}
+
+    .custom-module-caret.collapsed {
+        transform: rotate(-90deg);
+    }
+
+/* ===================================================
+   CUSTOM FILE PREVIEWER (Fixes the floating 'x' bug!)
+   ===================================================*/
+.custom-preview-overlay {
+    display: none; /* THIS is what fixes that weird glitch! */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-preview-modal {
+    width: 90vw;
+    height: 90vh;
+    background-color: #212529;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+}
+
+.custom-preview-header {
+    background-color: #1a1d20;
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.custom-preview-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+    .custom-preview-close:hover {
+        opacity: 1;
+    }
+
+.custom-preview-body {
+    flex-grow: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #e9ecef;
+}

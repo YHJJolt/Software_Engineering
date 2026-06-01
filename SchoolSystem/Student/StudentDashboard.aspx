@@ -50,7 +50,7 @@
         <div class="courses-grid">
             <asp:Repeater ID="rptCourses" runat="server">
                 <ItemTemplate>
-                    <div class="course-card" onclick="window.location.href='StudentCourses.aspx?id=<%# Eval("course_id") %>'">
+                    <div class="course-card" onclick="window.location.href='StudentCourseModules.aspx?id=<%# Eval("course_id") %>'">
                         <div class="course-badge">Active</div>
                         <div class="course-img-container">
                             <img src='<%# GetImageSrc(Eval("course_img")) %>' alt="Course Image" onerror="this.src='../Images/default-course.png';" />
