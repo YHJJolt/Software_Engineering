@@ -210,6 +210,7 @@
     <Content Include="Admin\AdminProfile.aspx" />
     <Content Include="Admin\UserManagement.aspx" />
     <Content Include="Student\Student.css" />
+    <Content Include="Student\StudentCourseAssignments.aspx" />
     <Content Include="Student\StudentCourseModules.aspx" />
     <Content Include="Student\StudentDashboard.aspx" />
     <Content Include="Student\StudentProfile.aspx" />
@@ -441,6 +442,13 @@
     </Compile>
     <Compile Include="Admin\UserManagement.aspx.designer.cs">
       <DependentUpon>UserManagement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\StudentCourseAssignments.aspx.cs">
+      <DependentUpon>StudentCourseAssignments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\StudentCourseAssignments.aspx.designer.cs">
+      <DependentUpon>StudentCourseAssignments.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\StudentCourseMaster.Master.cs">
       <DependentUpon>StudentCourseMaster.Master</DependentUpon>

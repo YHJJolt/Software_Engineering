@@ -47,12 +47,12 @@ namespace SchoolSystem
                         litCourseCode.Text = rdr["course_code"].ToString();
 
                         // Bulletproof routing using the tilde and new Student folder
-                        linkHome.HRef = "~/Student/CourseHome.aspx?id=" + cid;
-                        linkPeople.HRef = "~/Student/CoursePeople.aspx?id=" + cid;
-                        linkModules.HRef = "~/Student/CourseModules.aspx?id=" + cid;
-                        linkAssignments.HRef = "~/Student/CourseAssignments.aspx?id=" + cid;
-                        linkGrades.HRef = "~/Student/StudentGrades.aspx?id=" + cid;
-                        linkAnnouncements.HRef = "~/Student/StudentAnnouncements.aspx?id=" + cid;
+                        linkHome.HRef = "~/Student/StudentCourseHome.aspx?id=" + cid;
+                        linkPeople.HRef = "~/Student/StudentCoursePeople.aspx?id=" + cid;
+                        linkModules.HRef = "~/Student/StudentCourseModules.aspx?id=" + cid;
+                        linkAssignments.HRef = "~/Student/StudentCourseAssignments.aspx?id=" + cid;
+                        linkGrades.HRef = "~/Student/StudentCourseGrades.aspx?id=" + cid;
+                        linkAnnouncements.HRef = "~/Student/StudentCourseAnnouncements.aspx?id=" + cid;
 
                         // Assigning course_id to the profile button
                         linkSidebarProfile.HRef = "~/Student/StudentProfile.aspx?course_id=" + cid;

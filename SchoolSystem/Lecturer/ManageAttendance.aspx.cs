@@ -41,32 +41,32 @@ namespace SchoolSystem
             {
                 // Added enrolled_semester check AND fixed the search/filter grouping logic
                 string sql = @"
-            WITH AttendanceData AS (
-                SELECT 
-                    e.Enrollment_id,
-                    s.student_code, 
-                    s.student_name,
-                    cg.total_hours,
-                    cg.attended_hours,
-                    CASE 
-                        WHEN ISNULL(cg.total_hours, 0) = 0 THEN 0.0
-                        ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(cg.total_hours AS FLOAT)) * 100 
-                    END as AttendancePercentage
-                FROM Enrollment e
-                JOIN Student s ON e.student_id = s.student_id
-                LEFT JOIN CourseGrade cg ON e.enrollment_id = cg.Enrollment_id
-                WHERE e.course_id = @CourseID 
-                  AND e.status = 'Approved'
-                  AND e.enrolled_semester = s.student_sem -- <--- Filters out past students
-            )
-            SELECT * FROM AttendanceData
-            WHERE (
-                   (@Filter = 'All')
-                   OR (@Filter = 'High' AND AttendancePercentage >= 75.0)
-                   OR (@Filter = 'Low' AND AttendancePercentage < 75.0)
-                  )
-              AND (student_name LIKE '%' + @Search + '%' OR student_code LIKE '%' + @Search + '%')
-            ORDER BY student_name ASC";
+        WITH AttendanceData AS (
+            SELECT 
+                e.Enrollment_id,
+                s.student_code, 
+                s.student_name,
+                ISNULL(cg.total_hours, 0) AS total_hours,       -- FIX: Handle DBNull for new records
+                ISNULL(cg.attended_hours, 0) AS attended_hours, -- FIX: Handle DBNull for new records
+                CASE 
+                    WHEN ISNULL(cg.total_hours, 0) = 0 THEN 0.0
+                    ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(cg.total_hours AS FLOAT)) * 100 
+                END as AttendancePercentage
+            FROM Enrollment e
+            JOIN Student s ON e.student_id = s.student_id
+            LEFT JOIN CourseGrade cg ON e.enrollment_id = cg.Enrollment_id
+            WHERE e.course_id = @CourseID 
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem -- <--- Filters out past students
+        )
+        SELECT * FROM AttendanceData
+        WHERE (
+               (@Filter = 'All')
+               OR (@Filter = 'High' AND AttendancePercentage >= 75.0)
+               OR (@Filter = 'Low' AND AttendancePercentage < 75.0)
+              )
+          AND (student_name LIKE '%' + @Search + '%' OR student_code LIKE '%' + @Search + '%')
+        ORDER BY student_name ASC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);

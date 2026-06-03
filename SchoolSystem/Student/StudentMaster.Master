@@ -11,6 +11,9 @@
 </head>
 <body>
     <form id="form1" runat="server">
+
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+
         <div id="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-user-graduate icon"></i>
