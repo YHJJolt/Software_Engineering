@@ -60,15 +60,6 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.Literal litLecturerName;
 
         /// <summary>
-        /// litStatusBadge control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litStatusBadge;
-
-        /// <summary>
         /// litMyAttendance control.
         /// </summary>
         /// <remarks>

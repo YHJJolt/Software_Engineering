@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="Create Courses" Language="C#" MasterPageFile="~/Admin/AdminMaster.Master" AutoEventWireup="true" CodeBehind="CreateCourses.aspx.cs" Inherits="SchoolSystem.CreateCourses" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <div class="create-course-page">
         <div class="form-container">
             
@@ -41,16 +42,6 @@
                 <div class="form-group">
                     <label>Course Fee (RM)</label>
                     <asp:TextBox ID="txtCourseFee" runat="server" CssClass="form-control" TextMode="Number" Step="0.01" placeholder="e.g. 1500.00" />
-                </div>
-
-                <div class="form-group">
-                    <label>Status</label>
-                    <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-control">
-                        <asp:ListItem Value="Open">Open</asp:ListItem>
-                        <asp:ListItem Value="Ongoing">Ongoing</asp:ListItem>
-                        <asp:ListItem Value="Closed">Closed</asp:ListItem>
-                    </asp:DropDownList>
-                    <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlStatus" ErrorMessage="Status is required" ForeColor="Red" Display="Dynamic" />
                 </div>
 
                 <div class="form-group">

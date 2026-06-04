@@ -71,12 +71,6 @@ namespace SchoolSystem
                         litCreditHours.Text = rdr["credit_hours"].ToString();
                         litProgramName.Text = rdr["program_name"].ToString();
                         litLecturerName.Text = rdr["lecturer_name"].ToString();
-
-                        string status = rdr["course_status"].ToString();
-                        string cls = status.ToLower() == "open" ? "open"
-                                      : status.ToLower() == "ongoing" ? "ongoing" : "default";
-                        litStatusBadge.Text = string.Format(
-                            "<span class=\"sch-badge {0}\">{1}</span>", cls, status);
                     }
                 }
             }

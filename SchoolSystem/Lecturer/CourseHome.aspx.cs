@@ -38,9 +38,10 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
+                // Removed c.course_status from the SELECT statement below
                 SqlCommand cmd = new SqlCommand(@"
                     SELECT c.course_code, c.course_name, c.credit_hours,
-                           c.course_fee, c.course_status, p.program_name
+                           c.course_fee, p.program_name
                     FROM [Course] c
                     LEFT JOIN [Program] p ON c.Program_id = p.program_id
                     WHERE c.course_id = @id", conn);
@@ -53,10 +54,6 @@ namespace SchoolSystem
                         litCourseName.Text = rdr["course_name"].ToString();
                         litCreditHours.Text = rdr["credit_hours"].ToString();
                         litProgramName.Text = rdr["program_name"].ToString();
-
-                        string status = rdr["course_status"].ToString();
-                        string cls = status.ToLower() == "open" ? "open" : "ongoing";
-                        litStatusBadge.Text = $"<span class=\"ch-status-badge {cls}\">{status}</span>";
                     }
                 }
             }

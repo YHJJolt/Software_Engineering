@@ -85,22 +85,87 @@ namespace SchoolSystem
 
         private void LoadNotifications()
         {
-            DataTable dtNotifs = new DataTable();
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Fetches global Admin Announcements exactly like the Lecturer side
                 string sql = @"
-            SELECT 'Admin Announcement' as Type, 
-                   N'📢 [Posted by Admin] ' + title as Message,
-                   'info' as CssClass
-            FROM Announcement
-            WHERE admin_id IS NOT NULL";
+            -- 1. Identify the logged-in student
+            DECLARE @StudentId INT;
+            SELECT @StudentId = student_id FROM Student WHERE student_email = @Email;
+
+            -- 2. Pull the top 10 most recent notifications across all categories
+            SELECT TOP 10 Type, Message, CssClass
+            FROM (
+                
+                -- ==========================================
+                -- CATEGORY 1: Admin Announcements
+                -- ==========================================
+                SELECT 
+                    'Admin Announcement' AS Type, 
+                    N'📢 [Admin] ' + title AS Message,
+                    'info' AS CssClass,
+                    created_at AS SortDate
+                FROM Announcement
+                WHERE Admin_id IS NOT NULL
+
+                UNION ALL
+
+                -- ==========================================
+                -- CATEGORY 2: Lecturer Announcements
+                -- ==========================================
+                SELECT 
+                    'Lecturer Update' AS Type, 
+                    N'👨‍🏫 ' + a.title AS Message,
+                    'info' AS CssClass,
+                    a.created_at AS SortDate
+                FROM Announcement a
+                WHERE a.Lecturer_id IS NOT NULL 
+                  AND (
+                      -- Matches if the announcement is tied to a specific course the student is taking
+                      EXISTS (
+                          SELECT 1 FROM Enrollment e 
+                          WHERE e.course_id = a.Course_id 
+                            AND e.student_id = @StudentId 
+                            AND e.status = 'Approved'
+                      )
+                      OR 
+                      -- Matches if there is NO course_id, but the student takes ANY course from this lecturer
+                      (a.Course_id IS NULL AND EXISTS (
+                          SELECT 1 FROM Enrollment e
+                          INNER JOIN Course c ON e.course_id = c.course_id
+                          WHERE c.Lecturer_id = a.Lecturer_id 
+                            AND e.student_id = @StudentId 
+                            AND e.status = 'Approved'
+                      ))
+                  )
+
+                UNION ALL
+
+                -- ==========================================
+                -- CATEGORY 3: Graded Assignments
+                -- ==========================================
+                SELECT 
+                    'Assignment Graded' AS Type, 
+                    N'✅ ""' + ca.title + '"" graded: ' + 
+                    CAST(CAST(sub.marks_awarded AS FLOAT) AS VARCHAR) + '/' + CAST(ca.max_marks AS VARCHAR) AS Message,
+                    'alert' AS CssClass,
+                    COALESCE(sub.graded_date, GETDATE()) AS SortDate
+                FROM AssignmentSubmission sub
+                INNER JOIN CourseAssignment ca ON sub.assignment_id = ca.assignment_id
+                WHERE sub.student_id = @StudentId 
+                  AND sub.marks_awarded IS NOT NULL
+
+            ) AS CombinedNotifs
+            ORDER BY SortDate DESC;";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dtNotifs = new DataTable();
                 da.Fill(dtNotifs);
 
                 litNotifCount.Text = dtNotifs.Rows.Count.ToString();
+
                 if (dtNotifs.Rows.Count > 0)
                 {
                     noNotifs.Visible = false;

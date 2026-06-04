@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -99,8 +100,8 @@ namespace SchoolSystem
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     // 2. Added course_img to the INSERT statement
-                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, course_status, Lecturer_id, Program_id, Calendar_id, course_img) 
-                                   VALUES (@Code, @Name, @Credits, @Fee, @Status, @LecID, @ProgID, 1, @Image)";
+                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Lecturer_id, Program_id, Calendar_id, course_img) 
+                                   VALUES (@Code, @Name, @Credits, @Fee, @LecID, @ProgID, 1, @Image)";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
@@ -115,14 +116,13 @@ namespace SchoolSystem
                         decimal.TryParse(txtCourseFee.Text, out fee);
                         cmd.Parameters.AddWithValue("@Fee", fee);
 
-                        cmd.Parameters.AddWithValue("@Status", ddlStatus.SelectedValue);
                         cmd.Parameters.AddWithValue("@LecID", ddlLecturer.SelectedValue);
                         cmd.Parameters.AddWithValue("@ProgID", ddlProgram.SelectedValue);
 
                         // 3. Handle the Image Parameter
                         if (imageBytes != null)
                         {
-                            cmd.Parameters.AddWithValue("@Image", imageBytes);
+                            cmd.Parameters.Add("@Image", SqlDbType.VarBinary, -1).Value = imageBytes;
                         }
                         else
                         {

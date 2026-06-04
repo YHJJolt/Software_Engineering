@@ -26,7 +26,6 @@
                 </div>
             </div>
         </div>
-        <asp:Literal ID="litStatusBadge" runat="server" />
     </div>
 
     <%-- Stats --%>

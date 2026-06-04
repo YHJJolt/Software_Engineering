@@ -164,7 +164,6 @@ CREATE TABLE [Course] (
   [course_name] NVARCHAR(100) NULL,
   [credit_hours] INT NULL,
   [course_fee] NVARCHAR(45) NOT NULL, 
-  [course_status] NVARCHAR(20) DEFAULT 'Open', 
   [course_img] VARBINARY(MAX) NULL,
   [Lecturer_id] INT NOT NULL,
   [Calendar_id] INT NOT NULL,
@@ -367,8 +366,11 @@ END
 GO
 
 -- ===================================================================================
--- 20. Trigger: Auto Calculate GPA & CGPA (NEW)
+-- 20. Trigger: Auto Calculate GPA & CGPA 
 -- ===================================================================================
+IF OBJECT_ID('trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER trg_CalculateGradesAndGPA;
+GO
+
 CREATE TRIGGER trg_CalculateGradesAndGPA
 ON [AssignmentSubmission]
 AFTER INSERT, UPDATE
@@ -388,35 +390,41 @@ BEGIN
         INNER JOIN CourseAssignment ca ON i.assignment_id = ca.assignment_id
         INNER JOIN Enrollment e ON i.student_id = e.student_id AND ca.course_id = e.course_id;
 
-        -- Phase 2: Calculate Course Grade Points
+        -- Phase 2: Calculate Course Grade Points (ONLY counting graded submissions)
         MERGE INTO CourseGrade AS target
         USING (
             SELECT 
-                ae.enrollment_id,
+                enrollment_id,
                 CASE 
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 80 THEN 'A'
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 75 THEN 'A-'
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 70 THEN 'B+'
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 65 THEN 'B'
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 60 THEN 'B-'
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 55 THEN 'C+'
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 50 THEN 'C'
+                    WHEN Pct >= 80 THEN 'A'
+                    WHEN Pct >= 75 THEN 'A-'
+                    WHEN Pct >= 70 THEN 'B+'
+                    WHEN Pct >= 65 THEN 'B'
+                    WHEN Pct >= 60 THEN 'B-'
+                    WHEN Pct >= 55 THEN 'C+'
+                    WHEN Pct >= 50 THEN 'C'
                     ELSE 'F'
                 END AS LetterGrade,
                 CASE 
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 80 THEN 4.00
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 75 THEN 3.70
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 70 THEN 3.30
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 65 THEN 3.00
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 60 THEN 2.70
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 55 THEN 2.30
-                    WHEN (SUM(ISNULL(sub.marks_awarded, 0)) / NULLIF(SUM(ca.max_marks), 0)) * 100 >= 50 THEN 2.00
+                    WHEN Pct >= 80 THEN 4.00
+                    WHEN Pct >= 75 THEN 3.70
+                    WHEN Pct >= 70 THEN 3.30
+                    WHEN Pct >= 65 THEN 3.00
+                    WHEN Pct >= 60 THEN 2.70
+                    WHEN Pct >= 55 THEN 2.30
+                    WHEN Pct >= 50 THEN 2.00
                     ELSE 0.00
                 END AS GradePoint
-            FROM #AffectedEnrollments ae
-            INNER JOIN CourseAssignment ca ON ae.course_id = ca.course_id
-            LEFT JOIN AssignmentSubmission sub ON ca.assignment_id = sub.assignment_id AND sub.student_id = ae.student_id
-            GROUP BY ae.enrollment_id
+            FROM (
+                SELECT 
+                    ae.enrollment_id,
+                    -- Only sum max_marks if marks_awarded is NOT NULL
+                    (SUM(sub.marks_awarded) / NULLIF(SUM(CASE WHEN sub.marks_awarded IS NOT NULL THEN ca.max_marks ELSE 0 END), 0)) * 100 AS Pct
+                FROM #AffectedEnrollments ae
+                INNER JOIN CourseAssignment ca ON ae.course_id = ca.course_id
+                LEFT JOIN AssignmentSubmission sub ON ca.assignment_id = sub.assignment_id AND sub.student_id = ae.student_id
+                GROUP BY ae.enrollment_id
+            ) AS Calc
         ) AS source
         ON target.Enrollment_id = source.enrollment_id
         
@@ -466,133 +474,109 @@ BEGIN
 END
 GO
 
--- ============
--- INSERT DATA
--- ============
+-- ============================================================
+-- ALIGNED INSERT DATA
+-- ============================================================
 
+-- 1. ADMIN
 INSERT INTO [Admin (HoP)] (admin_email, admin_name, admin_pw, admin_isactive, admin_bio)
 VALUES ('admin@school.com', 'Justin Tan Hao Ren', 'admin123', 1, 'Senior Head of Program');
 
+-- 2. LECTURERS
 INSERT INTO [Lecturer]
-    (lecturer_name, lecturer_pw, lecturer_email,
-     lecturer_contact, lecturer_address, date_of_birth,
-     lecturer_department, teacher_isactive, Admin_admin_id)
+    (lecturer_name, lecturer_pw, lecturer_email, lecturer_department, teacher_isactive, Admin_admin_id)
 VALUES
-('Alan Turing',    'lect123', 'alanturing0001@lect.com',    NULL, NULL, NULL, 'School of Computing', 'Active', 1),
-('Ada Lovelace',   'lect123', 'adalovelace0002@lect.com',   NULL, NULL, NULL, 'School of Design', 'Active', 1),
-('Warren Buffett', 'lect123', 'warrenbuffett0003@lect.com', NULL, NULL, NULL, 'School of Business',  'Active', 1);
+('Alan Turing',    'lect123', 'alanturing0001@lect.com',  'School of Computing', 'Active', 1),
+('Ada Lovelace',   'lect123', 'adalovelace0002@lect.com', 'School of Computing', 'Active', 1),
+('Warren Buffett', 'lect123', 'warrenbuffett0003@lect.com', 'School of Business',  'Active', 1);
 
 UPDATE [Lecturer] SET lecturer_code = 'L' + RIGHT('0000' + CAST(lecturer_id AS NVARCHAR(4)), 4);
 GO
 
+-- 3. PROGRAMS (ID 1: Software Eng, ID 2: Business, ID 3: CompSci)
 INSERT INTO [Program]
-	(program_code, program_name, program_level, program_fee,
-	 program_semester, program_credits, Lecturer_id, Admin_admin_id)
+	(program_code, program_name, program_level, program_fee, program_semester, program_credits, Lecturer_id, Admin_admin_id)
 VALUES
 ('BSE', 'Software Engineering', 'Degree', 86000, 6, 120, 1, 1),
 ('BUS', 'Business Management','Degree', 85400, 6, 120, 3, 1),
 ('DCS', 'Computer Science','Diploma', 44000, 6, 90, 2, 1);
 GO
 
+-- 4. STUDENTS 
+-- Charlie (ID 1) & David (ID 2) -> Program 1 (BSE), Semester 3
+-- Eve (ID 3) -> Program 2 (BUS), Semester 1
 INSERT INTO [Student]
-    (student_name, student_pw, student_email,
-     student_contact, student_address, date_of_birth,
-     student_sem, student_isactive, Admin_admin_id, Program_id)
+    (student_name, student_pw, student_email, student_sem, student_isactive, Admin_admin_id, Program_id)
 VALUES
-('Charlie Brown', 'stud123', 'charliebrown0001@stud.com', NULL, NULL, NULL, 3, 'Active', 1, 2),
-('David Miller',  'stud123', 'davidmiller0002@stud.com',  NULL, NULL, NULL, 3, 'Active', 1, 2);
-
-INSERT INTO [Student]
-    (student_name, student_pw, student_email,
-     student_contact, student_address, date_of_birth,
-     student_sem, student_isactive, Admin_admin_id, Program_id)
-VALUES
-('Eve Adams', 'stud123', 'eveadams0003@stud.com', NULL, NULL, NULL, 1, 'Active', 1, 3);
+('Charlie Brown', 'stud123', 'charliebrown0001@stud.com', 3, 'Active', 1, 1),
+('David Miller',  'stud123', 'davidmiller0002@stud.com',   3, 'Active', 1, 1),
+('Eve Adams',     'stud123', 'eveadams0003@stud.com',     1, 'Active', 1, 2);
 
 UPDATE [Student] SET student_code = 'S' + RIGHT('0000' + CAST(student_id AS NVARCHAR(4)), 4);
 GO
 
+-- 5. CALENDAR (Base events needed for Course creation)
 INSERT INTO [Calendar] (event_title, event_desc, start_date, end_date, event_type, Admin_id)
 VALUES
-('Java Workshop', 'Intro to Spring Boot', '2026-05-20', '2026-05-20', 'General', 1),
-('Midterm Consultation', 'Room 302', '2026-05-20', '2026-05-20', 'Exam', 1),
-('Club Recruitment', 'Main Hall', '2026-05-20', '2026-05-20', 'Enrollment', 1),
-('Guest Lecturer Visit', 'Dr. Alan Turing', '2026-05-20', '2026-05-20', 'General', 1),
-('Library Book Return', 'Final Deadline', '2026-05-20', '2026-05-20', 'Holiday', 1),
-('Database Lab Exam', 'Practical Assessment', '2026-05-28', '2026-05-28', 'Exam', 1),
-('Sports Day', 'Stadium Complex', '2026-06-05', '2026-06-05', 'General', 1),
-('Convocation Ceremony', 'Class of 2026', '2026-07-15', '2026-07-15', 'General', 1),
-('Final Exam Week', 'All levels', '2026-06-15', '2026-06-30', 'Exam', 1),
-('Semester Break', 'Summer holiday', '2026-07-01', '2026-08-31', 'Holiday', 1),
-('Course Registration', 'New Semester', '2026-08-20', '2026-08-25', 'Enrollment', 1),
-('System Maintenance', 'Portal Offline', '2026-05-10', '2026-05-11', 'General', 1);
+('Spring Semester 2026', 'Main Academic Calendar', '2026-01-10', '2026-06-15', 'General', 1);
 
+-- 6. COURSES (Aligned to Programs)
+-- IDs 1, 2, 3, 4 belong to Program 1 (BSE). ID 5 belongs to Program 2 (BUS)
 INSERT INTO [Course] 
-	(course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_fee, course_status, Program_id)
+	(course_code, course_name, Lecturer_id, Calendar_id, credit_hours, course_fee, Program_id)
 VALUES 
-    ('CS101', 'C# Development', 1, 1, 3, '1500', 'Open', 3),
-    ('DB202', 'Database Systems', 2, 1, 4, '1234', 'Ongoing', 1),
-    ('BUS301', 'Business Ethics', 3, 1, 3, '4321', 'Open', 2),
-    ('WEB105', 'Web Development', 1, 1, 3, '2341', 'Open', 1),
-    ('DS204', 'Data Structures', 2, 1, 4, '2567', 'Ongoing', 3);
+    ('CS101',  'C# Development',    1, 1, 3, '1500', 1),
+    ('DB202',  'Database Systems',  2, 1, 4, '1200', 1),
+    ('WEB105', 'Web Development',   1, 1, 3, '2300', 1),
+    ('DS204',  'Data Structures',   2, 1, 4, '2500', 1),
+    ('BUS301', 'Business Ethics',   3, 1, 3, '4300', 2);
 GO
 
-INSERT INTO [Announcement] (title, content, category, Admin_id)
-VALUES
-('Welcome to the New System', 'The portal is now live.',                       'General',       1),
-('Exam Venue Update',         'Check your portal for the new hall numbers.',  'Academic',      1),
-('Library Closing Early',     'Closing at 6 PM this Friday for renovations.', 'General',       1),
-('Scholarship Open',          'Apply now for the 2026 intake.',               'Finance',       1),
-('Club Recruitment',          'Join the Robotics club today!',                'Co-curriculum', 1);
-GO
-
--- UPDATED ENROLLMENTS WITH SEMESTERS
+-- 7. ENROLLMENTS (Students take courses strictly in their Sem & Program)
+-- Charlie (ID 1) & David (ID 2) taking Sem 3 courses
 INSERT INTO [Enrollment] (student_id, course_id, enrolled_semester, enrollment_date, [status])
 VALUES 
-	(1, 2, 3, GETDATE(), 'Pending'),
-	(2, 2, 3, GETDATE(), 'Pending'), 
-	(3, 4, 1, GETDATE(), 'Pending'),
-	(1, 4, 3, GETDATE(), 'Pending'),
-	(2, 1, 3, GETDATE(), 'Pending'),
-	(3, 1, 1, GETDATE(), 'Pending'),
-	(2, 5, 3, GETDATE(), 'Pending'),
-	(1, 5, 3, GETDATE(), 'Pending');
-UPDATE Enrollment SET status = 'Approved' WHERE course_id IN (2, 4, 5);
+	(1, 2, 3, GETDATE(), 'Approved'), -- Charlie in DB202
+	(1, 3, 3, GETDATE(), 'Approved'), -- Charlie in WEB105
+	(1, 4, 3, GETDATE(), 'Approved'), -- Charlie in DS204
+	(2, 2, 3, GETDATE(), 'Approved'), -- David in DB202
+	(2, 4, 3, GETDATE(), 'Approved'), -- David in DS204
+	(3, 5, 1, GETDATE(), 'Approved'); -- Eve in BUS301 (Sem 1)
 GO
 
-INSERT INTO [CourseGrade] (letter_grade, grade_point, total_hours, attended_hours, Enrollment_id) VALUES
-('A',  4.00, 42, 38, 1), 
-('B+', 3.50, 48, 44, 2), 
-('A-', 3.70, 36, 32, 3), 
-('F',  0.00, 36, 5,  4), 
-('C-', 1.70, 48, 20, 5); 
+-- 8. ANNOUNCEMENTS
+INSERT INTO [Announcement] (title, content, category, Admin_id)
+VALUES ('Welcome to the New System', 'The portal is now live.', 'General', 1);
 GO
 
+-- 9. COURSE MODULES & FILES
 INSERT INTO [CourseModule] (course_id, module_name, module_description)
-VALUES (2, 'Week 1 - Introduction to Databases', 'This week we will cover the fundamentals of relational databases. Please ensure you have SQL Server installed.');
-GO
+VALUES (2, 'Week 1 - Intro to Databases', 'Fundamentals of relational databases.');
 
 INSERT INTO [ModuleFile] (module_id, file_title, file_description, file_name, file_path)
-VALUES (1, 'Chapter 1 Slides', 'Read pages 15-30 before our next lecture.', 'Chapter1.pdf', '~/Uploads/Modules/Chapter1.pdf');
+VALUES (1, 'Chapter 1 Slides', 'Read pages 15-30.', 'Chapter1.pdf', '~/Uploads/Chapter1.pdf');
 GO
 
-INSERT INTO [CourseAssignment] (course_id, title, description, assignment_type, due_date, max_marks, attachment_path)
-VALUES 
-(2, 'Database Design Project', 'Design an ERD for a library management system.', 'Coursework', '2026-06-15 23:59:00', 100, NULL),
-(2, 'Midterm Examination', 'Covers chapters 1 to 5. Download the guidelines attached.', 'Midterm', '2026-07-01 10:00:00', 50, '~/Uploads/Assignments/Midterm_Instructions.pdf');
-
+-- 10. ASSIGNMENTS 
+-- ID 1 & 2 for DB202, ID 3 for WEB105, ID 4 for BUS301
 INSERT INTO [CourseAssignment] (course_id, title, description, assignment_type, due_date, max_marks)
 VALUES 
-(2, 'Week 1 Quiz: Intro to DB', 'Initial assessment on SQL fundamentals.', 'Coursework', '2026-05-10 12:00:00', 20);
+(2, 'Week 1 Quiz: Intro to DB', 'SQL fundamentals.', 'Quiz', '2026-05-10 12:00:00', 20),
+(2, 'Midterm Examination', 'Covers chapters 1 to 5.', 'Exam', '2026-07-01 10:00:00', 50),
+(3, 'Frontend Web Project', 'Design a responsive site.', 'Project', '2026-06-15 10:00:00', 100),
+(5, 'Corporate Ethics Essay', '1000 word essay.', 'Essay', '2026-06-20 10:00:00', 100);
+GO
 
-DECLARE @PastAssignId INT = SCOPE_IDENTITY();
-
--- TRIGGER WILL FIRE HERE AND AUTOMATICALLY POPULATE GRADES TABLE
+-- 11. SUBMISSIONS (This will automatically fire your Trigger to calculate Grades & CGPA)
+-- Note: DS204 is left with NO submissions, so it will show up on the dashboard but not affect the GPA.
 INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published)
 VALUES 
-(@PastAssignId, 1, '~/Uploads/Submissions/Charlie_Quiz1.docx', '2026-05-09 15:00:00', 18, 1),
-(@PastAssignId, 2, '~/Uploads/Submissions/David_Quiz1.docx', '2026-05-10 11:30:00', 15, 1);
+(1, 1, '~/Uploads/Charlie_Quiz1.docx', GETDATE(), 18, 1), -- Charlie gets 18/20 in DB202 (A)
+(3, 1, '~/Uploads/Charlie_Web.zip', GETDATE(), 72, 1),    -- Charlie gets 72/100 in WEB105 (B+)
+(1, 2, '~/Uploads/David_Quiz1.docx', GETDATE(), 15, 1),   -- David gets 15/20 in DB202 (A-)
+(4, 3, '~/Uploads/Eve_Essay.docx', GETDATE(), 90, 1);     -- Eve gets 90/100 in BUS301 (A)
 GO
+
 -- ============================================================
 -- VERIFICATION SELECTS
 -- ============================================================
