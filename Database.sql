@@ -576,7 +576,7 @@ VALUES
 (1, 2, '~/Uploads/David_Quiz1.docx', GETDATE(), 15, 1),   -- David gets 15/20 in DB202 (A-)
 (4, 3, '~/Uploads/Eve_Essay.docx', GETDATE(), 90, 1);     -- Eve gets 90/100 in BUS301 (A)
 GO
-
+ 
 -- ============================================================
 -- VERIFICATION SELECTS
 -- ============================================================
