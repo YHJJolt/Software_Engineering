@@ -26,8 +26,8 @@
                 <a id="linkAttendance" runat="server" href="~/Student/StudentAttendance.aspx" class="nav-link"><i class="fas fa-user-check"></i> <span>View Attendance</span></a>
                 <a id="linkGrades" runat="server" href="~/Student/StudentAllGrades.aspx" class="nav-link"><i class="fas fa-graduation-cap"></i> <span>Grades</span></a>
                 <a id="linkCalendar" runat="server" href="~/Student/StudentCalendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
-                <a id="linkEnrollment" runat="server" href="~/Student/CourseEnrolment.aspx" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Course Enrolment</span></a>
-                <a id="linkPayment" runat="server" href="~/Student/StudentPayment.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
+                <a id="linkEnrollment" runat="server" href="~/Student/StudentEnrollments.aspx" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Course Enrolment</span></a>
+                <a id="linkPayment" runat="server" href="~/Student/StudentPayments.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
             </div>
 
             <a runat="server" href="~/Student/StudentProfile.aspx" class="sidebar-profile">
@@ -44,7 +44,9 @@
                     <button type="button" class="menu-toggle" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="page-title"><asp:Literal ID="litPageTitle" runat="server"></asp:Literal></h2>
+                    <h2 class="page-title" style="margin: 0 0 0 20px; font-weight: 800; color: var(--navy-accent); font-size: 22px;">
+                        <%: Page.Title %>
+                    </h2>
                 </div>
                 
                 <div class="notif-container" onclick="toggleNotifs()">

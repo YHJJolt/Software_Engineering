@@ -11,151 +11,133 @@ namespace SchoolSystem
 {
 
 
-    public partial class StudentMaster
+    public partial class StudentPayments
     {
 
         /// <summary>
-        /// head control.
+        /// upPayments control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder head;
+        protected global::System.Web.UI.UpdatePanel upPayments;
 
         /// <summary>
-        /// form1 control.
+        /// litPendingBalance control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
+        protected global::System.Web.UI.WebControls.Literal litPendingBalance;
 
         /// <summary>
-        /// ScriptManager1 control.
+        /// pnlNoInvoices control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.ScriptManager ScriptManager1;
+        protected global::System.Web.UI.WebControls.Panel pnlNoInvoices;
 
         /// <summary>
-        /// linkDashboard control.
+        /// rptInvoices control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkDashboard;
+        protected global::System.Web.UI.WebControls.Repeater rptInvoices;
 
         /// <summary>
-        /// linkCourses control.
+        /// hfPayInvoiceId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkCourses;
+        protected global::System.Web.UI.WebControls.HiddenField hfPayInvoiceId;
 
         /// <summary>
-        /// linkAttendance control.
+        /// litPayAmount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkAttendance;
+        protected global::System.Web.UI.WebControls.Literal litPayAmount;
 
         /// <summary>
-        /// linkGrades control.
+        /// ddlPaymentMethod control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkGrades;
+        protected global::System.Web.UI.WebControls.DropDownList ddlPaymentMethod;
 
         /// <summary>
-        /// linkCalendar control.
+        /// btnConfirmPayment control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkCalendar;
+        protected global::System.Web.UI.WebControls.Button btnConfirmPayment;
 
         /// <summary>
-        /// linkEnrollment control.
+        /// litReceiptNo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkEnrollment;
+        protected global::System.Web.UI.WebControls.Literal litReceiptNo;
 
         /// <summary>
-        /// linkPayment control.
+        /// litReceiptDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkPayment;
+        protected global::System.Web.UI.WebControls.Literal litReceiptDate;
 
         /// <summary>
-        /// imgSidebar control.
+        /// litReceiptStudent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Image imgSidebar;
+        protected global::System.Web.UI.WebControls.Literal litReceiptStudent;
 
         /// <summary>
-        /// litSidebarName control.
+        /// litReceiptMethod control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litSidebarName;
+        protected global::System.Web.UI.WebControls.Literal litReceiptMethod;
 
         /// <summary>
-        /// litNotifCount control.
+        /// rptReceiptBreakdown control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litNotifCount;
+        protected global::System.Web.UI.WebControls.Repeater rptReceiptBreakdown;
 
         /// <summary>
-        /// rptNotifications control.
+        /// litReceiptAmount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptNotifications;
-
-        /// <summary>
-        /// noNotifs control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl noNotifs;
-
-        /// <summary>
-        /// MainContent control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder MainContent;
+        protected global::System.Web.UI.WebControls.Literal litReceiptAmount;
     }
 }

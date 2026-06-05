@@ -11,8 +11,8 @@ namespace SchoolSystem
 
         public string PageTitle
         {
-            get { return litPageTitle.Text; }
-            set { litPageTitle.Text = value; }
+            get { return Page.Title; }
+            set { Page.Title = value; }
         }
 
         protected void Page_Load(object sender, EventArgs e)

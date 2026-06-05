@@ -651,6 +651,590 @@ body.sidebar-collapsed .sidebar-profile {
     z-index: -1 !important;
 }
 
+/* ============================================================== */
+/* RESTORED: ENROLLMENT SPLIT LAYOUT & PENDING QUEUE              */
+/* ============================================================== */
+.enrollment-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50/50 split */
+    gap: 30px;
+    align-items: start;
+    margin-top: 20px;
+}
+
+.pending-queue-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-sm);
+    animation: fadeInRight 0.3s ease-out;
+}
+
+    .pending-queue-card h4 {
+        margin: 0 0 5px 0;
+        color: var(--navy-accent);
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .pending-queue-card p {
+        margin: 0;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ============================================================== */
+/* RESTORED: ENROLLMENT TABLE & SECTION TITLES                    */
+/* ============================================================== */
+.sp-section-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--navy-accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.sp-table-wrapper {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.sp-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .sp-table th {
+        background: #f8fafc;
+        padding: 15px 20px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sp-table td {
+        padding: 15px 20px;
+        font-size: 14px;
+        color: var(--navy-accent);
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .sp-table tr:last-child td {
+        border-bottom: none;
+    }
+
+.center-align {
+    text-align: center !important;
+}
+
+/* ============================================================== */
+/* RESTORED: COURSE CARDS & PRICE TAG                             */
+/* ============================================================== */
+.course-catalog-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+    .course-catalog-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+        border-color: var(--antique-gold);
+    }
+
+    .course-catalog-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--antique-gold);
+    }
+
+.course-price-tag {
+    display: inline-block;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy-accent);
+    margin-top: 15px;
+}
+
+/* ============================================================== */
+/* RESTORED: PREMIUM SEARCH BAR                                   */
+/* ============================================================== */
+.sp-filter-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.sp-search-input {
+    flex: 1;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="%2394a3b8"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>') no-repeat 15px center;
+}
+
+.sp-filter-select {
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: #334155;
+    outline: none;
+}
+
+/* ============================================================== */
+/* STUDENT PAYMENTS (100% BOOTSTRAP-FREE)                         */
+/* ============================================================== */
+
+/* Layout & Utilities */
+.sp-container {
+    padding: 10px 0;
+}
+
+.sp-title {
+    color: var(--navy-accent);
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 25px;
+    margin-top: 0;
+}
+
+.sp-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sp-flex {
+    display: flex;
+    align-items: center;
+}
+
+.sp-gap-3 {
+    gap: 15px;
+}
+
+.sp-mb-1 {
+    margin-bottom: 5px;
+}
+
+.sp-mb-2 {
+    margin-bottom: 10px;
+}
+
+.sp-mt-3 {
+    margin-top: 15px;
+}
+
+.sp-text-muted {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.sp-fw-bold {
+    font-weight: 700;
+}
+
+.sp-text-center {
+    text-align: center;
+}
+
+.sp-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Stat Card */
+.payment-stat-card {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.payment-stat-icon {
+    font-size: 40px;
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.payment-stat-details h4 {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.payment-stat-details h2 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+/* Badges & Buttons */
+.sp-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.sp-badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.sp-badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sp-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.sp-btn-primary {
+    background: var(--navy-accent);
+    color: white;
+}
+
+    .sp-btn-primary:hover {
+        background: #0a0c14;
+    }
+
+.sp-btn-outline {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: var(--navy-accent);
+}
+
+    .sp-btn-outline:hover {
+        background: #f8fafc;
+        border-color: var(--navy-accent);
+    }
+
+.sp-btn-success {
+    background: #10b981;
+    color: white;
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+}
+
+    .sp-btn-success:hover {
+        background: #059669;
+    }
+
+/* Invoice Cards */
+.invoice-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-sm);
+    transition: 0.2s;
+}
+
+    .invoice-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: #cbd5e1;
+    }
+
+.invoice-header {
+    cursor: pointer;
+}
+
+    .invoice-header h5 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+        color: var(--navy-accent);
+    }
+
+    .invoice-header h4 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--navy-accent);
+    }
+
+/* Breakdown Accordion */
+.sp-breakdown {
+    display: none;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+    .sp-breakdown.show {
+        display: block;
+    }
+
+.sp-breakdown-box {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--navy-accent);
+}
+
+.sp-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+    .sp-breakdown-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+/* Forms */
+.sp-form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy-accent);
+}
+
+.sp-form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+    .sp-form-control:focus {
+        border-color: var(--antique-gold);
+    }
+
+/* Custom Modals */
+.sp-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.sp-modal-box {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.sp-modal-header {
+    background: var(--navy-accent);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .sp-modal-header h5 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+.sp-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+    .sp-modal-close:hover {
+        opacity: 1;
+    }
+
+.sp-modal-body {
+    padding: 25px;
+}
+
+/* Realistic Paper Receipt */
+.receipt-paper {
+    background: #fff;
+    padding: 40px;
+    width: 100%;
+    margin: 0 auto;
+    font-family: 'Courier New', Courier, monospace;
+    position: relative;
+    color: #333;
+}
+
+    .receipt-paper::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(-45deg, transparent 33.33%, #fff 33.33%, #fff 66.66%, transparent 66.66%), linear-gradient(45deg, transparent 33.33%, #fff 33.33%, #fff 66.66%, transparent 66.66%);
+        background-size: 20px 40px;
+        filter: drop-shadow(0 5px 2px rgba(0,0,0,0.02));
+    }
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+    .receipt-header h3 {
+        margin: 0;
+        font-weight: bold;
+        font-size: 22px;
+    }
+
+    .receipt-header p {
+        margin: 5px 0 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.receipt-total {
+    border-top: 2px dashed #ccc;
+    border-bottom: 2px dashed #ccc;
+    padding: 15px 0;
+    margin: 15px 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.receipt-footer {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    margin-top: 30px;
+}
+
+/* ============================================================== */
+/* STUDENT PAYMENT PRINT STYLES (Hides the website, prints only the receipt)      */
+/* ============================================================== */
+@media print {
+    /* Hide everything on the page */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* Reveal ONLY the modal and its contents */
+    #receiptModal, #receiptModal * {
+        visibility: visible !important;
+    }
+
+    /* Position the modal at the very top-left of the printer paper */
+    #receiptModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: transparent;
+    }
+
+    /* Flatten the receipt so it prints nicely on A4/Letter size */
+    .receipt-paper {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+        /* Hide the jagged edge decoration and buttons for the physical paper */
+        .receipt-paper::after {
+            display: none;
+        }
+
+    .no-print {
+        display: none !important;
+    }
+}
+
+
 /* ==========================================================================
    STUDENT COURSE HOME PAGE (.sch-*)
    ========================================================================== */

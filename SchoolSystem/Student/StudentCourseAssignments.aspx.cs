@@ -125,9 +125,9 @@ namespace SchoolSystem
                 if (row["submitted_at"] != DBNull.Value)
                 {
                     // Check if the lecturer has graded AND published it
-                    bool isPublished = row["is_published"] != DBNull.Value && Convert.ToBoolean(row["is_published"]);
+                    bool isGraded = row["marks_awarded"] != DBNull.Value;
 
-                    if (isPublished)
+                    if (isGraded)
                     {
                         lblStatusBadge.Text = "<i class='fas fa-check-circle me-1'></i> Graded";
                         lblStatusBadge.CssClass = "badge bg-success rounded-pill fs-6 px-3 py-2";
