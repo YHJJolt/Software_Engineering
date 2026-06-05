@@ -55,7 +55,7 @@ namespace SchoolSystem
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(@"
                     SELECT c.course_code, c.course_name, c.credit_hours,
-                           c.course_status, p.program_name, l.lecturer_name
+                           p.program_name, l.lecturer_name
                     FROM [Course] c
                     LEFT JOIN [Program]  p ON c.Program_id  = p.program_id
                     LEFT JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id

@@ -63,7 +63,6 @@ namespace SchoolSystem
                     c.course_id,
                     c.course_name,
                     c.course_code,
-                    c.course_status,
                     c.course_img,
                     ISNULL(p.program_semester, 0)  AS sem_num,
                     CASE
@@ -97,8 +96,7 @@ namespace SchoolSystem
                 SqlDataReader rdr = cmd.ExecuteReader();
                 while (rdr.Read())
                 {
-                    bool published = rdr["course_status"].ToString().ToLower() == "open"
-                                  || rdr["course_status"].ToString().ToLower() == "ongoing";
+                    bool published = true; // Or false, depending on your new default preference
 
                     string imgSrc = "";
                     if (rdr["course_img"] != DBNull.Value)
@@ -112,7 +110,6 @@ namespace SchoolSystem
                         id = Convert.ToInt32(rdr["course_id"]),
                         name = rdr["course_name"].ToString(),
                         code = rdr["course_code"].ToString(),
-                        status = rdr["course_status"].ToString(),
                         sem = rdr["semester_label"].ToString(),
                         semNum = Convert.ToInt32(rdr["sem_num"]),
                         students = Convert.ToInt32(rdr["student_count"]),

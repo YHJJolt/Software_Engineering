@@ -164,9 +164,6 @@
         }
 
         /* ── Helpers ── */
-        function dotClass(s) {
-            return s === 'Open' ? 'dot-open' : s === 'Ongoing' ? 'dot-ongoing' : 'dot-closed';
-        }
         function pubBadge(p) {
             return p ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>';
         }
@@ -183,8 +180,7 @@
             tb.innerHTML = list.map(function (c) {
                 return '<tr>'
                     + '<td style="text-align:center">' + starHtml(c.fav, c.id) + '</td>'
-                    + '<td><span class="course-dot ' + dotClass(c.status) + '"></span>'
-                    + '<a href="CourseHome.aspx?id=' + c.id + '" class="course-link">' + c.name + '</a></td>'
+                    + '<td><a href="CourseHome.aspx?id=' + c.id + '" class="course-link">' + c.name + '</a></td>'
                     + '<td><span class="badge-code">' + c.code + '</span></td>'
                     + '<td>' + c.sem + '</td>'
                     + '<td><span class="student-count"><i class="fas fa-users"></i>' + c.students + '</span></td>'
