@@ -14,6 +14,7 @@ GO
 
 -- 3. Drop existing tables if they exist (ORDER MATTERS FOR FOREIGN KEYS)
 IF OBJECT_ID('sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE sp_ProcessGraduations;
+IF OBJECT_ID('[StudentCourseFavourite]', 'U') IS NOT NULL DROP TABLE [StudentCourseFavourite];
 IF OBJECT_ID('[LecturerCourseFavourite]', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite]; 
 IF OBJECT_ID('[AssignmentSubmission]', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
 IF OBJECT_ID('[CourseAssignment]', 'U') IS NOT NULL DROP TABLE [CourseAssignment];
@@ -21,6 +22,7 @@ IF OBJECT_ID('[ModuleFile]', 'U') IS NOT NULL DROP TABLE [ModuleFile];
 IF OBJECT_ID('[CourseModule]', 'U') IS NOT NULL DROP TABLE [CourseModule];
 IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
 IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
+IF OBJECT_ID('[PaymentDetail]', 'U') IS NOT NULL DROP TABLE [PaymentDetail]; -- NEW
 IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
 IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
 IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
@@ -202,6 +204,19 @@ CREATE TABLE [Payment] (
 );
 
 -- ============================================================
+-- 10B. Table: PaymentDetail (NEW)
+-- ============================================================
+CREATE TABLE [PaymentDetail] (
+    [detail_id] INT IDENTITY(1,1) PRIMARY KEY,
+    [payment_id] INT NOT NULL,
+    [enrollment_id] INT NOT NULL,
+    [course_fee] DECIMAL(10,2) NOT NULL,
+    CONSTRAINT [fk_PD_Payment] FOREIGN KEY ([payment_id]) REFERENCES [Payment]([payment_id]),
+    CONSTRAINT [fk_PD_Enrollment] FOREIGN KEY ([enrollment_id]) REFERENCES [Enrollment]([enrollment_id])
+);
+GO
+
+-- ============================================================
 -- 11. Table: Announcement
 -- ============================================================
 CREATE TABLE [Announcement] (
@@ -311,8 +326,22 @@ CREATE TABLE [LecturerCourseFavourite] (
 );
 GO
 
+-- ============================================================
+-- 18. Table: StudentCourseFavourite Table (referenced by application)
+-- ============================================================
+CREATE TABLE [StudentCourseFavourite] (
+    [fav_id]      INT      NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    [student_id]  INT      NOT NULL,
+    [course_id]   INT      NOT NULL,
+    [created_at]  DATETIME DEFAULT GETDATE(),
+    CONSTRAINT [UQ_StudFav]          UNIQUE      ([student_id], [course_id]),
+    CONSTRAINT [FK_StudFav_Student]  FOREIGN KEY ([student_id]) REFERENCES [Student]  ([student_id]),
+    CONSTRAINT [FK_StudFav_Course]   FOREIGN KEY ([course_id])  REFERENCES [Course]   ([course_id])
+);
+GO
+
 -- ===================================================================================
--- 18. STORED PROCEDURE: Process Graduations Only (Controlled from C#)
+-- 19. STORED PROCEDURE: Process Graduations Only (Controlled from C#)
 -- ===================================================================================
 CREATE PROCEDURE sp_ProcessGraduations
 AS
@@ -330,8 +359,11 @@ END
 GO
 
 -- ===================================================================================
--- 19. Trigger: Auto Generate Payment
+-- 20. Trigger: Auto Generate Payment
 -- ===================================================================================
+IF OBJECT_ID('trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER trg_GeneratePayment;
+GO
+
 CREATE TRIGGER trg_GeneratePayment
 ON [Enrollment]
 AFTER INSERT, UPDATE
@@ -341,6 +373,7 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM inserted WHERE status = 'Approved')
     BEGIN
+        -- Phase 1: Create or Update the Main Invoice (Payment table)
         MERGE INTO [Payment] AS target
         USING (
             SELECT 
@@ -361,12 +394,25 @@ BEGIN
         WHEN NOT MATCHED BY TARGET THEN
             INSERT (student_id, payment_amount, payment_duedate)
             VALUES (source.student_id, source.TotalFee, source.DueDate);
+
+        -- Phase 2: Create the Invoice Line Items (PaymentDetail table)
+        INSERT INTO [PaymentDetail] (payment_id, enrollment_id, course_fee)
+        SELECT p.payment_id, e.enrollment_id, c.course_fee
+        FROM [Enrollment] e
+        INNER JOIN [Course] c ON e.course_id = c.course_id
+        INNER JOIN [Payment] p ON e.student_id = p.student_id
+        WHERE e.status = 'Approved'
+          AND e.student_id IN (SELECT student_id FROM inserted WHERE status = 'Approved')
+          -- Safety check: Prevent duplicate courses from being added to the receipt
+          AND NOT EXISTS (
+              SELECT 1 FROM [PaymentDetail] pd WHERE pd.enrollment_id = e.enrollment_id
+          );
     END
 END
 GO
 
 -- ===================================================================================
--- 20. Trigger: Auto Calculate GPA & CGPA 
+-- 21. Trigger: Auto Calculate GPA & CGPA 
 -- ===================================================================================
 IF OBJECT_ID('trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER trg_CalculateGradesAndGPA;
 GO
@@ -427,10 +473,10 @@ BEGIN
             ) AS Calc
         ) AS source
         ON target.Enrollment_id = source.enrollment_id
-        
+
         WHEN MATCHED THEN
             UPDATE SET letter_grade = source.LetterGrade, grade_point = source.GradePoint
-            
+
         WHEN NOT MATCHED THEN
             INSERT (Enrollment_id, letter_grade, grade_point, total_hours, attended_hours)
             VALUES (source.enrollment_id, source.LetterGrade, source.GradePoint, 0, 0);
@@ -450,10 +496,10 @@ BEGIN
             GROUP BY s.student_id, e.enrolled_semester
         ) AS source
         ON target.Student_id = source.student_id AND target.semester = source.semester
-        
+
         WHEN MATCHED THEN
             UPDATE SET gpa = source.CalculatedGPA
-            
+
         WHEN NOT MATCHED THEN
             INSERT (Student_id, semester, gpa)
             VALUES (source.student_id, source.semester, source.CalculatedGPA);
@@ -468,7 +514,7 @@ BEGIN
             GROUP BY Student_id
         ) cgpaCalc ON g.Student_id = cgpaCalc.Student_id
         WHERE g.Student_id IN (SELECT DISTINCT student_id FROM #AffectedEnrollments);
-        
+
         DROP TABLE #AffectedEnrollments;
     END
 END
@@ -576,6 +622,7 @@ VALUES
 (1, 2, '~/Uploads/David_Quiz1.docx', GETDATE(), 15, 1),   -- David gets 15/20 in DB202 (A-)
 (4, 3, '~/Uploads/Eve_Essay.docx', GETDATE(), 90, 1);     -- Eve gets 90/100 in BUS301 (A)
 GO
+
  
 -- ============================================================
 -- VERIFICATION SELECTS
@@ -589,4 +636,5 @@ SELECT * FROM Announcement;
 SELECT * FROM CourseModule;
 SELECT * FROM ModuleFile;
 SELECT * FROM CourseAssignment;
-SELECT * FROM AssignmentSubmission;
+SELECT * FROM Payment;
+SELECT * FROM PaymentDetail;
