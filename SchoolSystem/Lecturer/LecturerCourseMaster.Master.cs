@@ -83,20 +83,27 @@ namespace SchoolSystem
             DataTable dtNotifs = new DataTable();
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // SQL query updated to ONLY fetch Admin Announcements, 
-                // completely removing the "Low Marks" union section.
                 string sql = @"
-            SELECT 'Admin Announcement' as Type, 
-                   N'📢 [Posted by Admin] ' + title as Message,
-                   'info' as CssClass
+            SELECT 'Admin Announcement' AS Type,
+                   N'📢 [Posted by Admin] ' + title AS Message,
+                   'info' AS CssClass,
+                   '~/Lecturer/LecturerCalendar.aspx' AS Link
             FROM Announcement
-            WHERE admin_id IS NOT NULL";
+            WHERE admin_id IS NOT NULL
+
+            UNION ALL
+
+            SELECT 'New Event' AS Type,
+                   N'📅 [New Event] ' + event_title +
+                   N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                   'info' AS CssClass,
+                   '~/Lecturer/LecturerCalendar.aspx' AS Link
+            FROM Calendar
+            WHERE start_date >= DATEADD(DAY, -30, GETDATE())
+
+            ORDER BY Message";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
-
-                // If your original code had parameters for other things, they are no longer needed here 
-                // since we are only fetching global admin announcements.
-
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
                 da.Fill(dtNotifs);
 
@@ -113,7 +120,6 @@ namespace SchoolSystem
                 }
             }
         }
-
         private void HighlightActiveSideBar()
         {
             string p = System.IO.Path.GetFileName(Request.Url.AbsolutePath).ToLower();

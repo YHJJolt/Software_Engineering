@@ -210,6 +210,9 @@
     <Content Include="Admin\AdminProfile.aspx" />
     <Content Include="Admin\UserManagement.aspx" />
     <Content Include="Student\StudentAllGrades.aspx" />
+    <Content Include="Student\StudentAnnouncements.aspx" />
+    <Content Include="Student\StudentAnnouncementDetail.aspx" />
+    <Content Include="Student\StudentCalendar.aspx" />
     <Content Include="Student\StudentCourseAssignments.aspx" />
     <Content Include="Student\StudentCourseHome.aspx" />
     <Content Include="Student\Student.css" />
@@ -457,6 +460,27 @@
     </Compile>
     <Compile Include="Student\StudentAllGrades.aspx.designer.cs">
       <DependentUpon>StudentAllGrades.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\StudentAnnouncements.aspx.cs">
+      <DependentUpon>StudentAnnouncements.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\StudentAnnouncements.aspx.designer.cs">
+      <DependentUpon>StudentAnnouncements.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\StudentAnnouncementDetail.aspx.cs">
+      <DependentUpon>StudentAnnouncementDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\StudentAnnouncementDetail.aspx.designer.cs">
+      <DependentUpon>StudentAnnouncementDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Student\StudentCalendar.aspx.cs">
+      <DependentUpon>StudentCalendar.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Student\StudentCalendar.aspx.designer.cs">
+      <DependentUpon>StudentCalendar.aspx</DependentUpon>
     </Compile>
     <Compile Include="Student\StudentCourseAssignments.aspx.cs">
       <DependentUpon>StudentCourseAssignments.aspx</DependentUpon>

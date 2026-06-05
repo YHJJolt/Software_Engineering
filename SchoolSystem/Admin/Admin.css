@@ -1,5 +1,5 @@
 ﻿/* ==========================================================================
-   MODULE 1: ROLE SELECT (.role-selection-page)
+   ROLE SELECT (.role-selection-page)
    ========================================================================== */
 :root {
     --cream-base: #fdfaf6; /* Main Light Base Background */
@@ -127,7 +127,7 @@ body, html {
 
 
 /* ==========================================================================
-   MODULE 2: LOGIN (.login-page)
+   LOGIN
    ========================================================================== */
 .login-page .page-wrapper {
     width: 100%;
@@ -256,7 +256,7 @@ body, html {
 
 
 /* ==========================================================================
-   MODULE 3: ADMINMASTER SIDEBAR (Global Core Structural Rules)
+   ADMINMASTER SIDEBAR (Global Core Structural Rules)
    ========================================================================== */
 body, html {
     transition: 0.3s ease;
@@ -407,7 +407,7 @@ body.sidebar-collapsed .p-img {
 
 
 /* ==========================================================================
-   MODULE 4: DASHBOARD (.dashboard-page)
+   DASHBOARD (.dashboard-page)
    ========================================================================== */
 .dashboard-page .header {
     display: flex;
@@ -725,7 +725,7 @@ body.sidebar-collapsed .p-img {
 
 
 /* ==========================================================================
-   MODULE 5: PROGRAM MANAGEMENT (.program-mgmt-page)
+   PROGRAM MANAGEMENT (.program-mgmt-page)
    ========================================================================== */
 .program-mgmt-page .header {
     display: flex;
@@ -944,7 +944,7 @@ body.sidebar-collapsed .p-img {
 }
 
 /* ==========================================================================
-   MODULE 5.5: CREATE PROGRAM (.create-program-page)
+   CREATE PROGRAM (.create-program-page)
    ========================================================================== */
 .create-program-page .form-container {
     background: #E0E0E0;
@@ -1015,7 +1015,7 @@ body.sidebar-collapsed .p-img {
 }
 
 /* ==========================================================================
-   MODULE 6: USER MANAGEMENT (.user-mgmt-page)
+   USER MANAGEMENT (.user-mgmt-page)
    ========================================================================== */
 .user-mgmt-page .header {
     display: flex;
@@ -1533,7 +1533,7 @@ body.sidebar-collapsed .p-img {
 
 
 /* ==========================================================================
-   MODULE 7: PAYMENT MANAGEMENT (.payment-mgmt-page)
+   PAYMENT MANAGEMENT 
    ========================================================================== */
 
 /* General styles */
@@ -1865,7 +1865,7 @@ body.sidebar-collapsed .p-img {
 
 
 /* ==========================================================================
-   MODULE 8: COURSE MANAGEMENT (.course-mgmt-page)
+   COURSE MANAGEMENT
    ========================================================================== */
 .course-mgmt-page .header {
     display: flex;
@@ -2003,7 +2003,7 @@ body.sidebar-collapsed .p-img {
 }
 
 /* =========================================
-           MODERN EDIT MODAL 
+    MODERN EDIT MODAL 
    ========================================== */
 .course-mgmt-page .modal-overlay {
     position: fixed;
@@ -2109,7 +2109,7 @@ body.sidebar-collapsed .p-img {
 }
 
 /* ==========================================================================
-   MODULE 8.5: CREATE COURSES (.create-course-page)
+   CREATE COURSES 
    ========================================================================== */
 
 /* ====================== FORM STYLES ====================== */
@@ -2241,7 +2241,7 @@ body.sidebar-collapsed .p-img {
     font-weight: 600;
 }
 /* ==========================================================================
-   MODULE 9: ENROLLMENT (.enrollment-page)
+   ENROLLMENT 
    ========================================================================== */
 /*General Styles*/
 .enrollment-page .header {
@@ -2487,10 +2487,7 @@ body.sidebar-collapsed .p-img {
     font-size: 14px;
 }
 /* ==========================================================================
-   MODULE 10: PERFORMANCE (.performance-page)
-   ========================================================================== */
-/* ==========================================================================
-   MODULE 10: PERFORMANCE (.performance-page)
+   PERFORMANCE (.performance-page)
    ========================================================================== */
 .performance-page .header {
     display: flex;
@@ -3075,7 +3072,7 @@ body.sidebar-collapsed .p-img {
     }
 }
 /* ==========================================================================
-   MODULE 11: ANNOUNCEMENT (.announcement-page)
+   ANNOUNCEMENT 
    ========================================================================== */
 .announcement-page .announcement-container {
     max-width: 1800px;
@@ -3396,7 +3393,7 @@ body.sidebar-collapsed .p-img {
     }
 
 /* ==========================================================================
- MODULE 12: CALENDAR (.calendar-page)
+ CALENDAR 
  ========================================================================== */
 .calendar-page .header {
     display: flex;
@@ -3769,7 +3766,7 @@ body.sidebar-collapsed .p-img {
 }
 
 /* ==========================================================================
-   MODULE 13: USER PROFILE (.user-profile-page)
+   USER PROFILE (.user-profile-page)
    ========================================================================== */
 /* Profile Panel Styling - Jingliu Light Theme */
 .user-profile-page .profile-container {

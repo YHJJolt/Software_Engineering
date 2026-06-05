@@ -1,40 +1,3 @@
-USE master;
-GO
-
--- 1. Create the Database FIRST
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SchoolSystemDB')
-BEGIN
-    CREATE DATABASE [SchoolSystemDB];
-END
-GO
-
--- 2. SWITCH to the Database BEFORE dropping or creating tables!
-USE SchoolSystemDB;
-GO
-
--- 3. Drop existing tables if they exist (ORDER MATTERS FOR FOREIGN KEYS)
-IF OBJECT_ID('sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE sp_ProcessGraduations;
-IF OBJECT_ID('[StudentCourseFavourite]', 'U') IS NOT NULL DROP TABLE [StudentCourseFavourite];
-IF OBJECT_ID('[LecturerCourseFavourite]', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite]; 
-IF OBJECT_ID('[AssignmentSubmission]', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
-IF OBJECT_ID('[CourseAssignment]', 'U') IS NOT NULL DROP TABLE [CourseAssignment];
-IF OBJECT_ID('[ModuleFile]', 'U') IS NOT NULL DROP TABLE [ModuleFile];
-IF OBJECT_ID('[CourseModule]', 'U') IS NOT NULL DROP TABLE [CourseModule];
-IF OBJECT_ID('[CourseGrade]', 'U') IS NOT NULL DROP TABLE [CourseGrade];
-IF OBJECT_ID('[Announcement]', 'U') IS NOT NULL DROP TABLE [Announcement];
-IF OBJECT_ID('[PaymentDetail]', 'U') IS NOT NULL DROP TABLE [PaymentDetail]; -- NEW
-IF OBJECT_ID('[Payment]', 'U') IS NOT NULL DROP TABLE [Payment];
-IF OBJECT_ID('[Enrollment]', 'U') IS NOT NULL DROP TABLE [Enrollment];
-IF OBJECT_ID('[Course]', 'U') IS NOT NULL DROP TABLE [Course];
-IF OBJECT_ID('[Calendar]', 'U') IS NOT NULL DROP TABLE [Calendar];
-IF OBJECT_ID('LecturerCalendar', 'U') IS NOT NULL DROP TABLE LecturerCalendar;
-IF OBJECT_ID('[Grades]', 'U') IS NOT NULL DROP TABLE [Grades];
-IF OBJECT_ID('[Student]', 'U') IS NOT NULL DROP TABLE [Student];
-IF OBJECT_ID('[Program]', 'U') IS NOT NULL DROP TABLE [Program];
-IF OBJECT_ID('[Lecturer]', 'U') IS NOT NULL DROP TABLE [Lecturer];
-IF OBJECT_ID('[Admin (HoP)]', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
-GO
-
 -- ============================================================
 -- 1. Table: Admin (HoP)
 -- ============================================================
@@ -42,7 +5,7 @@ CREATE TABLE [Admin (HoP)] (
   [admin_id] INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
   [admin_name] NVARCHAR(45) NOT NULL,
   [admin_email] NVARCHAR(45) NOT NULL,
-  [admin_pw] NVARCHAR(45) NOT NULL,
+  [admin_pw] NVARCHAR(64) NOT NULL,
   [admin_isactive] BIT NULL,
   [admin_bio] NVARCHAR(MAX) NULL,     
   [admin_img] VARBINARY(MAX) NULL    
@@ -55,7 +18,7 @@ CREATE TABLE [Lecturer] (
     [lecturer_id]        INT            NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [lecturer_code]      NVARCHAR(10)   NULL,                       
     [lecturer_name]      NVARCHAR(45)   NOT NULL,
-    [lecturer_pw]        NVARCHAR(45)   NOT NULL DEFAULT 'lec123',  
+    [lecturer_pw]        NVARCHAR(64)   NOT NULL DEFAULT 'lec123',  
     [lecturer_email]     NVARCHAR(45)   NOT NULL,                   
     [lecturer_contact]   NVARCHAR(45)   NULL,                       
     [lecturer_address]   NVARCHAR(45)   NULL,                       
@@ -74,7 +37,7 @@ CREATE TABLE [Lecturer] (
 -- ============================================================
 CREATE TABLE [Program] (
     [program_id]       INT            NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	[program_code]     NVARCHAR(20)   NOT NULL,
+    [program_code]     NVARCHAR(20)   NOT NULL,
     [program_name]     NVARCHAR(100)  NOT NULL,
     [program_level]    NVARCHAR(50)   NOT NULL,
     [program_fee]      DECIMAL(10,2)   NOT NULL,
@@ -96,7 +59,7 @@ CREATE TABLE [Student] (
     [student_id]       INT            NOT NULL IDENTITY(1,1) PRIMARY KEY,
     [student_code]     NVARCHAR(10)   NULL,                         
     [student_name]     NVARCHAR(45)   NOT NULL,
-    [student_pw]       NVARCHAR(45)   NOT NULL DEFAULT 'stud123',
+    [student_pw]       NVARCHAR(64)   NOT NULL DEFAULT 'stud123',
     [student_email]    NVARCHAR(45)   NOT NULL,                     
     [student_contact]  NVARCHAR(45)   NULL,                         
     [student_address]  NVARCHAR(45)   NULL,                         
@@ -155,6 +118,22 @@ CREATE TABLE LecturerCalendar (
     lecturer_id   INT           NOT NULL,
     created_at    DATETIME      NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_LecCalendar_Lecturer FOREIGN KEY (lecturer_id) REFERENCES Lecturer(lecturer_id) ON DELETE CASCADE
+);
+
+-- ============================================================
+-- *Table: StudentCalendar
+-- ============================================================
+CREATE TABLE StudentCalendar (
+    calendar_id   INT           IDENTITY(1,1) PRIMARY KEY,
+    event_title   NVARCHAR(200) NOT NULL,
+    event_desc    NVARCHAR(MAX) NULL,
+    start_date    DATE          NOT NULL,
+    end_date      DATE          NULL,
+    event_type    NVARCHAR(50)  NOT NULL DEFAULT 'Personal',
+    visibility    NVARCHAR(50)  NOT NULL DEFAULT 'Private',
+    student_id    INT           NOT NULL,
+    created_at    DATETIME      NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_StudCalendar_Student FOREIGN KEY (student_id) REFERENCES Student(student_id) ON DELETE CASCADE
 );
 
 -- ============================================================

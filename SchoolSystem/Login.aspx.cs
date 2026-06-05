@@ -2,6 +2,8 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SchoolSystem
 {
@@ -36,8 +38,8 @@ namespace SchoolSystem
             string emailColumn = "";
             string passColumn = "";
             string nameColumn = "";
+            string idColumn = "";
 
-            // Mapping based on your original working code
             switch (selectedRole)
             {
                 case "HOP":
@@ -45,70 +47,102 @@ namespace SchoolSystem
                     emailColumn = "admin_email";
                     passColumn = "admin_pw";
                     nameColumn = "admin_name";
+                    idColumn = "admin_id";
                     break;
                 case "Lecturer":
                     tableName = "[Lecturer]";
                     emailColumn = "lecturer_email";
                     passColumn = "lecturer_pw";
                     nameColumn = "lecturer_name";
+                    idColumn = "lecturer_id";
                     break;
                 case "Student":
                     tableName = "[Student]";
                     emailColumn = "student_email";
                     passColumn = "student_pw";
                     nameColumn = "student_name";
+                    idColumn = "student_id";
                     break;
             }
 
-            string sqlQuery = $"SELECT * FROM {tableName} WHERE {emailColumn} = @Email AND {passColumn} = @Password";
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand(sqlQuery, conn))
+                conn.Open();
+
+                // Fetch the user by email only first
+                string fetchSql = $"SELECT * FROM {tableName} WHERE {emailColumn} = @Email";
+                using (SqlCommand cmd = new SqlCommand(fetchSql, conn))
                 {
                     cmd.Parameters.AddWithValue("@Email", inputEmail);
-                    cmd.Parameters.AddWithValue("@Password", inputPassword);
+                    SqlDataReader reader = cmd.ExecuteReader();
 
-                    try
+                    if (!reader.Read())
                     {
-                        conn.Open();
-                        SqlDataReader reader = cmd.ExecuteReader();
+                        ShowErrorMessage("Invalid email or password.");
+                        return;
+                    }
 
-                        if (reader.Read())
-                        {
-                            // SUCCESS: Store user data in Session
-                            Session["UserEmail"] = reader[emailColumn].ToString();
-                            Session["UserName"] = reader[nameColumn].ToString();
-                            Session["UserRole"] = selectedRole;
+                    string storedPassword = reader[passColumn].ToString();
+                    int userId = Convert.ToInt32(reader[idColumn]);
+                    string userName = reader[nameColumn].ToString();
+                    reader.Close();
 
-                            // Dynamic extraction of Database IDs for each role
-                            if (selectedRole == "HOP")
-                            {
-                                Session["AdminID"] = Convert.ToInt32(reader["admin_id"]);
-                                Response.Redirect("~/Admin/AdminDashboard.aspx");
-                            }
-                            else if (selectedRole == "Lecturer")
-                            {
-                                Session["LecturerID"] = Convert.ToInt32(reader["lecturer_id"]);
-                                Response.Redirect("~/Lecturer/LecturerDashboard.aspx");
-                            }
-                            else if (selectedRole == "Student")
-                            {
-                                Session["StudentID"] = Convert.ToInt32(reader["student_id"]);
-                                // Redirects properly to the newly created dashboard
-                                Response.Redirect("~/Student/StudentDashboard.aspx");
-                            }
-                        }
-                        else
+                    string hashedInput = HashPassword(inputPassword);
+                    bool isPlainText = (storedPassword == inputPassword);   // still unhashed
+                    bool isHashed = (storedPassword == hashedInput);     // already hashed
+
+                    if (!isPlainText && !isHashed)
+                    {
+                        // Wrong password
+                        ShowErrorMessage("Invalid email or password.");
+                        return;
+                    }
+
+                    // If plain text matched — auto-migrate to hash now
+                    if (isPlainText)
+                    {
+                        string updateSql = $"UPDATE {tableName} SET {passColumn} = @Hash WHERE {idColumn} = @Id";
+                        using (SqlCommand updateCmd = new SqlCommand(updateSql, conn))
                         {
-                            ShowErrorMessage("Invalid email or password.");
+                            updateCmd.Parameters.AddWithValue("@Hash", hashedInput);
+                            updateCmd.Parameters.AddWithValue("@Id", userId);
+                            updateCmd.ExecuteNonQuery();
                         }
                     }
-                    catch (Exception ex)
+
+                    // Login success
+                    Session["UserEmail"] = inputEmail;
+                    Session["UserName"] = userName;
+                    Session["UserRole"] = selectedRole;
+
+                    if (selectedRole == "HOP")
                     {
-                        ShowErrorMessage("Database Error: " + ex.Message);
+                        Session["AdminID"] = userId;
+                        Response.Redirect("~/Admin/AdminDashboard.aspx");
+                    }
+                    else if (selectedRole == "Lecturer")
+                    {
+                        Session["LecturerID"] = userId;
+                        Response.Redirect("~/Lecturer/LecturerDashboard.aspx");
+                    }
+                    else if (selectedRole == "Student")
+                    {
+                        Session["StudentID"] = userId;
+                        Response.Redirect("~/Student/StudentDashboard.aspx");
                     }
                 }
+            }
+        }
+        // Hashing password using SHA256
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in bytes)
+                    sb.Append(b.ToString("X2"));
+                return sb.ToString();
             }
         }
 

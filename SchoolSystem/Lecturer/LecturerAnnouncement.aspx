@@ -65,7 +65,7 @@
     <script>
     // @ts-nocheck
     let rawData = [];
-    let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>;
+    let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>
 
         $(document).ready(function () {
             if (currentCourseId == 0) {

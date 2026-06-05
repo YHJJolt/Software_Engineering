@@ -52,77 +52,92 @@ namespace SchoolSystem
 
         private void LoadNotifications()
         {
+            // Fix: Prevent NullReferenceException if the student's session expires
+            if (Session["UserEmail"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-            -- 1. Identify the logged-in student
             DECLARE @StudentId INT;
             SELECT @StudentId = student_id FROM Student WHERE student_email = @Email;
 
-            -- 2. Pull the top 10 most recent notifications across all categories
-            SELECT TOP 10 Type, Message, CssClass
+            SELECT TOP 10 Type, Message, CssClass, Link
             FROM (
-                
-                -- ==========================================
-                -- CATEGORY 1: Admin Announcements
-                -- ==========================================
-                SELECT 
-                    'Admin Announcement' AS Type, 
-                    N'📢 [Admin] ' + title AS Message,
-                    'info' AS CssClass,
-                    created_at AS SortDate
+
+                -- CATEGORY 1: Admin Announcements → Calendar page
+                SELECT 'Admin Announcement' AS Type,
+                       N'📢 [Admin] ' + title AS Message,
+                       'info' AS CssClass,
+                       CAST('~/Student/StudentCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       created_at AS SortDate
                 FROM Announcement
                 WHERE Admin_id IS NOT NULL
 
                 UNION ALL
 
-                -- ==========================================
-                -- CATEGORY 2: Lecturer Announcements
-                -- ==========================================
-                SELECT 
-                    'Lecturer Update' AS Type, 
-                    N'👨‍🏫 ' + a.title AS Message,
-                    'info' AS CssClass,
-                    a.created_at AS SortDate
+                -- CATEGORY 2: Lecturer Announcements → fallback to general if Course_id is NULL
+                SELECT 'Lecturer Update' AS Type,
+                       N'👨‍🏫 ' + a.title AS Message,
+                       'info' AS CssClass,
+                       CAST(
+                           CASE 
+                               WHEN a.Course_id IS NOT NULL THEN '~/Student/StudentAnnouncementDetail.aspx?id=' + CAST(a.announcement_id AS VARCHAR) + '&course_id=' + CAST(a.Course_id AS VARCHAR)
+                               ELSE '~/Student/StudentAnnouncements.aspx'
+                           END AS NVARCHAR(255)
+                       ) AS Link,
+                       a.created_at AS SortDate
                 FROM Announcement a
-                WHERE a.Lecturer_id IS NOT NULL 
+                WHERE a.Lecturer_id IS NOT NULL
                   AND (
-                      -- Matches if the announcement is tied to a specific course the student is taking
                       EXISTS (
-                          SELECT 1 FROM Enrollment e 
-                          WHERE e.course_id = a.Course_id 
-                            AND e.student_id = @StudentId 
-                            AND e.status = 'Approved'
+                          SELECT 1 FROM Enrollment e
+                          WHERE e.course_id  = a.Course_id
+                            AND e.student_id = @StudentId
+                            AND e.status     = 'Approved'
                       )
-                      OR 
-                      -- Matches if there is NO course_id, but the student takes ANY course from this lecturer
+                      OR
                       (a.Course_id IS NULL AND EXISTS (
                           SELECT 1 FROM Enrollment e
                           INNER JOIN Course c ON e.course_id = c.course_id
-                          WHERE c.Lecturer_id = a.Lecturer_id 
-                            AND e.student_id = @StudentId 
-                            AND e.status = 'Approved'
+                          WHERE c.Lecturer_id = a.Lecturer_id
+                            AND e.student_id  = @StudentId
+                            AND e.status      = 'Approved'
                       ))
                   )
 
                 UNION ALL
 
-                -- ==========================================
-                -- CATEGORY 3: Graded Assignments
-                -- ==========================================
-                SELECT 
-                    'Assignment Graded' AS Type, 
-                    N'✅ ""' + ca.title + '"" graded: ' + 
-                    CAST(CAST(sub.marks_awarded AS FLOAT) AS VARCHAR) + '/' + CAST(ca.max_marks AS VARCHAR) AS Message,
-                    'alert' AS CssClass,
-                    COALESCE(sub.graded_date, GETDATE()) AS SortDate
+                -- CATEGORY 3: Graded Assignments → course grades page (Fixed Quotes & Casts)
+                SELECT 'Assignment Graded' AS Type,
+                       N'✅ ' + CHAR(39) + ca.title + CHAR(39) + N' graded: ' + 
+                       CAST(CAST(sub.marks_awarded AS FLOAT) AS NVARCHAR(20)) + N'/' + 
+                       CAST(ca.max_marks AS NVARCHAR(20)) AS Message,
+                       'alert' AS CssClass,
+                       CAST('~/Student/StudentIndivGrades.aspx?id=' + CAST(ca.Course_id AS VARCHAR(10)) AS NVARCHAR(255)) AS Link,
+                       COALESCE(sub.graded_date, GETDATE()) AS SortDate
                 FROM AssignmentSubmission sub
                 INNER JOIN CourseAssignment ca ON sub.assignment_id = ca.assignment_id
-                WHERE sub.student_id = @StudentId 
+                WHERE sub.student_id      = @StudentId
                   AND sub.marks_awarded IS NOT NULL
 
+                UNION ALL
+
+                -- CATEGORY 4: Admin Calendar Events → student calendar page
+                SELECT 'New Event' AS Type,
+                       N'📅 [New Event] ' + event_title +
+                       N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                       'info' AS CssClass,
+                       CAST('~/Student/StudentCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       CAST(start_date AS DATETIME) AS SortDate
+                FROM Calendar
+                WHERE start_date >= DATEADD(DAY, -30, GETDATE())
+
             ) AS CombinedNotifs
-            ORDER BY SortDate DESC;";
+            ORDER BY SortDate DESC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());

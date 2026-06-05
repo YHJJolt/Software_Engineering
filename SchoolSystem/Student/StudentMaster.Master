@@ -62,15 +62,18 @@
                         <div class="notif-body">
                             <asp:Repeater ID="rptNotifications" runat="server">
                                 <ItemTemplate>
-                                    <div class='notif-item <%# Eval("CssClass") %>'>
-                                        <div class="notif-icon">
-                                            <i class="fas fa-bullhorn"></i>
+                                    <a href='<%# ResolveUrl(Eval("Link").ToString()) %>' 
+                                       style="text-decoration:none; color:inherit; display:block;">
+                                        <div class='notif-item <%# Eval("CssClass") %>'>
+                                            <div class="notif-icon">
+                                                <i class='<%# Eval("Type").ToString() == "Assignment Graded" ? "fas fa-check-circle" : Eval("Type").ToString() == "New Event" ? "fas fa-calendar-day" : "fas fa-bullhorn" %>'></i>
+                                            </div>
+                                            <div class="notif-content">
+                                                <strong><%# Eval("Type") %></strong>
+                                                <span><%# Eval("Message") %></span>
+                                            </div>
                                         </div>
-                                        <div class="notif-content">
-                                            <strong><%# Eval("Type") %></strong> 
-                                            <span><%# Eval("Message") %></span>
-                                        </div>
-                                    </div>
+                                    </a>
                                 </ItemTemplate>
                             </asp:Repeater>
                             <div id="noNotifs" runat="server" visible="false" style="padding:20px; text-align:center; color:#64748b;">No new notifications right now.</div>
