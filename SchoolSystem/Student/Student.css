@@ -368,6 +368,7 @@ body.sidebar-collapsed .sidebar-profile {
     box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .stat-icon-wrapper {
@@ -1415,3 +1416,1220 @@ body.sidebar-collapsed .sidebar-profile {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ==========================================================================
+   STUDENT INDIVIDUAL GRADES
+   ========================================================================== */
+
+/* ── Page wrapper ── */
+.sig-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Performance banner ── */
+.sig-banner {
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    transition: border-color 0.3s, background 0.3s;
+}
+
+    .sig-banner.tier-excellent {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+
+    .sig-banner.tier-good {
+        background: #eff6ff;
+        border-color: #93c5fd;
+    }
+
+    .sig-banner.tier-average {
+        background: #fffbeb;
+        border-color: #fcd34d;
+    }
+
+    .sig-banner.tier-atrisk {
+        background: #fff7ed;
+        border-color: #fdba74;
+    }
+
+    .sig-banner.tier-fail {
+        background: #fef2f2;
+        border-color: #fca5a5;
+    }
+
+.sig-banner-left {
+    flex: 0 0 200px;
+}
+
+.sig-banner-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.sig-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #64748b;
+    margin-bottom: 10px;
+    white-space: nowrap; /* ← add this */
+}
+
+    .sig-status-pill.tier-excellent {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .sig-status-pill.tier-good {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .sig-status-pill.tier-average {
+        background: #fef9c3;
+        color: #a16207;
+    }
+
+    .sig-status-pill.tier-atrisk {
+        background: #ffedd5;
+        color: #c2410c;
+    }
+
+    .sig-status-pill.tier-fail {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+.sig-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.sig-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sig-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-excellent {
+    background: #22c55e;
+}
+
+.dot-good {
+    background: #3b82f6;
+}
+
+.dot-average {
+    background: #eab308;
+}
+
+.dot-atrisk {
+    background: #f97316;
+}
+
+.dot-fail {
+    background: #ef4444;
+}
+
+.sig-banner-divider {
+    width: 1px;
+    background: #e2e8f0;
+    align-self: stretch;
+    margin: 0 24px;
+    flex-shrink: 0;
+}
+
+.sig-banner-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sig-metric {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sig-metric-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 600;
+    width: 100px;
+    flex-shrink: 0;
+}
+
+.sig-bar-track {
+    flex: 1;
+    height: 8px;
+    background: #cbd5e1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sig-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.5s ease;
+    background: #94a3b8;
+}
+
+    .sig-bar-fill.tier-excellent {
+        background: #15803d;
+    }
+
+    .sig-bar-fill.tier-good {
+        background: #1d4ed8;
+    }
+
+    .sig-bar-fill.tier-average {
+        background: #a16207;
+    }
+
+    .sig-bar-fill.tier-atrisk {
+        background: #c2410c;
+    }
+
+    .sig-bar-fill.tier-fail {
+        background: #b91c1c;
+    }
+
+.sig-metric-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    width: 52px;
+    text-align: right;
+}
+
+.sig-metric-sub {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+/* ── Toolbar row ── */
+.sig-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sig-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+    .sig-search-wrap i {
+        position: absolute;
+        left: 11px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+
+.sig-search {
+    padding: 8px 12px 8px 32px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #334155;
+    background: #fff;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+    .sig-search:focus {
+        border-color: #6366f1;
+    }
+
+.sig-sort-group {
+    display: flex;
+    gap: 6px;
+}
+
+.sig-sort-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+    .sig-sort-btn.active {
+        background: #1e293b;
+        color: #fff;
+        border-color: #1e293b;
+    }
+
+/* ── Table card ── */
+.sig-table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.sig-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+    .sig-table thead tr {
+        background: #1e293b;
+        color: #fff;
+    }
+
+    .sig-table thead th {
+        padding: 13px 16px;
+        text-align: left;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+    }
+
+    .sig-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.12s;
+    }
+
+        .sig-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .sig-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+    .sig-table tbody td {
+        padding: 13px 16px;
+        vertical-align: middle;
+        color: #334155;
+    }
+
+/* Type badge */
+.sig-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+    margin-left: 6px;
+}
+
+.sig-assign-title {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.sig-date {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* Submission badges */
+.sig-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.badge-submitted {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.badge-late {
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+.badge-missing {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.badge-pending {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+/* Score */
+.sig-score {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.sig-score-max {
+    color: #94a3b8;
+    font-weight: 400;
+    font-size: 0.82rem;
+}
+
+.sig-score-bar {
+    height: 4px;
+    background: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 70px;
+    margin-top: 4px;
+}
+
+.sig-score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.sig-score-none {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.sig-unpublished {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-style: italic;
+}
+
+/* Total row */
+.sig-total-row td {
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-top: 2px solid #e2e8f0;
+    font-weight: 700;
+}
+
+.sig-total-score {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.sig-total-pct {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-left: 6px;
+}
+
+.sig-total-outof {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 3px;
+    font-weight: 400;
+}
+
+    .sig-total-outof strong {
+        color: #1e293b;
+    }
+
+/* Empty state */
+.sig-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+    .sig-empty i {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .sig-empty p {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+
+
+/* ==========================================================================
+   STUDENT COURSES
+   ========================================================================== */
+
+.courses-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Toolbar ── */
+.courses-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Semester dropdown — sits right next to the title */
+.sem-select {
+    padding: 7px 32px 7px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #334155;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+    .sem-select:focus {
+        border-color: #6366f1;
+    }
+
+/* Search — far right */
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+    .search-wrapper i {
+        position: absolute;
+        left: 11px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+
+.search-input {
+    padding: 8px 12px 8px 32px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #334155;
+    background: #fff;
+    width: 220px;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+    .search-input:focus {
+        border-color: #6366f1;
+    }
+
+/* ── Table Card ── */
+.table-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.courses-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+    .courses-table thead tr {
+        background: #1e293b;
+        color: #fff;
+    }
+
+    .courses-table thead th {
+        padding: 13px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+    }
+
+    .courses-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+        .courses-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .courses-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+    .courses-table tbody td {
+        padding: 14px 16px;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+/* Course code badge */
+.code-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.course-name-cell {
+    font-weight: 500;
+    color: #3b82f6;
+}
+
+.courses-table tbody tr:hover .course-name-cell {
+    text-decoration: underline;
+}
+
+.lecturer-name {
+    color: #475569;
+}
+
+.credit-hours {
+    color: #475569;
+    font-weight: 500;
+}
+
+/* Semester pill in the table */
+.sem-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.status-pending {
+    background: #fef9c3;
+    color: #ca8a04;
+    border: 1px solid #fde68a;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+/* Footer */
+.table-footer {
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .table-footer strong {
+        color: #1e293b;
+    }
+
+/* Empty state */
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .empty-state p {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+/* Hide semester column when a specific semester is selected */
+.hide-sem-col .col-sem {
+    display: none;
+}
+
+/* ── Favourite star button ── */
+.star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    color: #cbd5e1;
+    font-size: 1rem;
+    line-height: 1;
+    transition: color 0.2s, transform 0.15s;
+    border-radius: 4px;
+}
+
+    .star-btn:hover {
+        color: #f59e0b;
+        transform: scale(1.2);
+    }
+
+    .star-btn.starred {
+        color: #f59e0b;
+    }
+
+
+/* ==========================================================================
+   STUDENT COURSES
+   ========================================================================== */
+
+.grades-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Toolbar ── */
+.grades-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sem-select {
+    padding: 7px 32px 7px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #334155;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+    .sem-select:focus {
+        border-color: #6366f1;
+    }
+
+/* Export button — small icon, top-right */
+.btn-export-pdf {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .btn-export-pdf:hover {
+        background: #334155;
+    }
+
+    .btn-export-pdf i {
+        font-size: 0.9rem;
+    }
+
+/* ── Stat cards ── */
+.grades-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.gstat-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-align: center;
+}
+
+    .gstat-card .gstat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .gstat-card .gstat-value {
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .gstat-card.gold {
+        border-top: 3px solid #f59e0b;
+    }
+
+    .gstat-card.purple {
+        border-top: 3px solid #8b5cf6;
+    }
+
+    .gstat-card.blue {
+        border-top: 3px solid #3b82f6;
+    }
+
+/* ── Table card ── */
+.table-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+    .grades-table thead tr {
+        background: #1e293b;
+        color: #fff;
+    }
+
+    .grades-table thead th {
+        padding: 13px 14px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.78rem;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+    }
+
+    .grades-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .grades-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+    .grades-table tbody td {
+        padding: 13px 14px;
+        color: #334155;
+        vertical-align: middle;
+    }
+
+.code-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.course-name-link {
+    font-weight: 500;
+    color: #334155;
+}
+
+/* Score bars */
+.score-cell {
+    min-width: 90px;
+}
+
+.score-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.score-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.score-bar-bg {
+    height: 5px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 80px;
+}
+
+.score-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+/* Grade badge */
+.grade-letter {
+    display: inline-block;
+    width: 34px;
+    text-align: center;
+    padding: 3px 0;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.gl-A {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.gl-Am {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.gl-Bp {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.gl-B {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.gl-Bm {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.gl-Cp {
+    background: #fef9c3;
+    color: #a16207;
+}
+
+.gl-C {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.gl-F {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.gl-NA {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+/* Status */
+.status-pass {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.status-fail {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.status-na {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Footer */
+.table-footer {
+    padding: 12px 14px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+    .table-footer strong {
+        color: #1e293b;
+    }
+
+/* Empty state */
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .empty-state p {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+/* ── Print modal overlay ── */
+.print-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+    .print-modal-overlay.active {
+        display: flex;
+    }
+
+.print-modal {
+    background: #fff;
+    border-radius: 14px;
+    width: 540px;
+    max-width: 95vw;
+    padding: 28px 28px 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    position: relative;
+}
+
+.print-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+    .print-modal-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+.print-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+    .print-modal-close:hover {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+.print-modal-preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    font-size: 0.82rem;
+    color: #475569;
+    line-height: 1.7;
+}
+
+    .print-modal-preview strong {
+        color: #1e293b;
+    }
+
+.print-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-print-confirm {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .btn-print-confirm:hover {
+        background: #334155;
+    }
+
+.btn-print-cancel {
+    padding: 9px 16px;
+    background: #fff;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+    .btn-print-cancel:hover {
+        background: #f8fafc;
+    }
+
+/* ── Print styles — mirrors exact pattern from Performance.aspx / Admin.css ── */
+@media print {
+    @page {
+        margin: 0;
+    }
+
+    /* Hide sidebar, topbar, toolbar, modal, export button */
+    #sidebar,
+    #topbar,
+    .grades-toolbar,
+    .print-modal-overlay,
+    .btn-export-pdf {
+        display: none !important;
+    }
+
+    /* Remove sidebar left offset — same as Admin.css */
+    #main-content {
+        margin-left: 0 !important;
+        padding: 10px !important;
+    }
+
+    /* Force colours to print */
+    body {
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Show print-only report title */
+    .print-header {
+        display: block !important;
+    }
+
+    /* Prevent cards splitting across pages */
+    .table-card, .gstat-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #d1d5db !important;
+    }
+
+    /* Keep table header dark */
+    .grades-table thead tr {
+        background: #1e293b !important;
+        color: #fff !important;
+    }
+}
+
+.print-header {
+    display: none;
+    text-align: center;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 4px;
+}
+
+    .print-header h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 3px;
+    }
+
+    .print-header p {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 0;
+    }

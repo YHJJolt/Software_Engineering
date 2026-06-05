@@ -51,7 +51,7 @@ namespace SchoolSystem
                         linkPeople.HRef = "~/Student/StudentCoursePeople.aspx?id=" + cid;
                         linkModules.HRef = "~/Student/StudentCourseModules.aspx?id=" + cid;
                         linkAssignments.HRef = "~/Student/StudentCourseAssignments.aspx?id=" + cid;
-                        linkGrades.HRef = "~/Student/StudentCourseGrades.aspx?id=" + cid;
+                        linkGrades.HRef = "~/Student/StudentIndivGrades.aspx?id=" + cid;
                         linkAnnouncements.HRef = "~/Student/StudentCourseAnnouncements.aspx?id=" + cid;
 
                         // Assigning course_id to the profile button

@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="Student Dashboard" Language="C#" MasterPageFile="~/Student/StudentMaster.Master" AutoEventWireup="true" CodeBehind="StudentDashboard.aspx.cs" Inherits="SchoolSystem.StudentDashboard" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -44,7 +45,7 @@
         
         <asp:Panel ID="noCoursesPanel" runat="server" Visible="false" CssClass="empty-state">
             <i class="fas fa-book-open"></i>
-            <p>You are not enrolled in any active courses for this semester.</p>
+            <p>You have no favourited courses. Star a course in <a href="StudentCourses.aspx">My Courses</a> to pin it here.</p>
         </asp:Panel>
 
         <div class="courses-grid">

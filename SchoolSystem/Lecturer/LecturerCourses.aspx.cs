@@ -56,35 +56,32 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) return;
 
-            // FIXED: The subquery for student_count now joins the Student table 
-            // to filter out historical semesters and unapproved enrollments.
+            // Query updated to count all approved enrollments, removing the current semester filter
             string sql = @"
-                SELECT
-                    c.course_id,
-                    c.course_name,
-                    c.course_code,
-                    c.course_img,
-                    ISNULL(p.program_semester, 0)  AS sem_num,
-                    CASE
-                        WHEN p.program_semester IS NOT NULL
-                        THEN 'Sem ' + CAST(p.program_semester AS NVARCHAR(5))
-                        ELSE 'N/A'
-                    END AS semester_label,
-                    (SELECT COUNT(DISTINCT e.student_id)
-                     FROM Enrollment e
-                     JOIN Student s ON e.student_id = s.student_id
-                     WHERE e.course_id = c.course_id 
-                       AND e.status = 'Approved'
-                       AND e.enrolled_semester = s.student_sem) AS student_count,
-                    CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
-                FROM [Course] c
-                INNER JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id
-                INNER JOIN [Program]  p ON c.Program_id  = p.program_id
-                LEFT  JOIN [LecturerCourseFavourite] f
-                       ON f.course_id   = c.course_id
-                      AND f.lecturer_id = l.lecturer_id
-                WHERE l.lecturer_email = @Email
-                ORDER BY c.course_name ASC";
+        SELECT
+            c.course_id,
+            c.course_name,
+            c.course_code,
+            c.course_img,
+            ISNULL(p.program_semester, 0)  AS sem_num,
+            CASE
+                WHEN p.program_semester IS NOT NULL
+                THEN 'Sem ' + CAST(p.program_semester AS NVARCHAR(5))
+                ELSE 'N/A'
+            END AS semester_label,
+            (SELECT COUNT(DISTINCT e.student_id)
+             FROM Enrollment e
+             WHERE e.course_id = c.course_id 
+               AND e.status = 'Approved') AS student_count,
+            CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
+        FROM [Course] c
+        INNER JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id
+        INNER JOIN [Program]  p ON c.Program_id  = p.program_id
+        LEFT  JOIN [LecturerCourseFavourite] f
+               ON f.course_id   = c.course_id
+              AND f.lecturer_id = l.lecturer_id
+        WHERE l.lecturer_email = @Email
+        ORDER BY c.course_name ASC";
 
             var list = new List<object>();
 

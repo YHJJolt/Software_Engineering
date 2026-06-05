@@ -51,14 +51,12 @@ namespace SchoolSystem
             {
                 conn.Open();
 
-                // 1. Courses Enrolled count (Filters by Approved AND Current Semester)
+                // 1. Courses Enrolled count (Filters by Approved only, removes semester check)
                 string sqlCourses = @"
-                    SELECT COUNT(*) 
-                    FROM Enrollment e
-                    INNER JOIN Student s ON e.student_id = s.student_id
-                    WHERE e.student_id = @StudentId 
-                      AND e.enrolled_semester = s.student_sem
-                      AND e.status = 'Approved'";
+            SELECT COUNT(*) 
+            FROM Enrollment e
+            WHERE e.student_id = @StudentId 
+              AND e.status = 'Approved'";
                 using (SqlCommand cmd = new SqlCommand(sqlCourses, conn))
                 {
                     cmd.Parameters.AddWithValue("@StudentId", studentId);
@@ -74,13 +72,12 @@ namespace SchoolSystem
                     litCGPA.Text = cgpaResult != null && cgpaResult != DBNull.Value ? Convert.ToDecimal(cgpaResult).ToString("0.00") : "N/A";
                 }
 
-                // 3. Average Attendance Calculation 
+                // 3. Average Attendance Calculation (removes semester check)
                 string sqlAttendance = @"
-                    SELECT SUM(cg.attended_hours) as Attended, SUM(cg.total_hours) as Total 
-                    FROM CourseGrade cg
-                    INNER JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
-                    INNER JOIN Student s ON e.student_id = s.student_id
-                    WHERE e.student_id = @StudentId AND e.enrolled_semester = s.student_sem";
+            SELECT SUM(cg.attended_hours) as Attended, SUM(cg.total_hours) as Total 
+            FROM CourseGrade cg
+            INNER JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
+            WHERE e.student_id = @StudentId";
 
                 using (SqlCommand cmd = new SqlCommand(sqlAttendance, conn))
                 {
@@ -113,16 +110,18 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // MAGIC QUERY: Only fetches courses where the stamped enrollment semester matches their current semester
+                // Only shows approved courses that the student has favourited
                 string sql = @"
-            SELECT c.course_id, c.course_code, c.course_name, c.course_img 
-            FROM Course c 
-            INNER JOIN Enrollment e ON c.course_id = e.course_id 
-            INNER JOIN Student s ON e.student_id = s.student_id
-            WHERE e.student_id = @StudentId 
-              AND e.enrolled_semester = s.student_sem 
-              AND e.status = 'Approved'
-            ORDER BY c.course_name ASC";
+                    SELECT c.course_id, c.course_code, c.course_name, c.course_img
+                    FROM Course c
+                    INNER JOIN Enrollment e
+                           ON c.course_id  = e.course_id
+                    INNER JOIN StudentCourseFavourite f
+                           ON f.course_id  = c.course_id
+                          AND f.student_id = @StudentId
+                    WHERE e.student_id = @StudentId
+                      AND e.status     = 'Approved'
+                    ORDER BY c.course_name ASC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {

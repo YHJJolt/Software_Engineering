@@ -33,7 +33,7 @@
                 <a id="linkPeople" runat="server" href="~/Student/StudentCoursePeople.aspx" class="nav-link"><i class="fas fa-users"></i> <span>People</span></a>
                 <a id="linkModules" runat="server" href="~/Student/StudentCourseModules.aspx" class="nav-link"><i class="fas fa-layer-group"></i> <span>Modules</span></a>
                 <a id="linkAssignments" runat="server" href="~/Student/StudentCourseAssignments" class="nav-link"><i class="fas fa-file-alt"></i> <span>Assignments</span></a>
-                <a id="linkGrades" runat="server" href="~/Student/StudentGrades.aspx" class="nav-link"><i class="fas fa-star"></i> <span>Grades</span></a>
+                <a id="linkGrades" runat="server" href="~/Student/StudentIndivGrades.aspx" class="nav-link"><i class="fas fa-star"></i> <span>Grades</span></a>
                 <a id="linkAnnouncements" runat="server" href="~/Student/StudentAnnouncements.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>View Announcements</span></a>
             </div>
             

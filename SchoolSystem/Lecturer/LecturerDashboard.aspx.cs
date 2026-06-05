@@ -29,53 +29,48 @@ namespace SchoolSystem
             {
                 // Query courses directly from Course table matching the Lecturer ID
                 string sqlCourses = @"
-                    SELECT COUNT(c.course_id) 
-                    FROM Course c 
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
-                    WHERE l.lecturer_email = @Email";
+            SELECT COUNT(c.course_id) 
+            FROM Course c 
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
+            WHERE l.lecturer_email = @Email";
 
-                // FIXED: Query student enrollments filtering by approved status and current semester cohort
+                // Query all student enrollments without filtering by enrolled_semester
                 string sqlStudents = @"
-                    SELECT COUNT(e.student_id) 
-                    FROM Enrollment e
-                    JOIN Course c ON e.course_id = c.course_id
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    JOIN Student s ON e.student_id = s.student_id
-                    WHERE l.lecturer_email = @Email
-                      AND e.status = 'Approved'
-                      AND e.enrolled_semester = s.student_sem";
+            SELECT COUNT(e.student_id) 
+            FROM Enrollment e
+            JOIN Course c ON e.course_id = c.course_id
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            WHERE l.lecturer_email = @Email
+              AND e.status = 'Approved'";
 
-                // FIXED: Calculate average passing rates filtering out historical students
+                // Calculate average passing rates for all students across all semesters
                 string sqlPassRate = @"
-                    SELECT 
-                        CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
-                    FROM CourseGrade cg
-                    JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
-                    JOIN Course c ON e.course_id = c.course_id
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    JOIN Student s ON e.student_id = s.student_id
-                    WHERE l.lecturer_email = @Email
-                      AND e.status = 'Approved'
-                      AND e.enrolled_semester = s.student_sem";
+            SELECT 
+                CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate 
+            FROM CourseGrade cg 
+            JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id 
+            JOIN Course c ON e.course_id = c.course_id 
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
+            WHERE l.lecturer_email = @Email 
+              AND e.status = 'Approved'";
 
                 conn.Open();
 
                 SqlCommand cmd1 = new SqlCommand(sqlCourses, conn);
                 cmd1.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
-                litCourseCount.Text = cmd1.ExecuteScalar()?.ToString() ?? "0";
+                litCourseCount.Text = cmd1.ExecuteScalar().ToString();
 
                 SqlCommand cmd2 = new SqlCommand(sqlStudents, conn);
                 cmd2.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
-                litStudentCount.Text = cmd2.ExecuteScalar()?.ToString() ?? "0";
+                litStudentCount.Text = cmd2.ExecuteScalar().ToString();
 
                 SqlCommand cmd3 = new SqlCommand(sqlPassRate, conn);
                 cmd3.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
-                object rateObj = cmd3.ExecuteScalar();
+                object passRateResult = cmd3.ExecuteScalar();
 
-                if (rateObj != DBNull.Value && rateObj != null)
+                if (passRateResult != DBNull.Value && passRateResult != null)
                 {
-                    double rate = Convert.ToDouble(rateObj);
-                    litPassRate.Text = rate.ToString("0.0") + "%";
+                    litPassRate.Text = Convert.ToDouble(passRateResult).ToString("0.0") + "%";
                 }
                 else
                 {
