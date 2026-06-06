@@ -338,6 +338,24 @@ END
 GO
 
 -- ===================================================================================
+-- 19. Student notifications read
+-- ===================================================================================
+CREATE TABLE [StudentNotifRead] (
+    [student_id]   INT      NOT NULL PRIMARY KEY,
+    [last_read_at] DATETIME NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT [fk_SNR_Student] FOREIGN KEY ([student_id])
+        REFERENCES [Student]([student_id]) ON DELETE CASCADE
+);
+
+-- ===================================================================================
+-- 19. Lecturer notifications read
+-- ===================================================================================
+CREATE TABLE LecturerNotifRead (
+    lecturer_id INT PRIMARY KEY,
+    last_read_at DATETIME NOT NULL
+);
+
+-- ===================================================================================
 -- 20. Trigger: Auto Generate Payment
 -- ===================================================================================
 IF OBJECT_ID('trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER trg_GeneratePayment;

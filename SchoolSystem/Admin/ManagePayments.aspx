@@ -29,7 +29,7 @@
                 <div class="stat-card">
                     <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;"><i class="fas fa-hand-holding-usd"></i></div>
                     <div class="stat-details">
-                        <span class="stat-title">Total Collected</span>
+                        <span class="stat-title">Total Received</span>
                         <span class="stat-value">RM <asp:Literal ID="litTotalCollected" runat="server" Text="0.00"></asp:Literal></span>
                     </div>
                 </div>

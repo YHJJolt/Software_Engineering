@@ -150,13 +150,22 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.Literal litNotifCount;
 
         /// <summary>
-        /// rptNotifications control.
+        /// updMarkRead control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptNotifications;
+        protected global::System.Web.UI.UpdatePanel updMarkRead;
+
+        /// <summary>
+        /// btnMarkRead control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnMarkRead;
 
         /// <summary>
         /// noNotifs control.
@@ -165,7 +174,16 @@ namespace SchoolSystem
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl noNotifs;
+        protected global::System.Web.UI.WebControls.PlaceHolder noNotifs;
+
+        /// <summary>
+        /// rptNotifications control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptNotifications;
 
         /// <summary>
         /// MainContent control.

@@ -2,6 +2,8 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Web.UI;
 
 namespace SchoolSystem
 {
@@ -18,11 +20,15 @@ namespace SchoolSystem
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
+
+            // Required to allow the bell click to update the DB asynchronously
+            ScriptManager.GetCurrent(Page)?.RegisterAsyncPostBackControl(btnMarkRead);
+
             if (!IsPostBack)
             {
                 LoadSidebarProfile();
-                HighlightActiveSideBar();
                 LoadNotifications();
+                HighlightActiveSideBar();
             }
         }
 
@@ -49,45 +55,98 @@ namespace SchoolSystem
 
         private void LoadNotifications()
         {
-            DataTable dtNotifs = new DataTable();
+            if (Session["UserEmail"] == null) { Response.Redirect("~/Login.aspx"); return; }
+
             using (SqlConnection conn = new SqlConnection(connStr))
             {
+                // Lecturers see Admin Announcements and Calendar Events only.
+                // Tracks unread state via LecturerNotifRead table (same pattern as StudentNotifRead).
                 string sql = @"
-            SELECT 'Admin Announcement' AS Type,
-                   N'📢 [Posted by Admin] ' + title AS Message,
-                   'info' AS CssClass,
-                   '~/Lecturer/LecturerCalendar.aspx' AS Link
-            FROM Announcement
-            WHERE admin_id IS NOT NULL
+            DECLARE @LecturerId INT;
+            SELECT @LecturerId = lecturer_id FROM Lecturer WHERE lecturer_email = @Email;
 
-            UNION ALL
+            DECLARE @LastRead DATETIME;
+            SELECT @LastRead = last_read_at FROM LecturerNotifRead WHERE lecturer_id = @LecturerId;
 
-            SELECT 'New Event' AS Type,
-                   N'📅 [New Event] ' + event_title +
-                   N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
-                   'info' AS CssClass,
-                   '~/Lecturer/LecturerCalendar.aspx' AS Link
-            FROM Calendar
-            WHERE start_date >= DATEADD(DAY, -30, GETDATE())
+            WITH AllNotifs AS (
+                SELECT 'Admin Announcement' AS Type,
+                       N'📢 [Admin] ' + title AS Message,
+                       CAST('~/Lecturer/LecturerCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       created_at AS SortDate
+                FROM Announcement
+                WHERE admin_id IS NOT NULL
 
-            ORDER BY Message";
+                UNION ALL
+
+                SELECT 'New Event' AS Type,
+                       N'📅 [New Event] ' + event_title + N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                       CAST('~/Lecturer/LecturerCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       CAST(start_date AS DATETIME) AS SortDate
+                FROM Calendar
+                WHERE start_date >= DATEADD(DAY, -30, GETDATE())
+            )
+            SELECT TOP 10 *,
+                CASE
+                    WHEN Type = 'New Event' THEN 0
+                    WHEN @LastRead IS NULL THEN 1
+                    WHEN SortDate > @LastRead THEN 1
+                    ELSE 0
+                END AS IsUnread,
+                CASE
+                    WHEN SortDate > GETDATE() THEN 'Upcoming'
+                    WHEN DATEDIFF(MINUTE, SortDate, GETDATE()) < 60 THEN CAST(DATEDIFF(MINUTE, SortDate, GETDATE()) AS VARCHAR) + 'm ago'
+                    WHEN DATEDIFF(HOUR, SortDate, GETDATE()) < 24 THEN CAST(DATEDIFF(HOUR, SortDate, GETDATE()) AS VARCHAR) + 'h ago'
+                    ELSE CAST(DATEDIFF(DAY, SortDate, GETDATE()) AS VARCHAR) + 'd ago'
+                END AS TimeAgo
+            FROM AllNotifs
+            ORDER BY SortDate DESC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                da.Fill(dtNotifs);
+                cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
 
-                litNotifCount.Text = dtNotifs.Rows.Count.ToString();
-                if (dtNotifs.Rows.Count > 0)
-                {
-                    noNotifs.Visible = false;
-                    rptNotifications.DataSource = dtNotifs;
-                    rptNotifications.DataBind();
-                }
-                else
-                {
-                    noNotifs.Visible = true;
-                }
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                int unreadCount = dt.AsEnumerable().Count(r => r.Field<int>("IsUnread") == 1);
+                litNotifCount.Text = (unreadCount > 0) ? $"<span class=\"notif-badge\">{unreadCount}</span>" : "";
+
+                rptNotifications.DataSource = dt;
+                rptNotifications.DataBind();
+                noNotifs.Visible = (dt.Rows.Count == 0);
             }
+        }
+
+        private void MarkAllNotificationsRead()
+        {
+            if (Session["UserEmail"] == null) return;
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                // Date buffer prevents milliseconds bug (same pattern as StudentMaster)
+                string sql = @"
+                    DECLARE @LecturerId INT;
+                    SELECT @LecturerId = lecturer_id FROM Lecturer WHERE lecturer_email = @Email;
+
+                    MERGE INTO LecturerNotifRead AS target
+                    USING (SELECT @LecturerId AS lecturer_id) AS source
+                        ON target.lecturer_id = source.lecturer_id
+                    WHEN MATCHED THEN
+                        UPDATE SET last_read_at = DATEADD(MINUTE, 1, GETDATE())
+                    WHEN NOT MATCHED THEN
+                        INSERT (lecturer_id, last_read_at) VALUES (@LecturerId, DATEADD(MINUTE, 1, GETDATE()));";
+
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        protected void btnMarkRead_Click(object sender, EventArgs e)
+        {
+            MarkAllNotificationsRead();
+            LoadNotifications();
         }
 
         private void HighlightActiveSideBar()

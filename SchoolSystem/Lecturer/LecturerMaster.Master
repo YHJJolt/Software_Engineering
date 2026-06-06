@@ -4,26 +4,32 @@
 <head runat="server">
     <meta charset="utf-8" />
     <title>Lecturer Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link rel="stylesheet" type="text/css" href="~/Lecturer/LecturerStyle.css" />
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
     <form id="form1" runat="server">
+
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
+
         <div id="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-chalkboard-teacher icon"></i>
                 <span>Lecturer Panel</span>
             </div>
+
             <div class="nav-links">
                 <a id="linkDashboard" runat="server" href="~/Lecturer/LecturerDashboard.aspx" class="nav-link"><i class="fas fa-home"></i> <span>Dashboard</span></a>
                 <a id="linkCalendar" runat="server" href="~/Lecturer/LecturerCalendar.aspx" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
                 <a id="linkCourses" runat="server" href="~/Lecturer/LecturerCourses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Courses</span></a>
             </div>
+
             <a runat="server" href="~/Lecturer/LecturerProfile.aspx" class="sidebar-profile">
                 <asp:Image ID="imgSidebar" runat="server" CssClass="p-img" ImageUrl="~/Images/default-avatar.png" />
                 <div class="p-text">
-                    <span class="p-name"><asp:Literal ID="litSidebarName" runat="server" /></span>
+                    <span class="p-name"><asp:Literal ID="litSidebarName" runat="server"></asp:Literal></span>
                 </div>
             </a>
         </div>
@@ -36,35 +42,51 @@
                     </button>
                     <h2 class="page-title"><asp:Literal ID="litPageTitle" runat="server">Dashboard</asp:Literal></h2>
                 </div>
-                
-                <div class="notif-container" onclick="toggleNotifs()">
-                    <div class="notif-bell-wrapper">
+
+                <%-- NOTIFICATION BELL --%>
+                <div class="notif-container">
+                    <div class="notif-bell-wrapper" onclick="toggleNotifs(event)">
                         <i class="fas fa-bell notif-bell"></i>
-                        <span class="notif-badge"><asp:Literal ID="litNotifCount" runat="server">0</asp:Literal></span>
+                        <asp:Literal ID="litNotifCount" runat="server"></asp:Literal>
                     </div>
-                    
-                    <div id="notifDropdown" class="notif-dropdown">
+
+                    <div id="notifDropdown" class="notif-dropdown" style="display:none;">
                         <div class="notif-header">
                             <h4>Notifications</h4>
+                            <asp:UpdatePanel ID="updMarkRead" runat="server" UpdateMode="Conditional">
+                                <ContentTemplate>
+                                    <asp:LinkButton ID="btnMarkRead" runat="server"
+                                        CssClass="mark-read-btn"
+                                        OnClick="btnMarkRead_Click"
+                                        OnClientClick="handleMarkRead();">
+                                        Mark all as read
+                                    </asp:LinkButton>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
                         </div>
+
                         <div class="notif-body">
+                            <asp:PlaceHolder ID="noNotifs" runat="server" Visible="false">
+                                <div class="no-notifs">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>You're all caught up!</p>
+                                </div>
+                            </asp:PlaceHolder>
+
                             <asp:Repeater ID="rptNotifications" runat="server">
                                 <ItemTemplate>
-                                    <a href='<%# ResolveUrl(Eval("Link").ToString()) %>'
-                                       style="text-decoration:none; color:inherit; display:block;">
-                                        <div class='notif-item <%# Eval("CssClass") %>'>
-                                            <div class="notif-icon">
-                                                <i class='<%# Eval("Type").ToString() == "New Event" ? "fas fa-calendar-day" : "fas fa-bullhorn" %>'></i>
-                                            </div>
-                                            <div class="notif-content">
-                                                <strong><%# Eval("Type") %></strong>
-                                                <span><%# Eval("Message") %></span>
-                                            </div>
+                                    <a href='<%# Eval("Link") != DBNull.Value ? ResolveUrl(Eval("Link").ToString()) : "#" %>'
+                                       class='notif-item <%# Convert.ToInt32(Eval("IsUnread")) == 1 ? "unread" : "" %>'>
+                                        <div class="notif-icon-wrapper">
+                                            <i class='<%# Eval("Type").ToString() == "New Event" ? "fas fa-calendar-day" : "fas fa-bullhorn" %>'></i>
+                                        </div>
+                                        <div class="notif-content">
+                                            <span class="notif-msg"><%# Eval("Message") %></span>
+                                            <span class="notif-time"><%# Eval("TimeAgo") %></span>
                                         </div>
                                     </a>
                                 </ItemTemplate>
                             </asp:Repeater>
-                            <div id="noNotifs" runat="server" visible="false" style="padding:20px; text-align:center; color:#64748b;">No new notifications right now.</div>
                         </div>
                     </div>
                 </div>
@@ -81,21 +103,51 @@
             document.body.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
         }
+
         window.onload = function () {
             if (localStorage.getItem('sidebarState') === 'collapsed') {
                 document.body.classList.add('sidebar-collapsed');
             }
         }
-        function toggleNotifs() {
+
+        function toggleNotifs(event) {
+            if (event) event.stopPropagation();
             var dropdown = document.getElementById('notifDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            var isOpening = dropdown.style.display !== 'block';
+            dropdown.style.display = isOpening ? 'block' : 'none';
+            if (isOpening) {
+                zeroOutBadge();
+                var btn = document.getElementById('<%= btnMarkRead.ClientID %>');
+                if (btn) btn.click();
+            }
         }
+
+        function zeroOutBadge() {
+            var badge = document.querySelector('.notif-badge');
+            if (badge) badge.style.display = 'none';
+
+            document.querySelectorAll('.notif-item.unread').forEach(function (el) {
+                el.classList.remove('unread');
+            });
+        }
+
+        function handleMarkRead() {
+            event.stopPropagation();
+            zeroOutBadge();
+        }
+
+        document.getElementById('notifDropdown').addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
         document.addEventListener('click', function (event) {
-            var isClickInside = document.querySelector('.notif-container').contains(event.target);
-            if (!isClickInside) {
-                document.getElementById('notifDropdown').style.display = 'none';
+            var container = document.querySelector('.notif-container');
+            if (container && !container.contains(event.target)) {
+                var dd = document.getElementById('notifDropdown');
+                if (dd) dd.style.display = 'none';
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
