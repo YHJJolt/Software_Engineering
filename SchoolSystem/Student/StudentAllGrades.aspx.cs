@@ -18,7 +18,7 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
 
-            ((StudentMaster)this.Master).PageTitle = "Results & Grades";
+            ((StudentMaster)this.Master).PageTitle = "Grades";
 
             if (!IsPostBack)
             {

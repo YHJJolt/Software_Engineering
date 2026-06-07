@@ -286,7 +286,6 @@ namespace SchoolSystem
                     string sql = @"
                         DELETE FROM CourseGrade WHERE Enrollment_id IN (SELECT enrollment_id FROM Enrollment WHERE course_id = @ID);
                         DELETE FROM Enrollment WHERE course_id = @ID;
-                        DELETE FROM LecturerEnrollment WHERE course_id = @ID;
                         DELETE FROM Course WHERE course_id = @ID;";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))

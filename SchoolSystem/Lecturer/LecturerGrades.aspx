@@ -14,7 +14,6 @@
         </div>
 
         <div class="grades-header">
-            <h2 id="gradesTitle">Grades</h2>
             <a href="#" class="btn-print" onclick="window.print(); return false;">
                 <i class="fas fa-print"></i> Print Grades
             </a>

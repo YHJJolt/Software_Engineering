@@ -15,6 +15,8 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // ADD THIS LINE TO OVERRIDE THE MASTER PAGE TITLE
+            ((LecturerCourseMaster)this.Master).PageTitle = "Modules";
             if (Request.QueryString["id"] == null && Request.UrlReferrer != null)
             {
                 Uri referrerUri = Request.UrlReferrer;

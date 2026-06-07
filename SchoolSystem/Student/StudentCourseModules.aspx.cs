@@ -30,7 +30,9 @@ namespace SchoolSystem
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
-
+            // ADD THIS LINE TO OVERRIDE THE MASTER PAGE TITLE
+            ((StudentCourseMaster)this.Master).PageTitle = "Modules";
+            
             if (Request.QueryString["id"] != null)
             {
                 currentCourseId = Convert.ToInt32(Request.QueryString["id"]);

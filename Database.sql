@@ -1,3 +1,4 @@
+
 -- ============================================================
 -- 1. Table: Admin (HoP)
 -- ============================================================
@@ -370,40 +371,72 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM inserted WHERE status = 'Approved')
     BEGIN
-        -- Phase 1: Create or Update the Main Invoice (Payment table)
-        MERGE INTO [Payment] AS target
-        USING (
-            SELECT 
-                e.student_id,
-                SUM(CAST(c.course_fee AS DECIMAL(18,2))) AS TotalFee,
-                DATEADD(day, 14, MIN(e.enrollment_date)) AS DueDate
+        -- We loop through the students affected by the approval
+        DECLARE @StudentId INT;
+        DECLARE student_cursor CURSOR FOR
+        SELECT DISTINCT student_id FROM inserted WHERE status = 'Approved';
+
+        OPEN student_cursor;
+        FETCH NEXT FROM student_cursor INTO @StudentId;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- 1. Find the total fee for new approved courses that are NOT YET billed
+            DECLARE @NewFeeAmount DECIMAL(18,2) = 0;
+
+            SELECT @NewFeeAmount = ISNULL(SUM(CAST(c.course_fee AS DECIMAL(18,2))), 0)
             FROM [Enrollment] e
             INNER JOIN [Course] c ON e.course_id = c.course_id
-            WHERE e.status = 'Approved'
-              AND e.student_id IN (SELECT student_id FROM inserted WHERE status = 'Approved')
-            GROUP BY e.student_id
-        ) AS source
-        ON target.student_id = source.student_id
-        
-        WHEN MATCHED THEN
-            UPDATE SET payment_amount = source.TotalFee
-            
-        WHEN NOT MATCHED BY TARGET THEN
-            INSERT (student_id, payment_amount, payment_duedate)
-            VALUES (source.student_id, source.TotalFee, source.DueDate);
+            WHERE e.student_id = @StudentId
+              AND e.status = 'Approved'
+              AND NOT EXISTS (
+                  SELECT 1 FROM [PaymentDetail] pd WHERE pd.enrollment_id = e.enrollment_id
+              );
 
-        -- Phase 2: Create the Invoice Line Items (PaymentDetail table)
-        INSERT INTO [PaymentDetail] (payment_id, enrollment_id, course_fee)
-        SELECT p.payment_id, e.enrollment_id, c.course_fee
-        FROM [Enrollment] e
-        INNER JOIN [Course] c ON e.course_id = c.course_id
-        INNER JOIN [Payment] p ON e.student_id = p.student_id
-        WHERE e.status = 'Approved'
-          AND e.student_id IN (SELECT student_id FROM inserted WHERE status = 'Approved')
-          -- Safety check: Prevent duplicate courses from being added to the receipt
-          AND NOT EXISTS (
-              SELECT 1 FROM [PaymentDetail] pd WHERE pd.enrollment_id = e.enrollment_id
-          );
+            -- If there are new courses to bill
+            IF @NewFeeAmount > 0
+            BEGIN
+                DECLARE @PaymentId INT = NULL;
+
+                -- 2. Check if the student has an existing UNPAID invoice
+                SELECT TOP 1 @PaymentId = payment_id
+                FROM [Payment]
+                WHERE Student_id = @StudentId AND payment_paydate IS NULL
+                ORDER BY payment_id DESC;
+
+                IF @PaymentId IS NOT NULL
+                BEGIN
+                    -- Scenario 1: Add to the existing unpaid invoice
+                    UPDATE [Payment]
+                    SET payment_amount = payment_amount + @NewFeeAmount
+                    WHERE payment_id = @PaymentId;
+                END
+                ELSE
+                BEGIN
+                    -- Scenario 2: Create a brand new unpaid invoice (Old ones were already paid)
+                    INSERT INTO [Payment] (Student_id, payment_amount, payment_duedate)
+                    VALUES (@StudentId, @NewFeeAmount, DATEADD(day, 14, GETDATE()));
+
+                    SET @PaymentId = SCOPE_IDENTITY();
+                END
+
+                -- 3. Link the new courses to the correct invoice
+                INSERT INTO [PaymentDetail] (payment_id, enrollment_id, course_fee)
+                SELECT @PaymentId, e.enrollment_id, c.course_fee
+                FROM [Enrollment] e
+                INNER JOIN [Course] c ON e.course_id = c.course_id
+                WHERE e.student_id = @StudentId
+                  AND e.status = 'Approved'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM [PaymentDetail] pd WHERE pd.enrollment_id = e.enrollment_id
+                  );
+            END
+
+            FETCH NEXT FROM student_cursor INTO @StudentId;
+        END
+
+        CLOSE student_cursor;
+        DEALLOCATE student_cursor;
     END
 END
 GO

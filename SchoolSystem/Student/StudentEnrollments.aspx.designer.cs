@@ -24,6 +24,33 @@ namespace SchoolSystem
         protected global::System.Web.UI.UpdatePanel upEnrollment;
 
         /// <summary>
+        /// pnlGraduated control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlGraduated;
+
+        /// <summary>
+        /// pnlActiveStudent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlActiveStudent;
+
+        /// <summary>
+        /// litCurrentSem control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCurrentSem;
+
+        /// <summary>
         /// gvMyStatus control.
         /// </summary>
         /// <remarks>
@@ -40,6 +67,15 @@ namespace SchoolSystem
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptAvailableCourses;
+
+        /// <summary>
+        /// divNoAvailable control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divNoAvailable;
 
         /// <summary>
         /// rptPendingQueue control.

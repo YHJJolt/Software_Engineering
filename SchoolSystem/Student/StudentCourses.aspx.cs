@@ -15,7 +15,7 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
 
-            ((StudentMaster)this.Master).PageTitle = "My Courses";
+            ((StudentMaster)this.Master).PageTitle = "Courses";
 
             EnsureFavouriteTableExists();
 

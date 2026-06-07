@@ -15,6 +15,9 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // ADD THIS LINE TO OVERRIDE THE MASTER PAGE TITLE
+            ((LecturerCourseMaster)this.Master).PageTitle = "Assignments";
+
             // 1. Your exact clever Referrer fallback logic from CourseModules
             if (Request.QueryString["id"] == null && Request.UrlReferrer != null)
             {

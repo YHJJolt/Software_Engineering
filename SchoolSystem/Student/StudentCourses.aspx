@@ -12,7 +12,6 @@
         <div class="courses-toolbar">
             <!-- Left: Title + Semester dropdown together -->
             <div class="toolbar-left">
-                <span class="toolbar-title">All Courses</span>
                 <asp:DropDownList ID="ddlSemester" runat="server" CssClass="sem-select"
                     AutoPostBack="true"
                     OnSelectedIndexChanged="ddlSemester_SelectedIndexChanged">

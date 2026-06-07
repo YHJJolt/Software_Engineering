@@ -19,9 +19,21 @@ namespace SchoolSystem
 
             if (!IsPostBack)
             {
-                LoadMyStatus();
-                LoadAvailableCourses();
-                LoadPendingQueue();
+                // Check if they are graduated FIRST
+                if (CheckIfGraduated())
+                {
+                    // Lock the screen
+                    pnlActiveStudent.Visible = false;
+                    pnlGraduated.Visible = true;
+                }
+                else
+                {
+                    // Normal active student, load the courses
+                    LoadCurrentSemester(); // <-- ADDED HERE
+                    LoadMyStatus();
+                    LoadAvailableCourses();
+                    LoadPendingQueue();
+                }
             }
         }
 
@@ -30,10 +42,11 @@ namespace SchoolSystem
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT c.course_code, c.course_name, e.status 
+                    SELECT c.course_code, c.course_name, e.status, e.enrolled_semester 
                     FROM Enrollment e
                     JOIN Course c ON e.course_id = c.course_id
-                    WHERE e.student_id = @sid";
+                    WHERE e.student_id = @sid
+                    ORDER BY e.enrolled_semester DESC";
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
                     cmd.Parameters.AddWithValue("@sid", currentStudentId);
@@ -67,6 +80,26 @@ namespace SchoolSystem
                     da.Fill(dt);
                     rptAvailableCourses.DataSource = dt;
                     rptAvailableCourses.DataBind();
+
+                    // ADD THIS LINE: Show or hide the empty state message
+                    divNoAvailable.Visible = (dt.Rows.Count == 0);
+                }
+            }
+        }
+
+        private void LoadCurrentSemester()
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT student_sem FROM Student WHERE student_id = @sid", con))
+                {
+                    cmd.Parameters.AddWithValue("@sid", currentStudentId);
+                    con.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null)
+                    {
+                        litCurrentSem.Text = result.ToString();
+                    }
                 }
             }
         }
@@ -125,6 +158,26 @@ namespace SchoolSystem
                     divNoPending.Visible = (dt.Rows.Count == 0);
                 }
             }
+        }
+
+        private bool CheckIfGraduated()
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT student_isactive FROM Student WHERE student_id = @sid", con))
+                {
+                    cmd.Parameters.AddWithValue("@sid", currentStudentId);
+                    con.Open();
+                    object result = cmd.ExecuteScalar();
+
+                    // If the database marks them as Graduated, return true!
+                    if (result != null && result.ToString() == "Graduated")
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private int GetStudentId()

@@ -4,7 +4,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <div class="sp-container">
-        <h3 class="sp-title">Tuition & Fees</h3>
+        <h3 class="sp-title">Tuition Fees</h3>
 
         <asp:UpdatePanel ID="upPayments" runat="server">
             <ContentTemplate>

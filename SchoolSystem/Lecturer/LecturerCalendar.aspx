@@ -4,10 +4,6 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
 <div class="calendar-page">
-    <div class="header">
-        <h1><i class="fas fa-calendar-alt"></i> Calendar</h1>
-    </div>
-
     <div class="calendar-container">
         <button type="button" class="btn-add-event" onclick="prepareAddModal()">
             <i class="fa-solid fa-plus"></i> Add New Event
@@ -196,7 +192,7 @@
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             height: 'auto',
-            aspectRatio: 1.8,           // Better aspect ratio
+            aspectRatio: 1.5,           // Better aspect ratio
             dayMaxEvents: 4,
             eventDisplay: 'block',
 

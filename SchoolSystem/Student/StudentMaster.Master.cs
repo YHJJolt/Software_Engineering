@@ -149,7 +149,7 @@ namespace SchoolSystem
             else if (currentPage.Contains("attendance")) linkAttendance.Attributes["class"] += " active";
             else if (currentPage.Contains("grade")) linkGrades.Attributes["class"] += " active";
             else if (currentPage.Contains("calendar")) linkCalendar.Attributes["class"] += " active";
-            else if (currentPage.Contains("enrolment")) linkEnrollment.Attributes["class"] += " active";
+            else if (currentPage.Contains("enrollment")) linkEnrollment.Attributes["class"] += " active";
             else if (currentPage.Contains("payment")) linkPayment.Attributes["class"] += " active";
         }
     }
