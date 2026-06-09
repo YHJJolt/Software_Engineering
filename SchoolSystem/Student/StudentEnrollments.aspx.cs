@@ -19,17 +19,31 @@ namespace SchoolSystem
 
             if (!IsPostBack)
             {
-                // Check if they are graduated FIRST
-                if (CheckIfGraduated())
+                // Check their exact database status
+                string status = GetStudentStatus();
+
+                if (status == "Graduated")
                 {
-                    // Lock the screen
+                    // Alumni screen
                     pnlActiveStudent.Visible = false;
+                    pnlInactive.Visible = false;
                     pnlGraduated.Visible = true;
+                }
+                else if (status == "Inactive")
+                {
+                    // Locked out for unpaid fees
+                    pnlActiveStudent.Visible = false;
+                    pnlGraduated.Visible = false;
+                    pnlInactive.Visible = true;
                 }
                 else
                 {
-                    // Normal active student, load the courses
-                    LoadCurrentSemester(); // <-- ADDED HERE
+                    // Normal Active Student
+                    pnlGraduated.Visible = false;
+                    pnlInactive.Visible = false;
+                    pnlActiveStudent.Visible = true;
+
+                    LoadCurrentSemester();
                     LoadMyStatus();
                     LoadAvailableCourses();
                     LoadPendingQueue();
@@ -160,7 +174,7 @@ namespace SchoolSystem
             }
         }
 
-        private bool CheckIfGraduated()
+        private string GetStudentStatus()
         {
             using (SqlConnection con = new SqlConnection(connStr))
             {
@@ -170,14 +184,10 @@ namespace SchoolSystem
                     con.Open();
                     object result = cmd.ExecuteScalar();
 
-                    // If the database marks them as Graduated, return true!
-                    if (result != null && result.ToString() == "Graduated")
-                    {
-                        return true;
-                    }
+                    // Returns 'Active', 'Inactive', or 'Graduated' exactly as Goh's triggers set them
+                    return result != null ? result.ToString() : "Active";
                 }
             }
-            return false;
         }
 
         private int GetStudentId()

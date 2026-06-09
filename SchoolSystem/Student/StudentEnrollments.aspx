@@ -15,6 +15,18 @@
                     <p style="color: #64748b; font-size: 16px; max-width: 500px; margin: 0 auto; line-height: 1.6;">You have successfully completed all your semesters and graduated from your program. Course enrollment is now permanently locked.</p>
                 </asp:Panel>
 
+                <asp:Panel ID="pnlInactive" runat="server" Visible="false" style="text-align: center; padding: 80px 20px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: var(--shadow-sm); margin-top: 20px;">
+                    <div style="display: inline-block; background: #fee2e2; padding: 25px; border-radius: 50%; margin-bottom: 20px;">
+                        <i class="fas fa-user-lock" style="font-size: 60px; color: #ef4444;"></i>
+                    </div>
+                    <h2 style="color: var(--navy-accent); font-weight: 900; margin-bottom: 10px; font-size: 28px;">Account Suspended</h2>
+                    <p style="color: #64748b; font-size: 16px; max-width: 550px; margin: 0 auto 30px auto; line-height: 1.6;">Your course enrollment is temporarily locked due to an outstanding tuition balance that has passed its due date. Please settle your balance to automatically reactivate your account.</p>
+                    
+                    <a href="StudentPayments.aspx" class="sp-btn" style="background: #ef4444; color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; font-size: 16px; border-radius: 8px; font-weight: 700; transition: 0.2s; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);">
+                        <i class="fas fa-credit-card"></i> Settle Balance
+                    </a>
+                </asp:Panel>
+
                 <asp:Panel ID="pnlActiveStudent" runat="server">
                     
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 25px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm);">
