@@ -9,11 +9,26 @@ namespace SchoolSystem
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
 
+        // Must be done in PreInit — it is the only event early enough to swap the MasterPage.
+        // If course_id is in the querystring the student arrived from inside a course sidebar,
+        // so we keep them inside StudentCourseMaster instead of dropping them back to StudentMaster.
+        protected void Page_PreInit(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(Request.QueryString["course_id"]))
+            {
+                MasterPageFile = "~/Student/StudentCourseMaster.Master";
+            }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
 
-            ((StudentMaster)this.Master).PageTitle = "My Profile";
+            // Set the page title on whichever master is active
+            if (Master is StudentCourseMaster courseMaster)
+                courseMaster.PageTitle = "My Profile";
+            else if (Master is StudentMaster)
+                Page.Title = "My Profile";
 
             if (!IsPostBack)
             {
@@ -52,7 +67,6 @@ namespace SchoolSystem
             }
         }
 
-        // FIXED: Renamed from btnSaveBio_Click to match the HTML button's OnClick event
         protected void btnSaveProfile_Click(object sender, EventArgs e)
         {
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -81,7 +95,13 @@ namespace SchoolSystem
                 cmd.ExecuteNonQuery();
             }
 
-            Response.Redirect("~/Student/StudentProfile.aspx");
+            // Preserve course_id on redirect so the master stays correct after image upload
+            string courseId = Request.QueryString["course_id"];
+            string redirectUrl = "~/Student/StudentProfile.aspx";
+            if (!string.IsNullOrEmpty(courseId))
+                redirectUrl += "?course_id=" + courseId;
+
+            Response.Redirect(redirectUrl);
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)

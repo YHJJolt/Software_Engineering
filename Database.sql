@@ -1,4 +1,3 @@
-
 -- ============================================================
 -- 1. Table: Admin (HoP)
 -- ============================================================
@@ -339,7 +338,7 @@ END
 GO
 
 -- ===================================================================================
--- 19. Student notifications read
+-- 20. Student notifications read
 -- ===================================================================================
 CREATE TABLE [StudentNotifRead] (
     [student_id]   INT      NOT NULL PRIMARY KEY,
@@ -349,7 +348,7 @@ CREATE TABLE [StudentNotifRead] (
 );
 
 -- ===================================================================================
--- 19. Lecturer notifications read
+-- 21. Lecturer notifications read
 -- ===================================================================================
 CREATE TABLE LecturerNotifRead (
     lecturer_id INT PRIMARY KEY,
@@ -357,7 +356,7 @@ CREATE TABLE LecturerNotifRead (
 );
 
 -- ===================================================================================
--- 20. Trigger: Auto Generate Payment
+-- 22. Trigger: Auto Generate Payment
 -- ===================================================================================
 IF OBJECT_ID('trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER trg_GeneratePayment;
 GO
@@ -441,8 +440,112 @@ BEGIN
 END
 GO
 
+
+-- ============================================================
+-- 23. TRIGGER: Set student to 'Inactive' when payment is overdue
+-- Fires on INSERT or UPDATE of Payment.
+-- If the due date has passed and the fee has NOT been paid,
+-- the linked student account is switched to 'Inactive'.
+-- ============================================================
+CREATE OR ALTER TRIGGER trg_Payment_SetInactive
+ON [Payment]
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Mark students as Inactive where:
+    --   1. The payment due date is in the past
+    --   2. The payment has NOT been made (payment_paydate IS NULL)
+    UPDATE s
+    SET s.[student_isactive] = 'Inactive'
+    FROM [Student] s
+    INNER JOIN inserted i ON s.[student_id] = i.[Student_id]
+    WHERE i.[payment_duedate] < GETDATE()
+      AND i.[payment_paydate] IS NULL
+      AND s.[student_isactive] NOT IN ('Inactive', 'Graduated');
+END
+GO
+
+-- ============================================================
+-- 24. TRIGGER: Restore student to 'Active' when payment is made
+-- Fires on UPDATE of Payment.
+-- If payment_paydate is now filled in (fee has been paid),
+-- the linked student account is switched back to 'Active'.
+-- The account stays Inactive for every other unpaid, overdue
+-- payment — it only becomes Active once ALL overdue fees are
+-- cleared.
+-- ============================================================
+CREATE OR ALTER TRIGGER trg_Payment_SetActive
+ON [Payment]
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Only proceed when payment_paydate was just set (i.e. the
+    -- student actually paid on this UPDATE).
+    IF NOT UPDATE([payment_paydate]) RETURN;
+
+    -- Restore to Active only if:
+    --   1. This row now has a pay date (just paid)
+    --   2. The student has NO other overdue & unpaid payment rows
+    UPDATE s
+    SET s.[student_isactive] = 'Active'
+    FROM [Student] s
+    INNER JOIN inserted i  ON s.[student_id] = i.[Student_id]
+    INNER JOIN deleted  d  ON i.[payment_id] = d.[payment_id]
+    WHERE i.[payment_paydate] IS NOT NULL   -- fee was just paid
+      AND d.[payment_paydate] IS NULL        -- it was previously unpaid
+      AND s.[student_isactive] = 'Inactive'
+      -- No other overdue unpaid payments exist for this student
+      AND NOT EXISTS (
+          SELECT 1
+          FROM [Payment] p
+          WHERE p.[Student_id]      = s.[student_id]
+            AND p.[payment_id]      <> i.[payment_id]  -- exclude the row just paid
+            AND p.[payment_duedate] < GETDATE()
+            AND p.[payment_paydate] IS NULL
+      );
+END
+GO
+
+-- ============================================================
+-- 25. TRIGGER: Restore student to 'Active' when an overdue unpaid
+-- payment record is DELETED (e.g. admin removes the invoice).
+-- Without this, deleting a Payment row leaves the student stuck
+-- as 'Inactive' forever because the other two triggers only fire
+-- on INSERT/UPDATE — not DELETE.
+-- ============================================================
+CREATE OR ALTER TRIGGER trg_Payment_DeleteReactivate
+ON [Payment]
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Reactivate only if the deleted row was overdue & unpaid,
+    -- AND the student has no remaining overdue unpaid payments.
+    UPDATE s
+    SET s.[student_isactive] = 'Active'
+    FROM [Student] s
+    INNER JOIN deleted d ON s.[student_id] = d.[Student_id]
+    WHERE d.[payment_duedate] < GETDATE()   -- the deleted row was overdue
+      AND d.[payment_paydate] IS NULL        -- and it was unpaid
+      AND s.[student_isactive] = 'Inactive'
+      -- No other overdue unpaid payments remain for this student
+      AND NOT EXISTS (
+          SELECT 1
+          FROM [Payment] p
+          WHERE p.[Student_id]      = s.[student_id]
+            AND p.[payment_duedate] < GETDATE()
+            AND p.[payment_paydate] IS NULL
+      );
+END
+GO
+
 -- ===================================================================================
--- 21. Trigger: Auto Calculate GPA & CGPA 
+-- 26. Trigger: Auto Calculate GPA & CGPA 
 -- ===================================================================================
 IF OBJECT_ID('trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER trg_CalculateGradesAndGPA;
 GO
@@ -653,7 +756,6 @@ VALUES
 (4, 3, '~/Uploads/Eve_Essay.docx', GETDATE(), 90, 1);     -- Eve gets 90/100 in BUS301 (A)
 GO
 
- 
 -- ============================================================
 -- VERIFICATION SELECTS
 -- ============================================================

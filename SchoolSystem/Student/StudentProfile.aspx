@@ -1,4 +1,5 @@
 ﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/Student/StudentMaster.Master" AutoEventWireup="true" CodeBehind="StudentProfile.aspx.cs" Inherits="SchoolSystem.StudentProfile" %>
+<%-- MasterPageFile above is the default; it is overridden in Page_PreInit when course_id is present --%>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <style>

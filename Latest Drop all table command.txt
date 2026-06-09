@@ -39,6 +39,9 @@ IF OBJECT_ID('dbo.Admin (HoP)', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
 IF OBJECT_ID('dbo.sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE [sp_ProcessGraduations];
 IF OBJECT_ID('dbo.trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER [trg_GeneratePayment];
 IF OBJECT_ID('dbo.trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER [trg_CalculateGradesAndGPA];
+IF OBJECT_ID('dbo.trg_Payment_SetInactive', 'TR') IS NOT NULL DROP TRIGGER [trg_Payment_SetInactive];
+IF OBJECT_ID('dbo.trg_Payment_SetActive', 'TR') IS NOT NULL DROP TRIGGER [trg_Payment_SetActive];
+IF OBJECT_ID('dbo.trg_Payment_DeleteReactivate', 'TR') IS NOT NULL DROP TRIGGER [trg_Payment_DeleteReactivate];
 
 PRINT 'Database layout successfully cleared without constraint errors.';
 GO

@@ -135,7 +135,7 @@
                                 <asp:LinkButton runat="server" CssClass="act-icon c-org" CommandName="Toggle" CommandArgument='<%# Eval("student_id") %>'
                                     Visible='<%# Eval("student_isactive").ToString() != "Graduated" %>'
                                     ToolTip='<%# Eval("student_isactive").ToString()=="Active"?"Deactivate":"Activate" %>'
-                                    OnClientClick='<%# "return confirmToggle(\""+Eval("student_name")+"\",\""+Eval("student_code")+"\",\""+Eval("student_isactive")+"\");" %>'>
+                                    OnClientClick='<%# "return confirmToggle(\""+Eval("student_name")+"\",\""+Eval("student_code")+"\",\""+Eval("student_isactive")+"\",\"student\");" %>'>
                                     <i class='<%# Eval("student_isactive").ToString()=="Active"?"fas fa-toggle-on":"fas fa-toggle-off" %>'></i></asp:LinkButton>
                                 <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="DeleteS" CommandArgument='<%# Eval("student_id") %>'
                                     ToolTip="Delete" OnClientClick='<%# "return confirmDelete(\""+Eval("student_name")+"\",\""+Eval("student_code")+"\",\"student\");" %>'>
@@ -194,7 +194,7 @@
                                 <asp:LinkButton runat="server" CssClass="act-icon c-blue" CommandName="ViewL" CommandArgument='<%# Eval("lecturer_id") %>' ToolTip="View"><i class="fas fa-eye"></i></asp:LinkButton>
                                 <asp:LinkButton runat="server" CssClass="act-icon c-org" CommandName="Toggle" CommandArgument='<%# Eval("lecturer_id") %>'
                                     ToolTip='<%# Eval("teacher_isactive").ToString()=="Active"?"Deactivate":"Activate" %>'
-                                    OnClientClick='<%# "return confirmToggle(\""+Eval("lecturer_name")+"\",\""+Eval("lecturer_code")+"\",\""+Eval("teacher_isactive")+"\");" %>'>
+                                    OnClientClick='<%# "return confirmToggle(\""+Eval("lecturer_name")+"\",\""+Eval("lecturer_code")+"\",\""+Eval("teacher_isactive")+"\",\"lecturer\");" %>'>
                                     <i class='<%# Eval("teacher_isactive").ToString()=="Active"?"fas fa-toggle-on":"fas fa-toggle-off" %>'></i></asp:LinkButton>
                                 <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="DeleteL" CommandArgument='<%# Eval("lecturer_id") %>'
                                     ToolTip="Delete" OnClientClick='<%# "return confirmDelete(\""+Eval("lecturer_name")+"\",\""+Eval("lecturer_code")+"\",\"lecturer\");" %>'>
@@ -464,10 +464,21 @@
         }
 
         function confirmDelete(name,code,type){return confirm('Permanently delete '+type+'?\n\nName : '+name+'\nCode : '+code+'\n\nThis cannot be undone');}
-        function confirmToggle(name,code,status){
-            var a=status==='Active'?'DEACTIVATE':'ACTIVATE';
-            var n=status==='Active'?'User will no longer be able to log in':'User will be able to log in again';
-            return confirm(a+' user?\n\nName : '+name+'\nCode : '+code+'\n\n'+n);
+        function confirmToggle(name,code,status,type){
+            var deactivating=status==='Active';
+            var a=deactivating?'DEACTIVATE':'ACTIVATE';
+            var n;
+            if(type==='student'){
+                n=deactivating
+                    ?'This student will not be able to progress to the next semester until reactivated.'
+                    :'This student will be able to progress to the next semester again.';
+            } else {
+                n=deactivating
+                    ?'This lecturer will be hidden from course assignments and will not appear as an active staff member.'
+                    :'This lecturer will be available for course assignments again.';
+            }
+            var userLabel=type==='student'?'student':'lecturer';
+            return confirm(a+' '+userLabel+'?\n\nName : '+name+'\nCode : '+code+'\n\n'+n);
         }
 
         function swapStats(tab){
