@@ -19,16 +19,37 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
+            if (Session["UserEmail"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+            }
 
-            // Explicitly map the button as an Async trigger
+            // Restored the async trigger for your notifications
             ScriptManager.GetCurrent(Page)?.RegisterAsyncPostBackControl(btnMarkRead);
 
             if (!IsPostBack)
             {
+                // RESTORED THESE TWO LINES
                 LoadSidebarProfile();
                 LoadNotifications();
+
                 HighlightActiveSideBar();
+            }
+
+            // --- GLOBAL ACCOUNT LOCKDOWN LOGIC ---
+            string currentPage = System.IO.Path.GetFileName(Request.Url.AbsolutePath).ToLower();
+
+            // 1. If they are NOT already on the payment page...
+            if (!currentPage.Contains("payment"))
+            {
+                // 2. Check their database status
+                string status = GetStudentStatus();
+
+                // 3. If they owe money, kick them immediately to the payment screen with a flag
+                if (status == "Inactive")
+                {
+                    Response.Redirect("~/Student/StudentPayments.aspx?locked=true");
+                }
             }
         }
 
@@ -151,6 +172,24 @@ namespace SchoolSystem
             else if (currentPage.Contains("calendar")) linkCalendar.Attributes["class"] += " active";
             else if (currentPage.Contains("enrollment")) linkEnrollment.Attributes["class"] += " active";
             else if (currentPage.Contains("payment")) linkPayment.Attributes["class"] += " active";
+        }
+
+        private string GetStudentStatus()
+        {
+            // Make sure your connection string is declared at the top of the class!
+            string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+            int studentId = Convert.ToInt32(Session["StudentID"]); // Or however you grab the ID in the master page
+
+            using (SqlConnection con = new SqlConnection(connStr))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT student_isactive FROM Student WHERE student_id = @sid", con))
+                {
+                    cmd.Parameters.AddWithValue("@sid", studentId);
+                    con.Open();
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? result.ToString() : "Active";
+                }
+            }
         }
     }
 }

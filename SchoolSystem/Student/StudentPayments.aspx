@@ -4,6 +4,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <div class="sp-container">
+        
+        <asp:Panel ID="pnlLockedWarning" runat="server" Visible="false" style="background: #fee2e2; border-left: 5px solid #ef4444; border-radius: 8px; padding: 15px 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm);">
+            <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #ef4444;"></i>
+            <div>
+                <h4 style="margin: 0 0 5px 0; color: #7f1d1d; font-weight: 800; font-size: 16px;">Access Restricted</h4>
+                <p style="margin: 0; color: #991b1b; font-size: 14px;">Your portal access has been temporarily suspended due to an overdue balance. Please settle your invoice below to instantly unlock your dashboard and courses.</p>
+            </div>
+        </asp:Panel>
+
         <h3 class="sp-title">Tuition Fees</h3>
 
         <asp:UpdatePanel ID="upPayments" runat="server">

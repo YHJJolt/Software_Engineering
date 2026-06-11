@@ -20,6 +20,12 @@ namespace SchoolSystem
 
             if (!IsPostBack)
             {
+                // Check if they were kicked here by the global Master Page lockdown
+                if (Request.QueryString["locked"] == "true")
+                {
+                    pnlLockedWarning.Visible = true;
+                }
+
                 LoadStudentPayments();
             }
         }
