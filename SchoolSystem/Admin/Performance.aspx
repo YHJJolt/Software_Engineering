@@ -5,6 +5,23 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
+    <style>
+        @media screen {
+            #gradeMid        { display: none !important; }
+            #gradeStats      { display: none !important; }
+            #courseGradesCard { display: none !important; }
+        }
+        @media print {
+            #gradeMid    { display: flex !important; }
+            #gradeStats  { display: block !important; }
+            #vGrades     { display: block !important; }
+            #enrollMid   { display: none !important; }
+            #enrollStats { display: none !important; }
+            #vEnroll     { display: none !important; }
+            .grade-chart-hide { display: none !important; }
+            .performance-page > .header { display: none !important; }
+        }
+    </style>
 
 </asp:Content>
 
@@ -20,7 +37,7 @@
             <button type="button" class="tb on" id="tb1" onclick="sw('enroll')">Enrollment Statistics</button>
             <button type="button" class="tb" id="tb2" onclick="sw('grades')">Grades</button>
         </div>
-        <button type="button" class="btn-export" onclick="window.print()">
+        <button type="button" class="btn-export" id="btnExportPdf" onclick="window.print()" style="display:none;">
             <i class="fas fa-file-pdf"></i> Export to PDF
         </button>
     </div>
@@ -150,7 +167,7 @@
         </div>
 
         <div id="vGrades" class="hidden">
-            <div class="card">
+            <div class="card" id="courseGradesCard">
                 <div class="section-title">
                     <span class="section-card-title">Course Grades</span>
                     <span class="title-center">Semester <span id="gSecTitle">1</span></span>
@@ -158,7 +175,7 @@
                 </div>
                 <div id="gCourseList"></div>
             </div>
-            <div class="card">
+            <div class="card grade-chart-hide">
                 <div class="section-title">
                     <span class="section-card-title">Grade Point Distribution</span>
                 </div>
@@ -305,6 +322,10 @@
     function buildEnrollCourses(d) {
         var el = document.getElementById('eCourseList');
         el.innerHTML = '';
+        if (d.courses.length === 0) {
+            el.innerHTML = '<div class="no-data">No enrolled courses for this semester.</div>';
+            return;
+        }
         d.courses.forEach(function (c, i) {
             el.innerHTML += '<div class="course-row"><span>' + c + '</span><span class="badge b-green">' + d.credits[i] + ' cr</span></div>';
         });
@@ -340,6 +361,10 @@
     function buildGradeCourses(d) {
         var el = document.getElementById('gCourseList');
         el.innerHTML = '';
+        if (d.courses.length === 0) {
+            el.innerHTML = '<div class="no-data">No grade data for this semester.</div>';
+            return;
+        }
         d.courses.forEach(function (c, i) {
             var bc = badgeClass[d.grades[i]] || 'b-blue';
             el.innerHTML += '<div class="course-row"><span>' + c + '</span><span class="badge ' + bc + '">' + d.grades[i] + ' (' + parseFloat(d.gpa[i]).toFixed(1) + ')</span></div>';
@@ -375,32 +400,24 @@
         });
     }
 
+
+    // ── Set correct print title before browser prints ────────────────
     // ── Tab switcher ────────────────────────────────────────────────
     function sw(t) {
         var isE = t === 'enroll';
         document.getElementById('vEnroll').classList.toggle('hidden', !isE);
         document.getElementById('vGrades').classList.toggle('hidden', isE);
         document.getElementById('enrollStats').classList.toggle('hidden', !isE);
-        document.getElementById('gradeStats').classList.toggle('hidden', isE);
         document.getElementById('tb1').classList.toggle('on', isE);
         document.getElementById('tb2').classList.toggle('on', !isE);
-        var eMid = document.getElementById('enrollMid');
-        var gMid = document.getElementById('gradeMid');
-        if (isE) { eMid.style.display = 'flex'; gMid.style.display = 'none'; }
-        else { eMid.style.display = 'none'; gMid.style.display = 'flex'; }
+        document.getElementById('enrollMid').style.display = isE ? 'flex' : 'none';
+        document.getElementById('btnExportPdf').style.display = isE ? 'none' : '';
     }
 
-    // ── Set correct print title before browser prints ────────────────
     window.onbeforeprint = function () {
-        var isEnroll = !document.getElementById('vEnroll').classList.contains('hidden');
         var name = student.name || '—';
-        if (isEnroll) {
-            document.getElementById('printTitleText').textContent = 'Enrollment Statistics Report';
-            document.getElementById('printTitleSub').textContent = 'Student Performance — ' + name;
-        } else {
-            document.getElementById('printTitleText').textContent = 'Student Performance Report';
-            document.getElementById('printTitleSub').textContent = 'Grade Summary — ' + name;
-        }
+        document.getElementById('printTitleText').textContent = 'Student Performance Report';
+        document.getElementById('printTitleSub').textContent = 'Grade Summary — ' + name.toUpperCase();
     };
 </script>
 </div>

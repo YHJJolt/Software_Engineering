@@ -34,25 +34,30 @@ namespace SchoolSystem
             JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
             WHERE l.lecturer_email = @Email";
 
-                // Query all student enrollments without filtering by enrolled_semester
+                // Counts only the active cohort (students still in the semester they enrolled in),
+                // so students who advanced to the next semester are excluded
                 string sqlStudents = @"
-            SELECT COUNT(e.student_id) 
+            SELECT COUNT(e.student_id)
             FROM Enrollment e
+            JOIN Student s ON e.student_id = s.student_id
             JOIN Course c ON e.course_id = c.course_id
             JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
             WHERE l.lecturer_email = @Email
-              AND e.status = 'Approved'";
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem";
 
-                // Calculate average passing rates for all students across all semesters
+                // Pass rate scoped to the active cohort (matches the Course Rates table below)
                 string sqlPassRate = @"
-            SELECT 
-                CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate 
-            FROM CourseGrade cg 
-            JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id 
-            JOIN Course c ON e.course_id = c.course_id 
-            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
-            WHERE l.lecturer_email = @Email 
-              AND e.status = 'Approved'";
+            SELECT
+                CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
+            FROM CourseGrade cg
+            JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
+            JOIN Student s ON e.student_id = s.student_id
+            JOIN Course c ON e.course_id = c.course_id
+            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            WHERE l.lecturer_email = @Email
+              AND e.status = 'Approved'
+              AND e.enrolled_semester = s.student_sem";
 
                 conn.Open();
 

@@ -3410,6 +3410,194 @@ body.sidebar-collapsed .p-img {
         background: #f1f3f4;
     }
 
+/* ============================================================
+   ADMIN TOPBAR + NOTIFICATION BELL (mirrors Student/Lecturer)
+   ============================================================ */
+#admin-topbar {
+    margin-left: var(--sidebar-width);
+    height: 70px;
+    background: var(--cream-base);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 40px;
+    border-bottom: 1px solid rgba(18, 20, 32, 0.08);
+    transition: 0.3s;
+}
+
+body.sidebar-collapsed #admin-topbar {
+    margin-left: 80px;
+}
+
+/* Pull main content up flush under the topbar */
+#admin-topbar + #main-content {
+    min-height: calc(100vh - 70px);
+}
+
+.notif-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.notif-bell-wrapper {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid rgba(18, 20, 32, 0.1);
+    transition: 0.3s;
+    position: relative;
+}
+
+.notif-container:hover .notif-bell-wrapper {
+    background: #faf7f0;
+    transform: translateY(-2px);
+}
+
+.notif-bell {
+    font-size: 18px;
+    color: var(--navy-accent);
+}
+
+.notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+.notif-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 55px;
+    width: 380px;
+    background: #fff;
+    border: 1px solid rgba(18, 20, 32, 0.08);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+    border-radius: 16px;
+    overflow: hidden;
+    z-index: 200;
+}
+
+.notif-header {
+    padding: 16px 20px;
+    background: #faf7f0;
+    border-bottom: 1px solid rgba(18, 20, 32, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .notif-header h4 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--navy-accent);
+    }
+
+.mark-read-btn {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--antique-gold);
+    text-decoration: none;
+}
+
+    .mark-read-btn:hover {
+        color: var(--navy-accent);
+        text-decoration: underline;
+    }
+
+.notif-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid rgba(18, 20, 32, 0.05);
+    transition: background 0.2s ease;
+}
+
+    .notif-item:last-child {
+        border-bottom: none;
+    }
+
+    .notif-item:hover {
+        background: #faf7f0;
+    }
+
+    .notif-item.unread {
+        background: #fdf6e9;
+        border-left: 3px solid var(--antique-gold);
+    }
+
+        .notif-item.unread:hover {
+            background: #faf0dc;
+        }
+
+.notif-icon-wrapper {
+    background: rgba(197, 160, 89, 0.15);
+    color: var(--antique-gold);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.notif-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notif-msg {
+    font-size: 13px;
+    color: var(--navy-accent);
+    line-height: 1.4;
+}
+
+.notif-time {
+    font-size: 12px;
+    color: rgba(18, 20, 32, 0.45);
+    font-weight: 600;
+}
+
+.no-notifs {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(18, 20, 32, 0.4);
+}
+
+    .no-notifs i {
+        font-size: 28px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .no-notifs p {
+        margin: 0;
+        font-size: 14px;
+    }
+
 /* ==========================================================================
  CALENDAR 
  ========================================================================== */

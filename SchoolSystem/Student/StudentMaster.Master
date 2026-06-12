@@ -84,7 +84,7 @@
                                     <a href='<%# Eval("Link") != DBNull.Value ? ResolveUrl(Eval("Link").ToString()) : "#" %>'
                                        class='notif-item <%# Convert.ToInt32(Eval("IsUnread")) == 1 ? "unread" : "" %>'>
                                         <div class="notif-icon-wrapper">
-                                            <i class='<%# Eval("Type").ToString() == "Assignment Graded" ? "fas fa-check-circle" : Eval("Type").ToString() == "New Event" ? "fas fa-calendar-day" : "fas fa-bullhorn" %>'></i>
+                                            <i class='<%# Eval("Type").ToString() == "Assignment Graded" ? "fas fa-check-circle" : Eval("Type").ToString() == "New Event" ? "fas fa-calendar-day" : Eval("Type").ToString() == "Event Reminder" ? "fas fa-clock" : Eval("Type").ToString() == "Enrollment Rejected" ? "fas fa-times-circle" : "fas fa-bullhorn" %>'></i>
                                         </div>
                                         <div class="notif-content">
                                             <span class="notif-msg"><%# Eval("Message") %></span>

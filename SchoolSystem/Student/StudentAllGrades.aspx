@@ -1,7 +1,20 @@
 ﻿<%@ Page Title="Results & Grades" Language="C#" MasterPageFile="~/Student/StudentMaster.Master" AutoEventWireup="true" CodeBehind="StudentAllGrades.aspx.cs" Inherits="SchoolSystem.StudentAllGrades" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-
+    <style>
+        @media print {
+            body * { visibility: hidden !important; }
+            #printable-area, #printable-area * { visibility: visible !important; }
+            #printable-area {
+                position: absolute;
+                left: 0; top: 0;
+                width: 100%;
+                padding: 32px 40px !important;
+                box-sizing: border-box;
+            }
+            .grades-toolbar, .print-modal-overlay { display: none !important; }
+        }
+    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">

@@ -97,15 +97,25 @@ namespace SchoolSystem
                 SELECT 'Assignment Graded' AS Type, N'✅ ' + CHAR(39) + ca.title + CHAR(39) + N' graded: ' + CAST(CAST(sub.marks_awarded AS FLOAT) AS NVARCHAR(20)) + N'/' + CAST(ca.max_marks AS NVARCHAR(20)) AS Message, 'alert' AS CssClass, CAST('~/Student/StudentIndivGrades.aspx?id=' + CAST(ca.Course_id AS VARCHAR(10)) AS NVARCHAR(255)) AS Link, COALESCE(sub.graded_date, GETDATE()) AS SortDate FROM AssignmentSubmission sub INNER JOIN CourseAssignment ca ON sub.assignment_id = ca.assignment_id WHERE sub.student_id = @StudentId AND sub.marks_awarded IS NOT NULL
                 UNION ALL
                 SELECT 'New Event' AS Type, N'📅 [New Event] ' + event_title + N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message, 'info' AS CssClass, CAST('~/Student/StudentCalendar.aspx' AS NVARCHAR(255)) AS Link, CAST(start_date AS DATETIME) AS SortDate FROM Calendar WHERE start_date >= DATEADD(DAY, -30, GETDATE())
+                UNION ALL
+                SELECT 'New Event' AS Type, N'📅 [My Event] ' + event_title + N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message, 'info' AS CssClass, CAST('~/Student/StudentCalendar.aspx' AS NVARCHAR(255)) AS Link, CAST(start_date AS DATETIME) AS SortDate FROM StudentCalendar WHERE student_id = @StudentId AND start_date >= DATEADD(DAY, -30, GETDATE())
+                UNION ALL
+                SELECT 'Enrollment Rejected' AS Type, N'❌ [Enrolment] Your request for ' + c.course_code + N' - ' + c.course_name + N' was rejected' AS Message, 'alert' AS CssClass, CAST('~/Student/StudentEnrollments.aspx' AS NVARCHAR(255)) AS Link, ISNULL(e.status_updated_at, e.enrollment_date) AS SortDate FROM Enrollment e INNER JOIN Course c ON e.course_id = c.course_id WHERE e.student_id = @StudentId AND e.status = 'Rejected'
+                UNION ALL
+                SELECT 'Event Reminder' AS Type, N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) AS Message, 'alert' AS CssClass, CAST('~/Student/StudentCalendar.aspx' AS NVARCHAR(255)) AS Link, CAST(start_date AS DATETIME) AS SortDate FROM Calendar WHERE start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
+                UNION ALL
+                SELECT 'Event Reminder' AS Type, N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) AS Message, 'alert' AS CssClass, CAST('~/Student/StudentCalendar.aspx' AS NVARCHAR(255)) AS Link, CAST(start_date AS DATETIME) AS SortDate FROM StudentCalendar WHERE student_id = @StudentId AND start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
             )
-            SELECT TOP 10 *, 
-                CASE 
-                    WHEN Type = 'New Event' THEN 0 
-                    WHEN @LastRead IS NULL THEN 1 
-                    WHEN SortDate > @LastRead THEN 1 
-                    ELSE 0 
+            SELECT TOP 10 *,
+                CASE
+                    WHEN Type = 'Event Reminder' THEN CASE WHEN @LastRead IS NULL OR DATEADD(DAY, -3, SortDate) > @LastRead THEN 1 ELSE 0 END
+                    WHEN Type = 'New Event' THEN 0
+                    WHEN @LastRead IS NULL THEN 1
+                    WHEN SortDate > @LastRead THEN 1
+                    ELSE 0
                 END AS IsUnread,
                 CASE
+                    WHEN Type = 'Event Reminder' THEN 'Upcoming'
                     WHEN SortDate > GETDATE() THEN 'Upcoming'
                     WHEN DATEDIFF(MINUTE, SortDate, GETDATE()) < 60 THEN CAST(DATEDIFF(MINUTE, SortDate, GETDATE()) AS VARCHAR) + 'm ago'
                     WHEN DATEDIFF(HOUR, SortDate, GETDATE()) < 24 THEN CAST(DATEDIFF(HOUR, SortDate, GETDATE()) AS VARCHAR) + 'h ago'

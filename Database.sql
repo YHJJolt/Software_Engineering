@@ -6,6 +6,7 @@ CREATE TABLE [Admin (HoP)] (
   [admin_name] NVARCHAR(45) NOT NULL,
   [admin_email] NVARCHAR(45) NOT NULL,
   [admin_pw] NVARCHAR(64) NOT NULL,
+  [admin_contact] NVARCHAR(45) NULL,
   [admin_isactive] BIT NULL,
   [admin_bio] NVARCHAR(MAX) NULL,     
   [admin_img] VARBINARY(MAX) NULL    
@@ -165,6 +166,7 @@ CREATE TABLE [Enrollment] (
     [enrolled_semester] INT NOT NULL,
     [enrollment_date] DATETIME DEFAULT GETDATE(),
     [status] VARCHAR(20) DEFAULT 'Pending',
+    [status_updated_at] DATETIME NULL,
     CONSTRAINT [FK_Enrollment_Student] FOREIGN KEY ([student_id]) REFERENCES [Student]([student_id]),
     CONSTRAINT [FK_Enrollment_Course] FOREIGN KEY ([course_id]) REFERENCES [Course]([course_id])
 );
@@ -224,6 +226,21 @@ CREATE TABLE [CourseGrade] (
     [attended_hours] INT NOT NULL DEFAULT 0,
     [Enrollment_id]  INT NOT NULL,
     CONSTRAINT [fk_CG_Enrollment] FOREIGN KEY ([Enrollment_id]) REFERENCES [Enrollment]([enrollment_id])
+);
+GO
+
+-- ============================================================
+-- 12B. Table: AttendanceRecord (per-date attendance marking)
+-- One row per student per session date; CourseGrade hours are
+-- recomputed from this table (2 hours per session).
+-- ============================================================
+CREATE TABLE [AttendanceRecord] (
+    [attendance_id]   INT IDENTITY(1,1) PRIMARY KEY,
+    [enrollment_id]   INT NOT NULL,
+    [attendance_date] DATE NOT NULL,
+    [status]          NVARCHAR(10) NOT NULL,
+    CONSTRAINT [fk_AR_Enrollment] FOREIGN KEY ([enrollment_id]) REFERENCES [Enrollment]([enrollment_id]),
+    CONSTRAINT [uq_AR_EnrollDate] UNIQUE ([enrollment_id], [attendance_date])
 );
 GO
 
@@ -352,6 +369,14 @@ CREATE TABLE [StudentNotifRead] (
 -- ===================================================================================
 CREATE TABLE LecturerNotifRead (
     lecturer_id INT PRIMARY KEY,
+    last_read_at DATETIME NOT NULL
+);
+
+-- ===================================================================================
+-- 21B. Admin notifications read
+-- ===================================================================================
+CREATE TABLE AdminNotifRead (
+    admin_id INT PRIMARY KEY,
     last_read_at DATETIME NOT NULL
 );
 
@@ -658,8 +683,8 @@ GO
 -- ============================================================
 
 -- 1. ADMIN
-INSERT INTO [Admin (HoP)] (admin_email, admin_name, admin_pw, admin_isactive, admin_bio)
-VALUES ('admin@school.com', 'Justin Tan Hao Ren', 'admin123', 1, 'Senior Head of Program');
+INSERT INTO [Admin (HoP)] (admin_email, admin_name, admin_pw, admin_contact, admin_isactive, admin_bio)
+VALUES ('admin@school.com', 'Justin Tan Hao Ren', 'admin123', '012-3456789', 1, 'Senior Head of Program');
 
 -- 2. LECTURERS
 INSERT INTO [Lecturer]

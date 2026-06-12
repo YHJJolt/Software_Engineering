@@ -1,6 +1,9 @@
 using System;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 namespace SchoolSystem
@@ -12,11 +15,90 @@ namespace SchoolSystem
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
+
+            // Required to allow the bell click to update the DB asynchronously
+            ScriptManager.GetCurrent(Page)?.RegisterAsyncPostBackControl(btnMarkRead);
+
             if (!IsPostBack)
             {
                 LoadSidebarProfile();
+                LoadNotifications();
                 HighlightActiveSideBar();
             }
+        }
+
+        private void LoadNotifications()
+        {
+            if (Session["UserEmail"] == null) { Response.Redirect("~/Login.aspx"); return; }
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                // Admin sees reminders for calendar events happening within the next 3 days.
+                // A reminder counts as unread if it "appeared" (3 days before the event) after the admin last read.
+                string sql = @"
+            DECLARE @AdminId INT;
+            SELECT @AdminId = admin_id FROM [Admin (HoP)] WHERE admin_email = @Email;
+
+            DECLARE @LastRead DATETIME;
+            SELECT @LastRead = last_read_at FROM AdminNotifRead WHERE admin_id = @AdminId;
+
+            SELECT TOP 10
+                'Event Reminder' AS Type,
+                N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                CAST('~/Admin/Calendar.aspx' AS NVARCHAR(255)) AS Link,
+                CAST(start_date AS DATETIME) AS SortDate,
+                CASE WHEN @LastRead IS NULL OR DATEADD(DAY, -3, CAST(start_date AS DATETIME)) > @LastRead THEN 1 ELSE 0 END AS IsUnread,
+                'Upcoming' AS TimeAgo
+            FROM Calendar
+            WHERE start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
+            ORDER BY start_date ASC";
+
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                int unreadCount = dt.AsEnumerable().Count(r => r.Field<int>("IsUnread") == 1);
+                litNotifCount.Text = (unreadCount > 0) ? $"<span class=\"notif-badge\">{unreadCount}</span>" : "";
+
+                rptNotifications.DataSource = dt;
+                rptNotifications.DataBind();
+                noNotifs.Visible = (dt.Rows.Count == 0);
+            }
+        }
+
+        private void MarkAllNotificationsRead()
+        {
+            if (Session["UserEmail"] == null) return;
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                // Date buffer prevents milliseconds bug (same pattern as StudentMaster)
+                string sql = @"
+                    DECLARE @AdminId INT;
+                    SELECT @AdminId = admin_id FROM [Admin (HoP)] WHERE admin_email = @Email;
+
+                    MERGE INTO AdminNotifRead AS target
+                    USING (SELECT @AdminId AS admin_id) AS source
+                        ON target.admin_id = source.admin_id
+                    WHEN MATCHED THEN
+                        UPDATE SET last_read_at = DATEADD(MINUTE, 1, GETDATE())
+                    WHEN NOT MATCHED THEN
+                        INSERT (admin_id, last_read_at) VALUES (@AdminId, DATEADD(MINUTE, 1, GETDATE()));";
+
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        protected void btnMarkRead_Click(object sender, EventArgs e)
+        {
+            MarkAllNotificationsRead();
+            LoadNotifications();
         }
 
         private void LoadSidebarProfile()

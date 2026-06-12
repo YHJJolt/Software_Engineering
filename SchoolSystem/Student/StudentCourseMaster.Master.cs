@@ -111,14 +111,22 @@ namespace SchoolSystem
                 SELECT 'Lecturer' as Source, N'👨‍🏫 ' + title as Message, created_at as SortDate, '~/Student/StudentAnnouncements.aspx' as Link FROM Announcement WHERE Lecturer_id IS NOT NULL
                 UNION ALL
                 SELECT 'Grade' as Source, N'✅ Assignment Graded' as Message, graded_date as SortDate, '~/Student/StudentIndivGrades.aspx' as Link FROM AssignmentSubmission WHERE marks_awarded IS NOT NULL AND student_id = @StudentId
+                UNION ALL
+                SELECT 'Rejected' as Source, N'❌ [Enrolment] Your request for ' + c.course_code + N' - ' + c.course_name + N' was rejected' as Message, ISNULL(e.status_updated_at, e.enrollment_date) as SortDate, '~/Student/StudentEnrollments.aspx' as Link FROM Enrollment e INNER JOIN Course c ON e.course_id = c.course_id WHERE e.student_id = @StudentId AND e.status = 'Rejected'
+                UNION ALL
+                SELECT 'Reminder' as Source, N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) as Message, CAST(start_date AS DATETIME) as SortDate, '~/Student/StudentCalendar.aspx' as Link FROM Calendar WHERE start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
+                UNION ALL
+                SELECT 'Reminder' as Source, N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) as Message, CAST(start_date AS DATETIME) as SortDate, '~/Student/StudentCalendar.aspx' as Link FROM StudentCalendar WHERE student_id = @StudentId AND start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
             )
-            SELECT TOP 10 *, 
-                CASE 
-                    WHEN @LastRead IS NULL THEN 1 
-                    WHEN SortDate > @LastRead THEN 1 
-                    ELSE 0 
+            SELECT TOP 10 *,
+                CASE
+                    WHEN Source = 'Reminder' THEN CASE WHEN @LastRead IS NULL OR DATEADD(DAY, -3, SortDate) > @LastRead THEN 1 ELSE 0 END
+                    WHEN @LastRead IS NULL THEN 1
+                    WHEN SortDate > @LastRead THEN 1
+                    ELSE 0
                 END AS IsUnread,
                 CASE
+                    WHEN Source = 'Reminder' THEN 'Upcoming'
                     WHEN SortDate > GETDATE() THEN 'Upcoming'
                     WHEN DATEDIFF(MINUTE, SortDate, GETDATE()) < 60 THEN CAST(DATEDIFF(MINUTE, SortDate, GETDATE()) AS VARCHAR) + 'm ago'
                     WHEN DATEDIFF(HOUR, SortDate, GETDATE()) < 24 THEN CAST(DATEDIFF(HOUR, SortDate, GETDATE()) AS VARCHAR) + 'h ago'

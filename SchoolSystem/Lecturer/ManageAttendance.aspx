@@ -7,6 +7,9 @@
         <asp:Label ID="lblSuccessMsg" runat="server" Visible="false" ForeColor="Green" Font-Bold="true" style="display:block; margin-bottom: 15px;"></asp:Label>
 
         <div class="filter-controls" style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+            <label style="font-weight: 600;">Session Date:</label>
+            <asp:TextBox ID="txtAttendanceDate" runat="server" TextMode="Date" AutoPostBack="true" OnTextChanged="txtAttendanceDate_TextChanged" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; outline: none;"></asp:TextBox>
+
             <asp:TextBox ID="txtSearch" runat="server" Placeholder="Search student name..." style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; width: 250px; outline: none;"></asp:TextBox>
             
             <asp:DropDownList ID="ddlAttendanceFilter" runat="server" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; outline: none;">
@@ -26,7 +29,7 @@
                     <th>Total Hours</th>
                     <th>Attended Hours</th>
                     <th>Attendance %</th>
-                    <th>Mark Today's Session</th>
+                    <th>Mark Session (<asp:Literal ID="litSelectedDate" runat="server">Today</asp:Literal>)</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,8 +49,9 @@
                             <td>
                                 <asp:HiddenField ID="hfEnrollmentId" runat="server" Value='<%# Eval("Enrollment_id") %>' />
                                 
-                                <asp:DropDownList ID="ddlStatus" runat="server" CssClass="status-dropdown">
-                                    <asp:ListItem Text="Present" Value="Present" Selected="True"></asp:ListItem>
+                                <asp:DropDownList ID="ddlStatus" runat="server" CssClass="status-dropdown" SelectedValue='<%# Eval("day_status") %>'>
+                                    <asp:ListItem Text="— Not Marked —" Value="NotMarked"></asp:ListItem>
+                                    <asp:ListItem Text="Present" Value="Present"></asp:ListItem>
                                     <asp:ListItem Text="Absent" Value="Absent"></asp:ListItem>
                                 </asp:DropDownList>
                             </td>

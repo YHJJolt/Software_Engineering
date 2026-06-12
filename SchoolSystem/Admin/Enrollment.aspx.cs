@@ -138,7 +138,8 @@ namespace SchoolSystem
 
         private void UpdateStatus(string id, string newStatus)
         {
-            string sql = "UPDATE Enrollment SET status = @Status WHERE enrollment_id = @ID";
+            // status_updated_at lets the student notification feed sort/track rejections by when they happened
+            string sql = "UPDATE Enrollment SET status = @Status, status_updated_at = GETDATE() WHERE enrollment_id = @ID";
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConnStr))
@@ -183,7 +184,7 @@ namespace SchoolSystem
                             if (hdnId != null && !string.IsNullOrEmpty(hdnId.Value))
                             {
                                 // FIXED: Completely removed tab check references
-                                string sql = "UPDATE Enrollment SET status = @Status WHERE enrollment_id = @ID";
+                                string sql = "UPDATE Enrollment SET status = @Status, status_updated_at = GETDATE() WHERE enrollment_id = @ID";
 
                                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                                 {

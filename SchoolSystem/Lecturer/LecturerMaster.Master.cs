@@ -84,15 +84,44 @@ namespace SchoolSystem
                        CAST(start_date AS DATETIME) AS SortDate
                 FROM Calendar
                 WHERE start_date >= DATEADD(DAY, -30, GETDATE())
+
+                UNION ALL
+
+                SELECT 'New Event' AS Type,
+                       N'📅 [My Event] ' + event_title + N' on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                       CAST('~/Lecturer/LecturerCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       CAST(start_date AS DATETIME) AS SortDate
+                FROM LecturerCalendar
+                WHERE lecturer_id = @LecturerId AND start_date >= DATEADD(DAY, -30, GETDATE())
+
+                UNION ALL
+
+                SELECT 'Event Reminder' AS Type,
+                       N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                       CAST('~/Lecturer/LecturerCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       CAST(start_date AS DATETIME) AS SortDate
+                FROM Calendar
+                WHERE start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
+
+                UNION ALL
+
+                SELECT 'Event Reminder' AS Type,
+                       N'⏰ [Reminder] ' + event_title + N' is coming up on ' + CONVERT(NVARCHAR, start_date, 106) AS Message,
+                       CAST('~/Lecturer/LecturerCalendar.aspx' AS NVARCHAR(255)) AS Link,
+                       CAST(start_date AS DATETIME) AS SortDate
+                FROM LecturerCalendar
+                WHERE lecturer_id = @LecturerId AND start_date >= CAST(GETDATE() AS DATE) AND start_date <= DATEADD(DAY, 3, GETDATE())
             )
             SELECT TOP 10 *,
                 CASE
+                    WHEN Type = 'Event Reminder' THEN CASE WHEN @LastRead IS NULL OR DATEADD(DAY, -3, SortDate) > @LastRead THEN 1 ELSE 0 END
                     WHEN Type = 'New Event' THEN 0
                     WHEN @LastRead IS NULL THEN 1
                     WHEN SortDate > @LastRead THEN 1
                     ELSE 0
                 END AS IsUnread,
                 CASE
+                    WHEN Type = 'Event Reminder' THEN 'Upcoming'
                     WHEN SortDate > GETDATE() THEN 'Upcoming'
                     WHEN DATEDIFF(MINUTE, SortDate, GETDATE()) < 60 THEN CAST(DATEDIFF(MINUTE, SortDate, GETDATE()) AS VARCHAR) + 'm ago'
                     WHEN DATEDIFF(HOUR, SortDate, GETDATE()) < 24 THEN CAST(DATEDIFF(HOUR, SortDate, GETDATE()) AS VARCHAR) + 'h ago'

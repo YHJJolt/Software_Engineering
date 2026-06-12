@@ -35,10 +35,10 @@ namespace SchoolSystem
             var entries = new List<string>();
 
             string sql = @"
-                SELECT student_id, student_name
+                SELECT student_id, student_name, student_isactive
                 FROM   [Student]
-                WHERE  student_isactive = 'Active'
-                ORDER  BY student_name";
+                WHERE  student_isactive IN ('Active', 'Graduated')
+                ORDER  BY student_isactive DESC, student_name";
 
             using (var conn = new SqlConnection(connStr))
             using (var cmd = new SqlCommand(sql, conn))
@@ -48,9 +48,10 @@ namespace SchoolSystem
                 {
                     while (r.Read())
                     {
+                        bool graduated = r["student_isactive"].ToString() == "Graduated";
                         entries.Add(string.Format("{{\"id\":{0},\"name\":\"{1}\"}}",
                             r["student_id"],
-                            Escape(r["student_name"].ToString())));
+                            Escape(r["student_name"].ToString()) + (graduated ? " (Graduated)" : "")));
                     }
                 }
             }

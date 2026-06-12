@@ -8,8 +8,10 @@ IF OBJECT_ID('dbo.PaymentDetail', 'U') IS NOT NULL DROP TABLE [PaymentDetail];
 IF OBJECT_ID('dbo.ModuleFile', 'U') IS NOT NULL DROP TABLE [ModuleFile];
 IF OBJECT_ID('dbo.AssignmentSubmission', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
 IF OBJECT_ID('dbo.CourseGrade', 'U') IS NOT NULL DROP TABLE [CourseGrade];
+IF OBJECT_ID('dbo.AttendanceRecord', 'U') IS NOT NULL DROP TABLE [AttendanceRecord];
 IF OBJECT_ID('dbo.StudentNotifRead', 'U') IS NOT NULL DROP TABLE [StudentNotifRead];
 IF OBJECT_ID('dbo.LecturerNotifRead', 'U') IS NOT NULL DROP TABLE [LecturerNotifRead];
+IF OBJECT_ID('dbo.AdminNotifRead', 'U') IS NOT NULL DROP TABLE [AdminNotifRead];
 
 -- 2. Drop second-level child tables
 IF OBJECT_ID('dbo.Payment', 'U') IS NOT NULL DROP TABLE [Payment];

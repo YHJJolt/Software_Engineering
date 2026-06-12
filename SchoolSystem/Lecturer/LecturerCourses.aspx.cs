@@ -56,7 +56,7 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) return;
 
-            // Query updated to count all approved enrollments, removing the current semester filter
+            // Student count includes only the active cohort (excludes students who advanced semesters)
             string sql = @"
         SELECT
             c.course_id,
@@ -71,8 +71,10 @@ namespace SchoolSystem
             END AS semester_label,
             (SELECT COUNT(DISTINCT e.student_id)
              FROM Enrollment e
-             WHERE e.course_id = c.course_id 
-               AND e.status = 'Approved') AS student_count,
+             JOIN Student s ON e.student_id = s.student_id
+             WHERE e.course_id = c.course_id
+               AND e.status = 'Approved'
+               AND e.enrolled_semester = s.student_sem) AS student_count,
             CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
         FROM [Course] c
         INNER JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id

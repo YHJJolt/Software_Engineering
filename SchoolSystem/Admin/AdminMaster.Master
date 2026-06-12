@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <link rel="stylesheet" type="text/css" href="~/Admin/Admin.css" />
+    <link rel="stylesheet" type="text/css" href="~/Admin/Admin.css?v=2" />
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
@@ -35,6 +35,56 @@
                 </div>
             </a>
         </div>
+        <div id="admin-topbar">
+            <%-- NOTIFICATION BELL --%>
+            <div class="notif-container">
+                <div class="notif-bell-wrapper" onclick="toggleNotifs(event)">
+                    <i class="fas fa-bell notif-bell"></i>
+                    <asp:Literal ID="litNotifCount" runat="server"></asp:Literal>
+                </div>
+
+                <div id="notifDropdown" class="notif-dropdown" style="display:none;">
+                    <div class="notif-header">
+                        <h4>Notifications</h4>
+                        <asp:UpdatePanel ID="updMarkRead" runat="server" UpdateMode="Conditional">
+                            <ContentTemplate>
+                                <asp:LinkButton ID="btnMarkRead" runat="server"
+                                    CssClass="mark-read-btn"
+                                    OnClick="btnMarkRead_Click"
+                                    OnClientClick="handleMarkRead();">
+                                    Mark all as read
+                                </asp:LinkButton>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
+                    </div>
+
+                    <div class="notif-body">
+                        <asp:PlaceHolder ID="noNotifs" runat="server" Visible="false">
+                            <div class="no-notifs">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>No upcoming events!</p>
+                            </div>
+                        </asp:PlaceHolder>
+
+                        <asp:Repeater ID="rptNotifications" runat="server">
+                            <ItemTemplate>
+                                <a href='<%# Eval("Link") != DBNull.Value ? ResolveUrl(Eval("Link").ToString()) : "#" %>'
+                                   class='notif-item <%# Convert.ToInt32(Eval("IsUnread")) == 1 ? "unread" : "" %>'>
+                                    <div class="notif-icon-wrapper">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="notif-content">
+                                        <span class="notif-msg"><%# Eval("Message") %></span>
+                                        <span class="notif-time"><%# Eval("TimeAgo") %></span>
+                                    </div>
+                                </a>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="main-content">
             <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
         </div>
@@ -47,6 +97,44 @@
         window.onload = function () {
             if (localStorage.getItem('sidebarState') === 'collapsed') document.body.classList.add('sidebar-collapsed');
         };
+
+        function toggleNotifs(event) {
+            if (event) event.stopPropagation();
+            var dropdown = document.getElementById('notifDropdown');
+            var isOpening = dropdown.style.display !== 'block';
+            dropdown.style.display = isOpening ? 'block' : 'none';
+            if (isOpening) {
+                zeroOutBadge();
+                var btn = document.getElementById('<%= btnMarkRead.ClientID %>');
+                if (btn) btn.click();
+            }
+        }
+
+        function zeroOutBadge() {
+            var badge = document.querySelector('.notif-badge');
+            if (badge) badge.style.display = 'none';
+
+            document.querySelectorAll('.notif-item.unread').forEach(function (el) {
+                el.classList.remove('unread');
+            });
+        }
+
+        function handleMarkRead() {
+            event.stopPropagation();
+            zeroOutBadge();
+        }
+
+        document.getElementById('notifDropdown').addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', function (event) {
+            var container = document.querySelector('.notif-container');
+            if (container && !container.contains(event.target)) {
+                var dd = document.getElementById('notifDropdown');
+                if (dd) dd.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>

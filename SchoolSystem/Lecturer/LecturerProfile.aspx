@@ -1,6 +1,10 @@
 ﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/Lecturer/LecturerMaster.Master" AutoEventWireup="true" CodeBehind="LecturerProfile.aspx.cs" Inherits="SchoolSystem.LecturerProfile" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .input-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; margin-bottom: 12px; box-sizing: border-box; }
+        .pw-section { border-top: 1px solid #eee; margin-top: 25px; padding-top: 10px; }
+    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -21,13 +25,24 @@
                     <asp:Literal ID="litFullName" runat="server" />
                 </h1>
                 
-                <span class="info-label">Contact</span>
+                <span class="info-label">Email</span>
                 <p style="color: rgba(18, 20, 32, 0.6); font-weight: 600; margin: 0 0 10px 0;">
                     <asp:Literal ID="litEmail" runat="server" />
                 </p>
 
+                <span class="info-label">Contact Number</span>
+                <asp:TextBox ID="txtContact" runat="server" CssClass="input-box" placeholder="e.g. 012-3456789"></asp:TextBox>
+
                 <span class="info-label">Biography</span>
                 <asp:TextBox ID="txtBio" runat="server" TextMode="MultiLine" CssClass="bio-box" placeholder="Tell us about yourself..."></asp:TextBox>
+
+                <div class="pw-section">
+                    <span class="info-label">Change Password</span>
+                    <asp:TextBox ID="txtCurrentPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="Current password"></asp:TextBox>
+                    <asp:TextBox ID="txtNewPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="New password (min 6 characters)"></asp:TextBox>
+                    <asp:TextBox ID="txtConfirmPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="Confirm new password"></asp:TextBox>
+                    <asp:Button ID="btnChangePw" runat="server" Text="Change Password" CssClass="btn-save" OnClick="btnChangePw_Click" CausesValidation="false" />
+                </div>
 
                 <div class="action-buttons">
                     <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="btn-logout" CausesValidation="false">

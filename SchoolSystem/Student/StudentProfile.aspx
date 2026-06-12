@@ -20,6 +20,8 @@
         .btn-logout:hover { background: #fca5a5; color: #dc2626; }
         .btn-save { background: var(--navy-accent); color: white; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.3s; }
         .btn-save:hover { background: #0a0c14; }
+        .input-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; margin-bottom: 12px; box-sizing: border-box; }
+        .pw-section { border-top: 1px solid #eee; margin-top: 25px; padding-top: 10px; }
     </style>
 </asp:Content>
 
@@ -46,8 +48,19 @@
                     <asp:Literal ID="litEmail" runat="server" />
                 </p>
 
+                <span class="info-label">Contact Number</span>
+                <asp:TextBox ID="txtContact" runat="server" CssClass="input-box" placeholder="e.g. 012-3456789"></asp:TextBox>
+
                 <span class="info-label">Biography</span>
                 <asp:TextBox ID="txtBio" runat="server" TextMode="MultiLine" CssClass="bio-box" placeholder="Tell us about yourself..."></asp:TextBox>
+
+                <div class="pw-section">
+                    <span class="info-label">Change Password</span>
+                    <asp:TextBox ID="txtCurrentPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="Current password"></asp:TextBox>
+                    <asp:TextBox ID="txtNewPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="New password (min 6 characters)"></asp:TextBox>
+                    <asp:TextBox ID="txtConfirmPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="Confirm new password"></asp:TextBox>
+                    <asp:Button ID="btnChangePw" runat="server" Text="Change Password" CssClass="btn-save" OnClick="btnChangePw_Click" CausesValidation="false" />
+                </div>
 
                 <div class="action-buttons">
                     <asp:LinkButton ID="btnLogout" runat="server" CssClass="btn-logout" OnClick="btnLogout_Click">
