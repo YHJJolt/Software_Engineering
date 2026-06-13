@@ -76,17 +76,19 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string query = @"
-                    SELECT 
+                    SELECT
                         c.course_code,
                         c.course_id,
                         c.course_name,
                         c.course_fee,
-                        ISNULL(l.lecturer_name, 'N/A') AS lecturer_name,
-                        ISNULL(l.lecturer_email, 'N/A') AS lecturer_email,
-                        ISNULL(p.program_name, 'N/A') AS program_name
+                        ISNULL(
+                            STUFF((SELECT DISTINCT ', ' + p2.program_name
+                                   FROM CourseProgram cp2
+                                   JOIN Program p2 ON cp2.program_id = p2.program_id
+                                   WHERE cp2.course_id = c.course_id
+                                   FOR XML PATH(''), TYPE).value('.','NVARCHAR(MAX)'), 1, 2, ''),
+                            'N/A') AS program_name
                     FROM Course c
-                    LEFT JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    LEFT JOIN Program p ON c.Program_id = p.program_id
                     WHERE 1=1 ";
 
                 // Apply text search if provided
@@ -98,7 +100,7 @@ namespace SchoolSystem
                 // Apply program filter if a specific program is selected
                 if (!string.IsNullOrWhiteSpace(programId))
                 {
-                    query += " AND c.Program_id = @ProgramId";
+                    query += @" AND EXISTS (SELECT 1 FROM CourseProgram cp JOIN Program p ON cp.program_id = p.program_id WHERE cp.course_id = c.course_id AND p.program_id = @ProgramId)";
                 }
 
                 query += " ORDER BY c.course_code ASC";
@@ -133,11 +135,13 @@ namespace SchoolSystem
 
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
+                    conn.Open();
+
+                    // Load course fields
                     string sql = "SELECT course_code, course_name, course_fee, course_img FROM Course WHERE course_id = @Id";
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@Id", courseId);
-                        conn.Open();
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
@@ -146,18 +150,43 @@ namespace SchoolSystem
                                 txtEditName.Text = reader["course_name"].ToString();
                                 txtEditFee.Text = reader["course_fee"].ToString();
 
-                                // Convert VARBINARY back to an image preview string
                                 if (reader["course_img"] != DBNull.Value)
                                 {
                                     byte[] bytes = (byte[])reader["course_img"];
-                                    string base64String = Convert.ToBase64String(bytes, 0, bytes.Length);
-                                    imgEditPreview.ImageUrl = "data:image/jpeg;base64," + base64String;
+                                    imgEditPreview.ImageUrl = "data:image/jpeg;base64," + Convert.ToBase64String(bytes);
                                 }
                                 else
                                 {
-                                    // Reset to transparent if no image exists in DB
                                     imgEditPreview.ImageUrl = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
                                 }
+                            }
+                        }
+                    }
+
+                    // Populate program checkboxes
+                    string sqlPrograms = "SELECT program_id, program_name FROM Program ORDER BY program_name";
+                    using (SqlCommand cmd = new SqlCommand(sqlPrograms, conn))
+                    {
+                        DataTable dtPrograms = new DataTable();
+                        new SqlDataAdapter(cmd).Fill(dtPrograms);
+                        cblEditPrograms.DataSource = dtPrograms;
+                        cblEditPrograms.DataTextField = "program_name";
+                        cblEditPrograms.DataValueField = "program_id";
+                        cblEditPrograms.DataBind();
+                    }
+
+                    // Pre-check programs already linked to this course
+                    string sqlLinked = "SELECT program_id FROM CourseProgram WHERE course_id = @Id";
+                    using (SqlCommand cmd = new SqlCommand(sqlLinked, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", courseId);
+                        using (SqlDataReader rdr = cmd.ExecuteReader())
+                        {
+                            while (rdr.Read())
+                            {
+                                string pid = rdr["program_id"].ToString();
+                                var item = cblEditPrograms.Items.FindByValue(pid);
+                                if (item != null) item.Selected = true;
                             }
                         }
                     }
@@ -245,6 +274,24 @@ namespace SchoolSystem
                         conn.Open();
                         cmd.ExecuteNonQuery();
                     }
+
+                    // Save program associations: delete old, insert selected
+                    int cid = int.Parse(hdnEditCourseId.Value);
+                    new SqlCommand("DELETE FROM CourseProgram WHERE course_id = @Id",
+                        conn)
+                    { Parameters = { new SqlParameter("@Id", cid) } }.ExecuteNonQuery();
+
+                    foreach (System.Web.UI.WebControls.ListItem item in cblEditPrograms.Items)
+                    {
+                        if (item.Selected)
+                        {
+                            var ins = new SqlCommand(
+                                "INSERT INTO CourseProgram (course_id, program_id) VALUES (@Cid, @Pid)", conn);
+                            ins.Parameters.AddWithValue("@Cid", cid);
+                            ins.Parameters.AddWithValue("@Pid", int.Parse(item.Value));
+                            ins.ExecuteNonQuery();
+                        }
+                    }
                 }
 
                 // Hide modal and show success alert
@@ -252,6 +299,8 @@ namespace SchoolSystem
 
                 // IMPORTANT: Rebind your GridView here so the UI updates
                 // BindGridView(); // Or whatever your method to load courses is named
+
+                LoadAllCourses(txtSearch.Text.Trim(), ddlProgramFilter.SelectedValue);
 
                 ScriptManager.RegisterStartupScript(this, GetType(), "success",
                     "Swal.fire('Updated', 'Course updated successfully!', 'success');", true);
@@ -284,8 +333,19 @@ namespace SchoolSystem
 
                     // Cascading Delete to handle Foreign Key Constraints
                     string sql = @"
+                        DELETE FROM AttendanceRecord WHERE enrollment_id IN (SELECT enrollment_id FROM Enrollment WHERE course_id = @ID);
                         DELETE FROM CourseGrade WHERE Enrollment_id IN (SELECT enrollment_id FROM Enrollment WHERE course_id = @ID);
+                        DELETE FROM PaymentDetail WHERE enrollment_id IN (SELECT enrollment_id FROM Enrollment WHERE course_id = @ID);
                         DELETE FROM Enrollment WHERE course_id = @ID;
+                        DELETE FROM Announcement WHERE Course_id = @ID;
+                        DELETE FROM AssignmentSubmission WHERE assignment_id IN (SELECT assignment_id FROM CourseAssignment WHERE course_id = @ID);
+                        DELETE FROM CourseAssignment WHERE course_id = @ID;
+                        DELETE FROM ModuleFile WHERE module_id IN (SELECT module_id FROM CourseModule WHERE course_id = @ID);
+                        DELETE FROM CourseModule WHERE course_id = @ID;
+                        DELETE FROM CourseProgram WHERE course_id = @ID;
+                        DELETE FROM CourseAssignment_Session WHERE course_id = @ID;
+                        DELETE FROM LecturerCourseFavourite WHERE course_id = @ID;
+                        DELETE FROM StudentCourseFavourite WHERE course_id = @ID;
                         DELETE FROM Course WHERE course_id = @ID;";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))

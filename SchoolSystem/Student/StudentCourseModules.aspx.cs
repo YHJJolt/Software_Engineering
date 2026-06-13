@@ -12,6 +12,7 @@ namespace SchoolSystem
         // Pulled from your Dashboard logic for consistency
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int currentCourseId = 0;
+        string academicSession = "";
 
         // THE MAGIC SWITCH! 
         // This allows you to test the sidebar correctly from the Dashboard click
@@ -32,14 +33,14 @@ namespace SchoolSystem
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
             // ADD THIS LINE TO OVERRIDE THE MASTER PAGE TITLE
             ((StudentCourseMaster)this.Master).PageTitle = "Modules";
-            
+
             if (Request.QueryString["id"] != null)
             {
                 currentCourseId = Convert.ToInt32(Request.QueryString["id"]);
+                academicSession = Request.QueryString["session"] ?? "";
             }
             else
             {
-                // Kick them back to dashboard if they try to access without a course ID
                 Response.Redirect("~/Student/StudentDashboard.aspx");
             }
 
@@ -68,9 +69,10 @@ namespace SchoolSystem
         {
             using (SqlConnection con = new SqlConnection(connStr))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM CourseModule WHERE course_id = @cid ORDER BY created_at ASC", con))
+                using (SqlCommand cmd = new SqlCommand("SELECT * FROM CourseModule WHERE course_id = @cid AND (@Session = '' OR academic_session = @Session) ORDER BY created_at ASC", con))
                 {
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);
+                    cmd.Parameters.AddWithValue("@Session", academicSession);
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);

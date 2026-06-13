@@ -10,6 +10,7 @@ namespace SchoolSystem
         private string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         private int courseId;
         private int studentId;
+        private string academicSession;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -20,6 +21,8 @@ namespace SchoolSystem
                 Response.Redirect("~/Student/StudentDashboard.aspx");
                 return;
             }
+
+            academicSession = Request.QueryString["session"] ?? "";
 
             ((StudentCourseMaster)this.Master).PageTitle = "Home";
 
@@ -55,12 +58,21 @@ namespace SchoolSystem
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(@"
                     SELECT c.course_code, c.course_name, c.credit_hours,
-                           p.program_name, l.lecturer_name
+                           CASE WHEN EXISTS (SELECT 1 FROM sys.tables WHERE name = 'CourseProgram')
+                                THEN (SELECT TOP 1 p.program_name
+                                      FROM CourseProgram cp JOIN Program p ON cp.program_id = p.program_id
+                                      WHERE cp.course_id = c.course_id)
+                                ELSE NULL
+                           END AS program_name,
+                           l.lecturer_name
                     FROM [Course] c
-                    LEFT JOIN [Program]  p ON c.Program_id  = p.program_id
-                    LEFT JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id
+                    LEFT JOIN CourseAssignment_Session ca
+                           ON ca.course_id = c.course_id
+                          AND (@Session = '' OR ca.academic_session = @Session)
+                    LEFT JOIN [Lecturer] l ON ca.lecturer_id = l.lecturer_id
                     WHERE c.course_id = @id", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
 
                 using (SqlDataReader rdr = cmd.ExecuteReader())
                 {
@@ -82,14 +94,17 @@ namespace SchoolSystem
             {
                 conn.Open();
 
-                // My attendance %
+                // Attendance % scoped to this session's enrollment record
                 SqlCommand c1 = new SqlCommand(@"
                     SELECT cg.attended_hours, cg.total_hours
                     FROM [CourseGrade] cg
                     JOIN [Enrollment] e ON cg.Enrollment_id = e.enrollment_id
-                    WHERE e.course_id = @cid AND e.student_id = @sid", conn);
+                    WHERE e.course_id  = @cid
+                      AND e.student_id = @sid
+                      AND (@Session = '' OR e.academic_session = @Session)", conn);
                 c1.Parameters.AddWithValue("@cid", courseId);
                 c1.Parameters.AddWithValue("@sid", studentId);
+                c1.Parameters.AddWithValue("@Session", academicSession);
                 using (SqlDataReader rdr = c1.ExecuteReader())
                 {
                     if (rdr.Read())
@@ -104,17 +119,19 @@ namespace SchoolSystem
                     else litMyAttendance.Text = "N/A";
                 }
 
-                // My letter grade
+                // Letter grade scoped to this session
                 SqlCommand c2 = new SqlCommand(@"
                     SELECT cg.letter_grade
                     FROM [CourseGrade] cg
                     JOIN [Enrollment] e ON cg.Enrollment_id = e.enrollment_id
-                    WHERE e.course_id = @cid AND e.student_id = @sid", conn);
+                    WHERE e.course_id  = @cid
+                      AND e.student_id = @sid
+                      AND (@Session = '' OR e.academic_session = @Session)", conn);
                 c2.Parameters.AddWithValue("@cid", courseId);
                 c2.Parameters.AddWithValue("@sid", studentId);
+                c2.Parameters.AddWithValue("@Session", academicSession);
                 object grade = c2.ExecuteScalar();
-                litMyGrade.Text = (grade != null && grade != DBNull.Value
-                                   && grade.ToString().Trim() != "")
+                litMyGrade.Text = (grade != null && grade != DBNull.Value && grade.ToString().Trim() != "")
                     ? grade.ToString() : "N/A";
             }
         }
@@ -125,15 +142,13 @@ namespace SchoolSystem
             {
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(@"
-                    SELECT TOP 5
-                        title,
-                        assignment_type,
-                        due_date
+                    SELECT TOP 5 title, assignment_type, due_date
                     FROM [CourseAssignment]
                     WHERE course_id = @cid
-                      AND due_date >= GETDATE()
+                      AND (@Session = '' OR academic_session = @Session)
                     ORDER BY due_date ASC", conn);
                 cmd.Parameters.AddWithValue("@cid", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
 
                 DataTable dt = new DataTable();
                 new SqlDataAdapter(cmd).Fill(dt);
@@ -153,9 +168,11 @@ namespace SchoolSystem
                     SELECT TOP 5 a.title, a.category, a.created_at
                     FROM [Announcement] a
                     WHERE a.Course_id = @cid
+                      AND (@Session = '' OR a.academic_session = @Session)
                       AND (a.Lecturer_id IS NOT NULL OR a.Admin_id IS NOT NULL)
                     ORDER BY a.created_at DESC", conn);
                 cmd.Parameters.AddWithValue("@cid", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
 
                 DataTable dt = new DataTable();
                 new SqlDataAdapter(cmd).Fill(dt);
@@ -166,7 +183,6 @@ namespace SchoolSystem
             }
         }
 
-        // Returns CSS class based on how close the due date is
         public string GetDueClass(object dueDateObj)
         {
             if (dueDateObj == null || dueDateObj == DBNull.Value) return "sch-assign-due";

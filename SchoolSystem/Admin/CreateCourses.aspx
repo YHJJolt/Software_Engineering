@@ -44,14 +44,6 @@
                     <asp:TextBox ID="txtCourseFee" runat="server" CssClass="form-control" TextMode="Number" Step="0.01" placeholder="e.g. 1500.00" />
                 </div>
 
-                <div class="form-group">
-                    <label>Lecturer</label>
-                    <asp:DropDownList ID="ddlLecturer" runat="server" CssClass="form-control">
-                        <asp:ListItem Text="-- Select Lecturer --" Value="0"></asp:ListItem>
-                    </asp:DropDownList>
-                    <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlLecturer" InitialValue="0" ErrorMessage="Please select a lecturer" ForeColor="Red" Display="Dynamic" />
-                </div>
-
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>Program</label>
                     <asp:DropDownList ID="ddlProgram" runat="server" CssClass="form-control">

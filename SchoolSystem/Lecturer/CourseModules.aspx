@@ -245,96 +245,96 @@
     </div>
     
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('id');
-            if (courseId) {
-                const links = document.querySelectorAll('.nav-link');
-                links.forEach(link => {
-                    if (link.href.includes('.aspx') && !link.href.includes('id=')) {
-                        link.href = link.href + "?id=" + courseId;
-                    }
-                });
+document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('id');
+    if (courseId) {
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            if (link.href.includes('.aspx') && !link.href.includes('id=')) {
+                link.href = link.href + "?id=" + courseId;
             }
         });
+    }
+});
 
-        function toggleCustomModule(contentId, iconId) {
-            var content = document.getElementById(contentId);
-            var icon = document.getElementById(iconId);
+function toggleCustomModule(contentId, iconId) {
+    var content = document.getElementById(contentId);
+    var icon = document.getElementById(iconId);
 
-            if (content.style.display === "none") {
-                content.style.display = "block";
-                icon.classList.remove('collapsed');
-            } else {
-                content.style.display = "none";
-                icon.classList.add('collapsed');
-            }
-        }
+    if (content.style.display === "none") {
+        content.style.display = "block";
+        icon.classList.remove('collapsed');
+    } else {
+        content.style.display = "none";
+        icon.classList.add('collapsed');
+    }
+}
 
-        function showDeleteConfirmModal(moduleId) {
-            // 1. Put the ID into the hidden field so C# can find it
-            document.getElementById('hfDeleteModuleId').value = moduleId;
-            // 2. Open the beautiful modal
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-            deleteModal.show();
-        }
+function showDeleteConfirmModal(moduleId) {
+    // 1. Put the ID into the hidden field so C# can find it
+    document.getElementById('hfDeleteModuleId').value = moduleId;
+    // 2. Open the beautiful modal
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
+}
 
-        function showDeleteFileConfirmModal(fileId) {
-            // 1. Put the ID into the hidden field so C# can find it
-            document.getElementById('hfDeleteFileId').value = fileId;
-            // 2. Open the file delete modal
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteFileConfirmModal'));
-            deleteModal.show();
-        }
+function showDeleteFileConfirmModal(fileId) {
+    // 1. Put the ID into the hidden field so C# can find it
+    document.getElementById('hfDeleteFileId').value = fileId;
+    // 2. Open the file delete modal
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteFileConfirmModal'));
+    deleteModal.show();
+}
 
-        // ADVANCED FILE PREVIEW INJECTION
-        function openCustomPreview(fileUrl, fileTitle) {
-            document.getElementById('customPreviewTitle').innerText = fileTitle;
-            let ext = fileUrl.split('.').pop().toLowerCase();
-            const container = document.getElementById('customPreviewContainer');
+// ADVANCED FILE PREVIEW INJECTION
+function openCustomPreview(fileUrl, fileTitle) {
+    document.getElementById('customPreviewTitle').innerText = fileTitle;
+    let ext = fileUrl.split('.').pop().toLowerCase();
+    const container = document.getElementById('customPreviewContainer');
 
-            // --- DUMMY DATA OVERRIDE ---
-            // Fakes the missing Chapter 1 dummy PDF as a Word Document
-            // to bypass the 404 IIS error and show the beautiful fallback screen
-            if (fileUrl.includes('Chapter1.pdf')) {
-                ext = 'docx';
-            }
+    // --- DUMMY DATA OVERRIDE ---
+    // Fakes the missing Chapter 1 dummy PDF as a Word Document
+    // to bypass the 404 IIS error and show the beautiful fallback screen
+    if (fileUrl.includes('Chapter1.pdf')) {
+        ext = 'docx';
+    }
 
-            // 1. Wipe clean
-            container.innerHTML = '';
+    // 1. Wipe clean
+    container.innerHTML = '';
 
-            // 2. Build the perfect viewer based on file type
-            if (ext === 'pdf' || ext === 'txt') {
-                container.innerHTML = `
+    // 2. Build the perfect viewer based on file type
+    if (ext === 'pdf' || ext === 'txt') {
+        container.innerHTML = `
                     <object data="${fileUrl}" type="application/pdf" width="100%" height="100%" style="display: block; border: none;">
                         <iframe src="${fileUrl}" width="100%" height="100%" style="border: none;">
                             This browser does not support embedded PDFs.
                         </iframe>
                     </object>`;
-            }
-            else if (ext === 'jpg' || ext === 'png' || ext === 'jpeg' || ext === 'gif') {
-                container.innerHTML = `
+    }
+    else if (ext === 'jpg' || ext === 'png' || ext === 'jpeg' || ext === 'gif') {
+        container.innerHTML = `
                     <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: #212529;">
                         <img src="${fileUrl}" style="max-width: 95%; max-height: 95%; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
                     </div>`;
-            }
-            else {
-                // UI specifically designed to perfectly match your provided screenshot
-                let iconClass = "fas fa-file-alt";
-                let iconColor = "#6c757d"; // Default Grey
+    }
+    else {
+        // UI specifically designed to perfectly match your provided screenshot
+        let iconClass = "fas fa-file-alt";
+        let iconColor = "#6c757d"; // Default Grey
 
-                if (ext === 'docx' || ext === 'doc') {
-                    iconClass = "fas fa-file-word";
-                    iconColor = "#0d6efd"; // Blue for Word
-                } else if (ext === 'pptx' || ext === 'ppt') {
-                    iconClass = "fas fa-file-powerpoint";
-                    iconColor = "#d63384"; // Pink for PPT
-                } else if (ext === 'zip' || ext === 'rar') {
-                    iconClass = "fas fa-file-archive";
-                    iconColor = "#ffc107"; // Yellow for Zip
-                }
+        if (ext === 'docx' || ext === 'doc') {
+            iconClass = "fas fa-file-word";
+            iconColor = "#0d6efd"; // Blue for Word
+        } else if (ext === 'pptx' || ext === 'ppt') {
+            iconClass = "fas fa-file-powerpoint";
+            iconColor = "#d63384"; // Pink for PPT
+        } else if (ext === 'zip' || ext === 'rar') {
+            iconClass = "fas fa-file-archive";
+            iconColor = "#ffc107"; // Yellow for Zip
+        }
 
-                container.innerHTML = `
+        container.innerHTML = `
                     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: #f8f9fa;">
                         <i class="${iconClass} mb-3" style="font-size: 75px; color: ${iconColor};"></i>
                         <h3 class="fw-bold text-dark mb-2" style="font-size: 22px;">File uploaded in .${ext} format so it can't be previewed.</h3>
@@ -343,41 +343,41 @@
                             <i class="fas fa-download me-2"></i> Download File
                         </a>
                     </div>`;
-            }
+    }
 
-            // 3. Show the overlay
-            document.getElementById('customPreviewOverlay').style.display = 'flex';
-        }
+    // 3. Show the overlay
+    document.getElementById('customPreviewOverlay').style.display = 'flex';
+}
 
-        function closeCustomPreview() {
-            // 1. Hide the overlay
-            document.getElementById('customPreviewOverlay').style.display = 'none';
-            // 2. Destroy the viewer to free up memory and prevent bugs
-            document.getElementById('customPreviewContainer').innerHTML = '';
-        }
+function closeCustomPreview() {
+    // 1. Hide the overlay
+    document.getElementById('customPreviewOverlay').style.display = 'none';
+    // 2. Destroy the viewer to free up memory and prevent bugs
+    document.getElementById('customPreviewContainer').innerHTML = '';
+}
 
-        // FILE UPLOAD VISUAL FEEDBACK
-        function updateFileName(input) {
-            var display = document.getElementById('fileNameDisplay');
-            var icon = document.getElementById('fileUploadIcon');
+// FILE UPLOAD VISUAL FEEDBACK
+function updateFileName(input) {
+    var display = document.getElementById('fileNameDisplay');
+    var icon = document.getElementById('fileUploadIcon');
 
-            if (input.files && input.files.length > 0) {
-                // A file was selected: Show the name and turn the icon green
-                display.innerText = input.files[0].name;
-                display.classList.remove('text-secondary');
-                display.classList.add('text-success');
+    if (input.files && input.files.length > 0) {
+        // A file was selected: Show the name and turn the icon green
+        display.innerText = input.files[0].name;
+        display.classList.remove('text-secondary');
+        display.classList.add('text-success');
 
-                icon.classList.remove('fa-cloud-upload-alt', 'text-primary');
-                icon.classList.add('fa-check-circle', 'text-success');
-            } else {
-                // User clicked cancel: Reset back to default
-                display.innerText = 'Select a file to upload';
-                display.classList.remove('text-success');
-                display.classList.add('text-secondary');
+        icon.classList.remove('fa-cloud-upload-alt', 'text-primary');
+        icon.classList.add('fa-check-circle', 'text-success');
+    } else {
+        // User clicked cancel: Reset back to default
+        display.innerText = 'Select a file to upload';
+        display.classList.remove('text-success');
+        display.classList.add('text-secondary');
 
-                icon.classList.remove('fa-check-circle', 'text-success');
-                icon.classList.add('fa-cloud-upload-alt', 'text-primary');
-            }
-        }
-    </script>
+        icon.classList.remove('fa-check-circle', 'text-success');
+        icon.classList.add('fa-cloud-upload-alt', 'text-primary');
+    }
+}
+</script>
 </asp:Content>

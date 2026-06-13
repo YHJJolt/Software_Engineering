@@ -11,6 +11,7 @@ namespace SchoolSystem
         private string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         private int courseId;
         private int studentId;
+        private string academicSession;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -20,6 +21,8 @@ namespace SchoolSystem
             {
                 Response.Redirect("~/Student/StudentDashboard.aspx"); return;
             }
+
+            academicSession = Request.QueryString["session"] ?? "";
 
             ((StudentCourseMaster)this.Master).PageTitle = "Grades";
 
@@ -46,9 +49,6 @@ namespace SchoolSystem
 
         private void LoadGrades()
         {
-            // Same query pattern as LecturerGrades.aspx.cs:
-            // Join CourseAssignment LEFT JOIN AssignmentSubmission for the logged-in student.
-            // Only expose marks_awarded if is_published = 1 (matches lecturer publish logic).
             string sql = @"
                 SELECT
                     ca.assignment_id,
@@ -64,6 +64,7 @@ namespace SchoolSystem
                     ON  ca.assignment_id = sub.assignment_id
                     AND sub.student_id   = @StudentId
                 WHERE ca.course_id = @CourseId
+                  AND (@Session = '' OR ca.academic_session = @Session)
                 ORDER BY ca.due_date ASC";
 
             var list = new List<object>();
@@ -73,6 +74,7 @@ namespace SchoolSystem
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@StudentId", studentId);
                 cmd.Parameters.AddWithValue("@CourseId", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
                 conn.Open();
 
                 using (SqlDataReader rdr = cmd.ExecuteReader())
@@ -81,24 +83,18 @@ namespace SchoolSystem
                     {
                         bool isPublished = Convert.ToBoolean(rdr["is_published"]);
 
-                        // Only expose the score if the lecturer has published it
                         string score = null;
                         if (isPublished && rdr["marks_awarded"] != DBNull.Value)
                             score = rdr["marks_awarded"].ToString();
 
                         string dueRaw = rdr["due_date_raw"] != DBNull.Value
                             ? Convert.ToDateTime(rdr["due_date_raw"]).ToString("o") : null;
-
                         string dueFmt = rdr["due_date_raw"] != DBNull.Value
-                            ? Convert.ToDateTime(rdr["due_date_raw"])
-                                .ToString("MMM dd, yyyy 'at' h:mmtt") : null;
-
+                            ? Convert.ToDateTime(rdr["due_date_raw"]).ToString("MMM dd, yyyy 'at' h:mmtt") : null;
                         string submittedRaw = rdr["submitted_at"] != DBNull.Value
                             ? Convert.ToDateTime(rdr["submitted_at"]).ToString("o") : null;
-
                         string submittedFmt = rdr["submitted_at"] != DBNull.Value
-                            ? Convert.ToDateTime(rdr["submitted_at"])
-                                .ToString("MMM dd, yyyy 'at' h:mmtt") : null;
+                            ? Convert.ToDateTime(rdr["submitted_at"]).ToString("MMM dd, yyyy 'at' h:mmtt") : null;
 
                         list.Add(new
                         {

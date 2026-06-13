@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="~/Admin/Admin.css?v=2" />
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
@@ -23,6 +24,7 @@
                 <a id="linkUsers" runat="server" href="~/Admin/UserManagement.aspx" class="nav-link"><i class="fas fa-users"></i> <span>User Management</span></a>
                 <a id="linkPayment" runat="server" href="~/Admin/ManagePayments.aspx" class="nav-link"><i class="fas fa-credit-card"></i> <span>Payment</span></a>
                 <a id="linkCourses" runat="server" href="~/Admin/Courses.aspx" class="nav-link"><i class="fas fa-book"></i> <span>Course Management</span></a>
+                <a id="linkCourseAllocation" runat="server" href="~/Admin/CourseAllocation.aspx" class="nav-link"><i class="fas fa-receipt"></i> <span>Course Allocation</span></a>
                 <a id="linkEnrollment" runat="server" href="~/Admin/Enrollment.aspx" class="nav-link"><i class="fas fa-user-plus"></i> <span>Enrollment</span></a>
                 <a id="linkPerformance" runat="server" href="~/Admin/Performance.aspx" class="nav-link"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
                 <a id="linkAnnouncements" runat="server" href="~/Admin/AdminAnnouncement.aspx" class="nav-link"><i class="fas fa-bullhorn"></i> <span>Announcement</span></a>

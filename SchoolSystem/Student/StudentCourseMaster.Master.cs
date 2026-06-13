@@ -21,7 +21,6 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
 
-            // Required to allow the bell click to update the DB asynchronously 
             ScriptManager.GetCurrent(Page)?.RegisterAsyncPostBackControl(btnMarkRead);
 
             if (!IsPostBack)
@@ -32,7 +31,6 @@ namespace SchoolSystem
                 HighlightActiveSideBar();
             }
 
-            // Fallback replication for safety trigger
             string eventTarget = Request.Form["__EVENTTARGET"];
             if (eventTarget == "markReadTrigger")
             {
@@ -44,6 +42,7 @@ namespace SchoolSystem
         private void LoadCourseDetails()
         {
             string cid = Request.QueryString["id"] ?? Request.QueryString["course_id"];
+            string session = Request.QueryString["session"] ?? "";
 
             if (!string.IsNullOrEmpty(cid))
             {
@@ -56,15 +55,18 @@ namespace SchoolSystem
                     SqlDataReader rdr = cmd.ExecuteReader();
                     if (rdr.Read())
                     {
+                        string qs = "?id=" + cid + (string.IsNullOrEmpty(session) ? "" : "&session=" + Uri.EscapeDataString(session));
+
                         litCourseCode.Text = rdr["course_code"].ToString();
 
-                        linkHome.HRef = "~/Student/StudentCourseHome.aspx?id=" + cid;
-                        linkPeople.HRef = "~/Student/StudentCoursePeople.aspx?id=" + cid;
-                        linkModules.HRef = "~/Student/StudentCourseModules.aspx?id=" + cid;
-                        linkAssignments.HRef = "~/Student/StudentCourseAssignments.aspx?id=" + cid;
-                        linkGrades.HRef = "~/Student/StudentIndivGrades.aspx?id=" + cid;
-                        linkAnnouncements.HRef = "~/Student/StudentAnnouncements.aspx?id=" + cid;
-                        linkSidebarProfile.HRef = "~/Student/StudentProfile.aspx?course_id=" + cid;
+                        linkHome.HRef = "~/Student/StudentCourseHome.aspx" + qs;
+                        linkPeople.HRef = "~/Student/StudentCoursePeople.aspx" + qs;
+                        linkModules.HRef = "~/Student/StudentCourseModules.aspx" + qs;
+                        linkAssignments.HRef = "~/Student/StudentCourseAssignments.aspx" + qs;
+                        linkGrades.HRef = "~/Student/StudentIndivGrades.aspx" + qs;
+                        linkAnnouncements.HRef = "~/Student/StudentAnnouncements.aspx" + qs;
+                        linkSidebarProfile.HRef = "~/Student/StudentProfile.aspx?course_id=" + cid
+                            + (string.IsNullOrEmpty(session) ? "" : "&session=" + Uri.EscapeDataString(session));
                     }
                 }
             }
@@ -97,7 +99,6 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Exact logic from StudentMaster to prevent future date bugs
                 string sql = @"
             DECLARE @StudentId INT;
             SELECT @StudentId = student_id FROM Student WHERE student_email = @Email;
@@ -108,7 +109,12 @@ namespace SchoolSystem
             WITH AllNotifs AS (
                 SELECT 'Admin' as Source, N'📢 [Admin] ' + title as Message, created_at as SortDate, '~/Student/StudentCalendar.aspx' as Link FROM Announcement WHERE Admin_id IS NOT NULL
                 UNION ALL
-                SELECT 'Lecturer' as Source, N'👨‍🏫 ' + title as Message, created_at as SortDate, '~/Student/StudentAnnouncements.aspx' as Link FROM Announcement WHERE Lecturer_id IS NOT NULL
+                SELECT 'Lecturer' as Source, N'👨‍🏫 ' + a.title as Message, a.created_at as SortDate,
+                       CAST(CASE WHEN a.Course_id IS NOT NULL
+                                 THEN '~/Student/StudentAnnouncementDetail.aspx?id=' + CAST(a.announcement_id AS VARCHAR) + '&course_id=' + CAST(a.Course_id AS VARCHAR) + '&session=' + ISNULL(a.academic_session,'')
+                                 ELSE '~/Student/StudentAnnouncements.aspx'
+                            END AS NVARCHAR(255)) AS Link
+                FROM Announcement a WHERE a.Lecturer_id IS NOT NULL AND a.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
                 UNION ALL
                 SELECT 'Grade' as Source, N'✅ Assignment Graded' as Message, graded_date as SortDate, '~/Student/StudentIndivGrades.aspx' as Link FROM AssignmentSubmission WHERE marks_awarded IS NOT NULL AND student_id = @StudentId
                 UNION ALL
@@ -132,7 +138,7 @@ namespace SchoolSystem
                     WHEN DATEDIFF(HOUR, SortDate, GETDATE()) < 24 THEN CAST(DATEDIFF(HOUR, SortDate, GETDATE()) AS VARCHAR) + 'h ago'
                     ELSE CAST(DATEDIFF(DAY, SortDate, GETDATE()) AS VARCHAR) + 'd ago'
                 END AS TimeAgo
-            FROM AllNotifs 
+            FROM AllNotifs
             ORDER BY SortDate DESC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);

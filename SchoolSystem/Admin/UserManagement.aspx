@@ -101,9 +101,9 @@
                     </div>
                     
                     <%-- ADDED ADVANCE SEMESTER BUTTON --%>
-                    <asp:LinkButton ID="btnAdvanceSemester" runat="server" CssClass="btn btn-warning fw-bold text-dark" OnClick="btnAdvanceSemester_Click" 
-                        OnClientClick="return confirm('Are you sure you want to advance ALL active students to the next semester?\n\nThis will also automatically graduate students who reach their program limit. This action cannot be undone.');">
-                        <i class="fas fa-forward me-1"></i> Advance Semester
+                    <asp:LinkButton ID="btnAdvanceSession" runat="server" CssClass="btn btn-warning fw-bold text-dark" OnClick="btnAdvanceSession_Click"
+                        OnClientClick="return confirm('Are you sure you want to advance the academic session?\n\nAll active students will move to the next semester and the global session will roll forward (e.g. JAN→APR→AUG). Students who reach their program limit will be automatically graduated. This action cannot be undone.');">
+                        <i class="fas fa-forward me-1"></i> Advance Session
                     </asp:LinkButton>
 
                     <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddStudent"><i class="fas fa-plus"></i> Add Student</button>
@@ -302,6 +302,7 @@
                                 <asp:ListItem Value="School of Computing">School of Computing</asp:ListItem>
                                 <asp:ListItem Value="School of Business">School of Business</asp:ListItem>
                                 <asp:ListItem Value="School of Design">School of Design</asp:ListItem>
+                                <asp:ListItem Value="School of Design">School of Art</asp:ListItem>
                             </asp:DropDownList>
                             <div id="errLectDept" class="text-danger mt-1" style="font-size:12px;display:none;">Please select a department</div>
                         </div>
@@ -377,41 +378,41 @@
         function onLectNameInput() {
             var n = document.getElementById('<%=txtLectName.ClientID%>');
             var e = document.getElementById('<%=txtLectEmail.ClientID%>');
-            var id = document.getElementById('<%=hfNextLectId.ClientID%>').value || '1';
-            toTitleCase(n);
-            e.value = n.value ? buildEmail(n.value, id, 'lect.com') : '';
-        }
+    var id = document.getElementById('<%=hfNextLectId.ClientID%>').value || '1';
+    toTitleCase(n);
+    e.value = n.value ? buildEmail(n.value, id, 'lect.com') : '';
+}
 
-        function togglePw(id, btn) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            var show = (el.type === 'text');
-            el.type = show ? 'password' : 'text';
-            btn.querySelector('i').className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
-        }
+function togglePw(id, btn) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var show = (el.type === 'text');
+    el.type = show ? 'password' : 'text';
+    btn.querySelector('i').className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
 
-        function chk(fieldId, errId, testFn) {
-            var el = document.getElementById(fieldId);
-            var err = document.getElementById(errId);
-            var val = el ? el.value.trim() : '';
-            var fail = !testFn(val);
-            if (err) err.style.display = fail ? 'block' : 'none';
-            if (el) el.classList.toggle('is-invalid', fail);
-            return !fail;
-        }
-        function validateOptionalPhone(fieldId, errId) {
-            var el = document.getElementById(fieldId);
-            var err = document.getElementById(errId);
-            var val = el ? el.value.trim() : '';
-            if (!val) { if (err) err.style.display = 'none'; if (el) el.classList.remove('is-invalid'); return true; }
-            var fail = !/^01\d-\d{7,8}$/.test(val);
-            if (err) err.style.display = fail ? 'block' : 'none';
-            if (el) el.classList.toggle('is-invalid', fail);
-            return !fail;
-        }
-        function validateStudForm() {
-            var ok = true;
-            ok = chk('<%=txtStudName.ClientID%>', 'errStudName', function (v) { return v.length > 0; }) && ok;
+function chk(fieldId, errId, testFn) {
+    var el = document.getElementById(fieldId);
+    var err = document.getElementById(errId);
+    var val = el ? el.value.trim() : '';
+    var fail = !testFn(val);
+    if (err) err.style.display = fail ? 'block' : 'none';
+    if (el) el.classList.toggle('is-invalid', fail);
+    return !fail;
+}
+function validateOptionalPhone(fieldId, errId) {
+    var el = document.getElementById(fieldId);
+    var err = document.getElementById(errId);
+    var val = el ? el.value.trim() : '';
+    if (!val) { if (err) err.style.display = 'none'; if (el) el.classList.remove('is-invalid'); return true; }
+    var fail = !/^01\d-\d{7,8}$/.test(val);
+    if (err) err.style.display = fail ? 'block' : 'none';
+    if (el) el.classList.toggle('is-invalid', fail);
+    return !fail;
+}
+function validateStudForm() {
+    var ok = true;
+    ok = chk('<%=txtStudName.ClientID%>', 'errStudName', function (v) { return v.length > 0; }) && ok;
             ok = validateOptionalPhone('<%=txtStudContact.ClientID%>', 'errStudContact') && ok;
             var semEl = document.getElementById('<%=txtStudSem.ClientID%>');
             var semVal = semEl ? parseInt(semEl.value) : 0;

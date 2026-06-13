@@ -56,34 +56,33 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) return;
 
-            // Student count includes only the active cohort (excludes students who advanced semesters)
+            // Query through CourseAssignment_Session so courses are grouped by academic session.
+            // One row per (course, session) pair — same course taught in two sessions appears twice.
             string sql = @"
         SELECT
             c.course_id,
             c.course_name,
             c.course_code,
             c.course_img,
-            ISNULL(p.program_semester, 0)  AS sem_num,
-            CASE
-                WHEN p.program_semester IS NOT NULL
-                THEN 'Sem ' + CAST(p.program_semester AS NVARCHAR(5))
-                ELSE 'N/A'
-            END AS semester_label,
+            cas.academic_session,
+            cas.assign_id,
+            cas.assign_status,
             (SELECT COUNT(DISTINCT e.student_id)
              FROM Enrollment e
-             JOIN Student s ON e.student_id = s.student_id
              WHERE e.course_id = c.course_id
-               AND e.status = 'Approved'
-               AND e.enrolled_semester = s.student_sem) AS student_count,
+               AND e.academic_session = cas.academic_session
+               AND e.status = 'Approved') AS student_count,
             CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
-        FROM [Course] c
-        INNER JOIN [Lecturer] l ON c.Lecturer_id = l.lecturer_id
-        INNER JOIN [Program]  p ON c.Program_id  = p.program_id
+        FROM [CourseAssignment_Session] cas
+        INNER JOIN [Lecturer] l  ON cas.lecturer_id = l.lecturer_id
+        INNER JOIN [Course]   c  ON cas.course_id   = c.course_id
         LEFT  JOIN [LecturerCourseFavourite] f
                ON f.course_id   = c.course_id
               AND f.lecturer_id = l.lecturer_id
         WHERE l.lecturer_email = @Email
-        ORDER BY c.course_name ASC";
+        ORDER BY
+            CASE WHEN cas.assign_status = 'Active' THEN 0 ELSE 1 END,
+            cas.academic_session DESC, c.course_name ASC";
 
             var list = new List<object>();
 
@@ -107,10 +106,11 @@ namespace SchoolSystem
                     list.Add(new
                     {
                         id = Convert.ToInt32(rdr["course_id"]),
+                        assignId = Convert.ToInt32(rdr["assign_id"]),
                         name = rdr["course_name"].ToString(),
                         code = rdr["course_code"].ToString(),
-                        sem = rdr["semester_label"].ToString(),
-                        semNum = Convert.ToInt32(rdr["sem_num"]),
+                        session = rdr["academic_session"].ToString(),
+                        status = rdr["assign_status"].ToString(),
                         students = Convert.ToInt32(rdr["student_count"]),
                         published = published,
                         fav = Convert.ToInt32(rdr["is_favourite"]) == 1,

@@ -16,7 +16,6 @@ namespace SchoolSystem
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
 
-            // Required to allow the bell click to update the DB asynchronously
             ScriptManager.GetCurrent(Page)?.RegisterAsyncPostBackControl(btnMarkRead);
 
             if (!IsPostBack)
@@ -33,8 +32,6 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Admin sees reminders for calendar events happening within the next 3 days.
-                // A reminder counts as unread if it "appeared" (3 days before the event) after the admin last read.
                 string sql = @"
             DECLARE @AdminId INT;
             SELECT @AdminId = admin_id FROM [Admin (HoP)] WHERE admin_email = @Email;
@@ -75,7 +72,6 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Date buffer prevents milliseconds bug (same pattern as StudentMaster)
                 string sql = @"
                     DECLARE @AdminId INT;
                     SELECT @AdminId = admin_id FROM [Admin (HoP)] WHERE admin_email = @Email;
@@ -105,7 +101,6 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Fetching from [Admin (HoP)] as defined in the technical project structure
                 string sql = "SELECT admin_name, admin_img FROM [Admin (HoP)] WHERE admin_email = @Email";
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
@@ -126,24 +121,23 @@ namespace SchoolSystem
         {
             string currentPage = Request.Url.AbsolutePath.ToLowerInvariant();
 
-            // Added linkPrograms to the array
-            HtmlAnchor[] links = { linkDashboard, linkPrograms, linkUsers, linkPayment, linkCourses, linkEnrollment, linkPerformance, linkAnnouncements, linkCalendar };
+            // linkCourseAllocation included so it resets correctly alongside the others
+            HtmlAnchor[] links = { linkDashboard, linkPrograms, linkUsers, linkPayment, linkCourses, linkCourseAllocation, linkEnrollment, linkPerformance, linkAnnouncements, linkCalendar };
 
             foreach (var link in links)
             {
-                if (link != null)
-                {
-                    if (link.Attributes["class"].Contains("sub-link"))
-                        link.Attributes["class"] = "nav-link sub-link";
-                    else
-                        link.Attributes["class"] = "nav-link";
-                }
+                if (link == null) continue;
+                link.Attributes["class"] = link.Attributes["class"].Contains("sub-link")
+                    ? "nav-link sub-link"
+                    : "nav-link";
             }
 
+            // "courseallocation" MUST be checked before "course" — otherwise "course" swallows it
             if (currentPage.Contains("admindashboard") && linkDashboard != null) linkDashboard.Attributes["class"] += " active";
-            else if (currentPage.Contains("program") && linkPrograms != null) linkPrograms.Attributes["class"] += " active"; // NEW
+            else if (currentPage.Contains("program") && linkPrograms != null) linkPrograms.Attributes["class"] += " active";
             else if (currentPage.Contains("usermanagement") && linkUsers != null) linkUsers.Attributes["class"] += " active";
             else if (currentPage.Contains("payments") && linkPayment != null) linkPayment.Attributes["class"] += " active";
+            else if (currentPage.Contains("courseallocation") && linkCourseAllocation != null) linkCourseAllocation.Attributes["class"] += " active";
             else if (currentPage.Contains("course") && linkCourses != null) linkCourses.Attributes["class"] += " active";
             else if (currentPage.Contains("enrollment") && linkEnrollment != null) linkEnrollment.Attributes["class"] += " active";
             else if (currentPage.Contains("performance") && linkPerformance != null) linkPerformance.Attributes["class"] += " active";

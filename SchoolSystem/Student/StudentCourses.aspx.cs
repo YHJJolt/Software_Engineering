@@ -21,8 +21,8 @@ namespace SchoolSystem
 
             if (!IsPostBack)
             {
-                int defaultSem = LoadSemesterDropdown();
-                LoadCourses(defaultSem);
+                LoadSessionDropdown();
+                LoadCourses(ddlSemester.SelectedValue);
             }
         }
 
@@ -70,102 +70,72 @@ namespace SchoolSystem
             return 0;
         }
 
-        // Populates the semester dropdown. Returns 0 (All Semesters) as the default.
-        private int LoadSemesterDropdown()
+        private void LoadSessionDropdown()
         {
             int studentId = GetStudentId();
 
             ddlSemester.Items.Clear();
-
-            // "All Semesters" is always first and selected by default
-            ddlSemester.Items.Add(new ListItem("All Semesters", "0"));
+            ddlSemester.Items.Add(new ListItem("All Sessions", ""));
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT DISTINCT e.enrolled_semester
+                    SELECT DISTINCT e.academic_session
                     FROM Enrollment e
                     WHERE e.student_id = @StudentId
-                    ORDER BY e.enrolled_semester ASC";
+                      AND e.academic_session IS NOT NULL
+                      AND e.academic_session <> ''
+                    ORDER BY e.academic_session DESC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@StudentId", studentId);
                     conn.Open();
-
                     SqlDataReader rdr = cmd.ExecuteReader();
                     while (rdr.Read())
                     {
-                        int sem = Convert.ToInt32(rdr["enrolled_semester"]);
-                        ddlSemester.Items.Add(new ListItem("Semester " + sem, sem.ToString()));
+                        string s = rdr["academic_session"].ToString();
+                        ddlSemester.Items.Add(new ListItem(s, s));
                     }
                 }
             }
 
-            // Default to "All Semesters"
-            ddlSemester.SelectedValue = "0";
-            return 0;
+            ddlSemester.SelectedIndex = 0;
         }
 
-        // semester = 0 means All Semesters (no filter), otherwise filter by that semester.
-        private void LoadCourses(int semester)
+        private void LoadCourses(string session)
         {
             int studentId = GetStudentId();
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql;
-
-                if (semester == 0)
-                {
-                    // Show all enrolled courses across every semester
-                    sql = @"
-                        SELECT 
-                            c.course_id,
-                            c.course_code,
-                            c.course_name,
-                            c.credit_hours,
-                            l.lecturer_name,
-                            e.status,
-                            e.enrolled_semester,
-                            CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
-                        FROM Enrollment e
-                        INNER JOIN Course c   ON e.course_id   = c.course_id
-                        INNER JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                        LEFT  JOIN StudentCourseFavourite f
-                               ON f.course_id  = c.course_id
-                              AND f.student_id = @StudentId
-                        WHERE e.student_id = @StudentId
-                        ORDER BY e.enrolled_semester ASC, c.course_name ASC";
-                }
-                else
-                {
-                    sql = @"
-                        SELECT 
-                            c.course_id,
-                            c.course_code,
-                            c.course_name,
-                            c.credit_hours,
-                            l.lecturer_name,
-                            e.status,
-                            e.enrolled_semester,
-                            CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
-                        FROM Enrollment e
-                        INNER JOIN Course c   ON e.course_id   = c.course_id
-                        INNER JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                        LEFT  JOIN StudentCourseFavourite f
-                               ON f.course_id  = c.course_id
-                              AND f.student_id = @StudentId
-                        WHERE e.student_id        = @StudentId
-                          AND e.enrolled_semester = @Semester
-                        ORDER BY c.course_name ASC";
-                }
+                string sql = @"
+                    SELECT
+                        c.course_id,
+                        c.course_code,
+                        c.course_name,
+                        c.credit_hours,
+                        e.status,
+                        e.academic_session,
+                        l.lecturer_name,
+                        CASE WHEN f.fav_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
+                    FROM Enrollment e
+                    INNER JOIN Course c ON e.course_id = c.course_id
+                    LEFT JOIN CourseAssignment_Session cas
+                           ON cas.course_id        = c.course_id
+                          AND cas.academic_session = e.academic_session
+                    LEFT JOIN Lecturer l ON cas.lecturer_id = l.lecturer_id
+                    LEFT JOIN StudentCourseFavourite f
+                           ON f.course_id  = c.course_id
+                          AND f.student_id = @StudentId
+                    WHERE e.student_id = @StudentId
+                      AND (@Session = '' OR e.academic_session = @Session)
+                    ORDER BY e.academic_session DESC, c.course_name ASC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@StudentId", studentId);
-                    if (semester != 0)
-                        cmd.Parameters.AddWithValue("@Semester", semester);
+                    cmd.Parameters.AddWithValue("@Session", session ?? "");
 
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
@@ -194,9 +164,7 @@ namespace SchoolSystem
 
         protected void ddlSemester_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int selectedSem = 0;
-            int.TryParse(ddlSemester.SelectedValue, out selectedSem);
-            LoadCourses(selectedSem);
+            LoadCourses(ddlSemester.SelectedValue);
         }
 
         public string GetStatusClass(string status)

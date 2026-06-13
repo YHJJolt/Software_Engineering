@@ -69,50 +69,50 @@
     </asp:Panel>
 
     <script>
-        function toggleSort(e) {
-            e.stopPropagation();
-            var p = document.getElementById('cpSortPanel');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        }
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.cp-sort-wrap'))
-                document.getElementById('cpSortPanel').style.display = 'none';
-        });
-        function pickSort(val, btn, e) {
-            e.stopPropagation();
-            document.querySelectorAll('.cp-sort-opt').forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            document.getElementById('cpSortPanel').style.display = 'none';
-            sortTable(val);
-        }
-        function sortTable(val) {
-            var tbody = document.getElementById('cpBody');
-            var rows = Array.from(tbody.querySelectorAll('tr[data-name]'));
-            var col = val.startsWith('name') ? 'name' : 'code';
-            var dir = val.endsWith('asc') ? 1 : -1;
-            rows.sort(function (a, b) {
-                return a.dataset[col].localeCompare(b.dataset[col]) * dir;
-            });
-            rows.forEach(function (r) { tbody.appendChild(r); });
-        }
-        function filterPeople() {
-            var search = document.getElementById('cpSearch').value.toLowerCase();
-            var rows = document.querySelectorAll('#cpBody tr[data-name]');
-            var visible = 0;
-            rows.forEach(function (row) {
-                var ok = !search || row.dataset.name.includes(search)
-                    || row.dataset.code.includes(search)
-                    || row.dataset.email.includes(search);
-                row.style.display = ok ? '' : 'none';
-                if (ok) visible++;
-            });
-            var noResults = visible === 0 && rows.length > 0;
-            document.getElementById('cpNoResults').style.display = noResults ? '' : 'none';
-            document.getElementById('cpTableWrap').style.display = noResults ? 'none' : '';
-        }
-        window.addEventListener('DOMContentLoaded', function () {
-            sortTable('name-asc');
-        });
-    </script>
+function toggleSort(e) {
+    e.stopPropagation();
+    var p = document.getElementById('cpSortPanel');
+    p.style.display = p.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('.cp-sort-wrap'))
+        document.getElementById('cpSortPanel').style.display = 'none';
+});
+function pickSort(val, btn, e) {
+    e.stopPropagation();
+    document.querySelectorAll('.cp-sort-opt').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('cpSortPanel').style.display = 'none';
+    sortTable(val);
+}
+function sortTable(val) {
+    var tbody = document.getElementById('cpBody');
+    var rows = Array.from(tbody.querySelectorAll('tr[data-name]'));
+    var col = val.startsWith('name') ? 'name' : 'code';
+    var dir = val.endsWith('asc') ? 1 : -1;
+    rows.sort(function (a, b) {
+        return a.dataset[col].localeCompare(b.dataset[col]) * dir;
+    });
+    rows.forEach(function (r) { tbody.appendChild(r); });
+}
+function filterPeople() {
+    var search = document.getElementById('cpSearch').value.toLowerCase();
+    var rows = document.querySelectorAll('#cpBody tr[data-name]');
+    var visible = 0;
+    rows.forEach(function (row) {
+        var ok = !search || row.dataset.name.includes(search)
+            || row.dataset.code.includes(search)
+            || row.dataset.email.includes(search);
+        row.style.display = ok ? '' : 'none';
+        if (ok) visible++;
+    });
+    var noResults = visible === 0 && rows.length > 0;
+    document.getElementById('cpNoResults').style.display = noResults ? '' : 'none';
+    document.getElementById('cpTableWrap').style.display = noResults ? 'none' : '';
+}
+window.addEventListener('DOMContentLoaded', function () {
+    sortTable('name-asc');
+});
+</script>
 
 </asp:Content>

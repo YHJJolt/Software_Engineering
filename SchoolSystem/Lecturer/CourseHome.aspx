@@ -69,7 +69,7 @@
         <div class="ch-card">
             <div class="ch-card-header">
                 <h4><i class="fas fa-users" style="color:var(--antique-gold); margin-right:8px;"></i>Enrolled Students</h4>
-                <a href='<%=ResolveUrl("~/Lecturer/CoursePeople.aspx?id=") + Request.QueryString["id"] %>' class="ch-view-link">
+                <a href='<%=ResolveUrl("~/Lecturer/CoursePeople.aspx?id=") + Request.QueryString["id"] + (string.IsNullOrEmpty(Request.QueryString["session"]) ? "" : "&session=" + Server.UrlEncode(Request.QueryString["session"])) %>' class="ch-view-link">
                     View All <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
@@ -98,7 +98,7 @@
         <div class="ch-card">
             <div class="ch-card-header">
                 <h4><i class="fas fa-bullhorn" style="color:var(--antique-gold); margin-right:8px;"></i>Announcements</h4>
-                <a href='<%=ResolveUrl("~/Lecturer/LecturerAnnouncement.aspx?id=") + Request.QueryString["id"] %>' class="ch-view-link">
+                <a href='<%=ResolveUrl("~/Lecturer/LecturerAnnouncement.aspx?id=") + Request.QueryString["id"] + (string.IsNullOrEmpty(Request.QueryString["session"]) ? "" : "&session=" + Server.UrlEncode(Request.QueryString["session"])) %>' class="ch-view-link">
                     View All <i class="fas fa-arrow-right"></i>
                 </a>
             </div>

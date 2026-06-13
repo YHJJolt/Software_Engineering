@@ -19,7 +19,6 @@
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" />
         <asp:ScriptManagerProxy runat="server" />
-
         <div id="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-book-open icon"></i>
@@ -110,6 +109,7 @@
     </form>
 
     <script>
+// @ts-nocheck
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-collapsed');
             localStorage.setItem('sidebarState', document.body.classList.contains('sidebar-collapsed') ? 'collapsed' : 'expanded');
@@ -128,36 +128,36 @@
             dropdown.style.display = isOpening ? 'block' : 'none';
             if (isOpening) {
                 zeroOutBadge();
-                var btn = document.getElementById('<%= btnMarkRead.ClientID %>');
-                if (btn) btn.click();
-            }
-        }
+        var btn = document.getElementById('<%= btnMarkRead.ClientID %>');
+        if (btn) btn.click();
+    }
+}
 
-        function zeroOutBadge() {
-            var badge = document.querySelector('.notif-badge');
-            if (badge) badge.style.display = 'none';
+function zeroOutBadge() {
+    var badge = document.querySelector('.notif-badge');
+    if (badge) badge.style.display = 'none';
 
-            document.querySelectorAll('.notif-item.unread').forEach(function (el) {
-                el.classList.remove('unread');
-            });
-        }
+    document.querySelectorAll('.notif-item.unread').forEach(function (el) {
+        el.classList.remove('unread');
+    });
+}
 
-        function handleMarkRead() {
-            event.stopPropagation();
-            zeroOutBadge();
-        }
+function handleMarkRead() {
+    event.stopPropagation();
+    zeroOutBadge();
+}
 
-        document.getElementById('notifDropdown').addEventListener('click', function (e) {
-            e.stopPropagation();
-        });
+document.getElementById('notifDropdown').addEventListener('click', function (e) {
+    e.stopPropagation();
+});
 
-        document.addEventListener('click', function (event) {
-            var container = document.querySelector('.notif-container');
-            if (container && !container.contains(event.target)) {
-                var dd = document.getElementById('notifDropdown');
-                if (dd) dd.style.display = 'none';
-            }
-        });
+document.addEventListener('click', function (event) {
+    var container = document.querySelector('.notif-container');
+    if (container && !container.contains(event.target)) {
+        var dd = document.getElementById('notifDropdown');
+        if (dd) dd.style.display = 'none';
+    }
+});
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

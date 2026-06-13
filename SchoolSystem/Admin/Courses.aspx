@@ -37,7 +37,6 @@
                     <asp:BoundField DataField="course_code" HeaderText="Course Code" />
                     <asp:BoundField DataField="course_name" HeaderText="Course Name" />
                     <asp:BoundField DataField="program_name" HeaderText="Program" />
-                    <asp:BoundField DataField="lecturer_name" HeaderText="Lecturer" />
                     <asp:BoundField DataField="course_fee" HeaderText="Fee (RM)" DataFormatString="{0:N2}" />
 
                     <asp:TemplateField HeaderText="Actions">
@@ -94,6 +93,12 @@
                             <label>Course Fee (RM)</label>
                             <asp:TextBox ID="txtEditFee" runat="server" CssClass="form-control" TextMode="Number" Step="0.01" />
                         </div>
+                        <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+                            <label>Programs</label>
+                            <div style="border:1px solid #d1d5db; border-radius:6px; padding:8px 12px; max-height:150px; overflow-y:auto; background:#fff;">
+                                <asp:CheckBoxList ID="cblEditPrograms" runat="server" RepeatColumns="1" CssClass="program-checklist" />
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
@@ -141,21 +146,21 @@
                     }
                 }
             });
-            return false;
-        }
+    return false;
+}
 
-        // Live preview script for the Edit Modal
-        function previewEditImage(input) {
-            var preview = document.getElementById('imgEditPreview');
+// Live preview script for the Edit Modal
+function previewEditImage(input) {
+    var preview = document.getElementById('imgEditPreview');
 
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
         }
-    </script>
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
     </div>
 </asp:Content>

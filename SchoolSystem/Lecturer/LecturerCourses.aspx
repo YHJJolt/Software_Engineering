@@ -2,6 +2,10 @@
     CodeBehind="LecturerCourses.aspx.cs" Inherits="SchoolSystem.LecturerCourses" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
+    <style>
+        .badge-active   { background:#d1fae5; color:#065f46; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:600; }
+        .badge-archived { background:#f3f4f6; color:#6b7280; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:600; }
+    </style>
     <div class="courses-page">
 
         <div class="courses-topbar">
@@ -36,13 +40,13 @@
                         <th class="sortable" onclick="sortBy('code')">
                             Code <span class="sort-icon none" id="sort-code"></span>
                         </th>
-                        <th class="sortable" onclick="sortBy('sem')">
-                            Semester <span class="sort-icon none" id="sort-sem"></span>
+                        <th class="sortable" onclick="sortBy('session')">
+                            Session <span class="sort-icon none" id="sort-session"></span>
                         </th>
                         <th class="sortable" onclick="sortBy('students')">
                             Students <span class="sort-icon none" id="sort-students"></span>
                         </th>
-                        <th>Enrolled as</th>
+                        <th>Status</th>
                         <th class="sortable" onclick="sortBy('published')">
                             Published <span class="sort-icon none" id="sort-published"></span>
                         </th>
@@ -96,7 +100,7 @@
         /* ════════════════════════════════
            SORT
         ════════════════════════════════ */
-        var sortKeys = ['fav', 'name', 'code', 'sem', 'students', 'published'];
+        var sortKeys = ['fav', 'name', 'code', 'session', 'students', 'published'];
 
         function sortBy(col) {
             var cur = sortDir[col] || 'none';
@@ -123,7 +127,7 @@
                 case 'fav':       return c.fav ? 0 : 1;
                 case 'name':      return c.name.toLowerCase();
                 case 'code':      return c.code.toLowerCase();
-                case 'sem':       return c.semNum;
+                case 'session':   return c.session.toLowerCase();
                 case 'students':  return c.students;
                 case 'published': return c.published ? 0 : 1;
                 default:          return '';
@@ -167,6 +171,11 @@
         function pubBadge(p) {
             return p ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>';
         }
+        function statusBadge(status) {
+            return status === 'Active'
+                ? '<span class="badge-active">Active</span>'
+                : '<span class="badge-archived">Archived</span>';
+        }
         function starHtml(fav, id) {
             return '<button type="button" class="star-btn' + (fav ? ' starred' : '') + '" onclick="event.stopPropagation();toggleFav(this,' + id + ')" title="' + (fav ? 'Remove favourite' : 'Add favourite') + '">'
                 + '<i class="' + (fav ? 'fas' : 'far') + ' fa-star"></i></button>';
@@ -178,13 +187,16 @@
             var tb = document.getElementById('tableBody');
             tv.classList.toggle('hidden', list.length === 0 || currentView !== 'table');
             tb.innerHTML = list.map(function (c) {
-                return '<tr>'
+                var archived = c.status !== 'Active';
+                var href = 'CourseHome.aspx?id=' + c.id + '&session=' + encodeURIComponent(c.session);
+                var rowStyle = archived ? ' style="opacity:0.5;pointer-events:auto;"' : '';
+                return '<tr' + rowStyle + '>'
                     + '<td style="text-align:center">' + starHtml(c.fav, c.id) + '</td>'
-                    + '<td><a href="CourseHome.aspx?id=' + c.id + '" class="course-link">' + c.name + '</a></td>'
+                    + '<td><a href="' + href + '" class="course-link">' + c.name + '</a></td>'
                     + '<td><span class="badge-code">' + c.code + '</span></td>'
-                    + '<td>' + c.sem + '</td>'
+                    + '<td><span class="badge-session">' + c.session + '</span></td>'
                     + '<td><span class="student-count"><i class="fas fa-users"></i>' + c.students + '</span></td>'
-                    + '<td><span class="badge-role">Lecturer</span></td>'
+                    + '<td>' + statusBadge(c.status) + '</td>'
                     + '<td>' + pubBadge(c.published) + '</td>'
                     + '</tr>';
             }).join('');
@@ -195,9 +207,12 @@
             var gv = document.getElementById('gridView');
             gv.classList.toggle('hidden', list.length === 0 || currentView !== 'grid');
             gv.innerHTML = list.map(function (c) {
+                var archived = c.status !== 'Active';
+                var href = 'CourseHome.aspx?id=' + c.id + '&session=' + encodeURIComponent(c.session);
                 var imgSrc = c.img ? c.img : 'Images/default-course.png';
                 var imgHtml = '<img src="' + imgSrc + '" alt="' + c.name + '" onerror="this.src=\'Images/default-course.png\';" />';
-                return '<div class="course-card" onclick="window.location.href=\'CourseHome.aspx?id=' + c.id + '\'">'
+                var cardStyle = archived ? ' style="opacity:0.5;"' : '';
+                return '<div class="course-card"' + cardStyle + ' onclick="window.location.href=\'' + href + '\'">'
                     + '<div class="card-img-wrap">' + imgHtml + '</div>'
                     + '<div class="card-body">'
                     + '<div class="card-top">'
@@ -208,10 +223,10 @@
                     + '<div class="card-meta">'
                     + '<div class="card-row">'
                     + '<span><i class="fas fa-users"></i>' + c.students + ' students</span>'
-                    + '<span><i class="fas fa-calendar-alt"></i>' + c.sem + '</span>'
+                    + '<span><i class="fas fa-calendar-alt"></i>' + c.session + '</span>'
                     + '</div>'
                     + '<div class="card-row" style="margin-top:5px">'
-                    + '<span class="badge-role">Lecturer</span>'
+                    + statusBadge(c.status)
                     + pubBadge(c.published)
                     + '</div>'
                     + '</div>'
@@ -241,24 +256,24 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ courseId: id, email: '<%= Session["UserEmail"] %>' })
             })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (data.d === 'error') {
-                        // Revert on failure
-                        btn.classList.toggle('starred', isFav);
-                        btn.querySelector('i').className = isFav ? 'fas fa-star' : 'far fa-star';
-                        btn.title = isFav ? 'Remove favourite' : 'Add favourite';
-                        if (course) course.fav = isFav;
-                        alert('Failed to update favourite. Please try again.');
-                    }
-                })
-                .catch(function () {
-                    // Revert on network error
-                    btn.classList.toggle('starred', isFav);
-                    btn.querySelector('i').className = isFav ? 'fas fa-star' : 'far fa-star';
-                    btn.title = isFav ? 'Remove favourite' : 'Add favourite';
-                    if (course) course.fav = isFav;
-                });
-        }
-    </script>
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.d === 'error') {
+                // Revert on failure
+                btn.classList.toggle('starred', isFav);
+                btn.querySelector('i').className = isFav ? 'fas fa-star' : 'far fa-star';
+                btn.title = isFav ? 'Remove favourite' : 'Add favourite';
+                if (course) course.fav = isFav;
+                alert('Failed to update favourite. Please try again.');
+            }
+        })
+        .catch(function () {
+            // Revert on network error
+            btn.classList.toggle('starred', isFav);
+            btn.querySelector('i').className = isFav ? 'fas fa-star' : 'far fa-star';
+            btn.title = isFav ? 'Remove favourite' : 'Add favourite';
+            if (course) course.fav = isFav;
+        });
+}
+</script>
 </asp:Content>

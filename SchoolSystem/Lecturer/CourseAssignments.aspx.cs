@@ -12,6 +12,7 @@ namespace SchoolSystem
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int currentCourseId = 2; // Default fallback
+        string academicSession;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -33,11 +34,12 @@ namespace SchoolSystem
                 }
             }
 
-            // 2. Grab the ID from the URL
+            // 2. Grab the ID and session from the URL
             if (Request.QueryString["id"] != null)
             {
                 currentCourseId = Convert.ToInt32(Request.QueryString["id"]);
             }
+            academicSession = Request.QueryString["session"] ?? "";
 
             // 3. Normal Page Load
             if (!IsPostBack)
@@ -73,11 +75,12 @@ namespace SchoolSystem
             {
                 // DYNAMIC SORTING QUERY
                 string sortOrder = ddlSort.SelectedValue == "DESC" ? "DESC" : "ASC";
-                string query = $"SELECT * FROM CourseAssignment WHERE course_id = @cid ORDER BY due_date {sortOrder}";
+                string query = $"SELECT * FROM CourseAssignment WHERE course_id = @cid AND (@Session = '' OR academic_session = @Session) ORDER BY due_date {sortOrder}";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);
+                    cmd.Parameters.AddWithValue("@Session", academicSession);
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
@@ -116,7 +119,7 @@ namespace SchoolSystem
 
             using (SqlConnection con = new SqlConnection(connStr))
             {
-                string query = "INSERT INTO CourseAssignment (course_id, title, description, assignment_type, due_date, max_marks, attachment_path) VALUES (@cid, @title, @desc, @type, @date, @max, @path)";
+                string query = "INSERT INTO CourseAssignment (course_id, title, description, assignment_type, due_date, max_marks, attachment_path, academic_session) VALUES (@cid, @title, @desc, @type, @date, @max, @path, @session)";
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);
@@ -126,6 +129,7 @@ namespace SchoolSystem
                     cmd.Parameters.AddWithValue("@date", Convert.ToDateTime(txtDueDate.Text));
                     cmd.Parameters.AddWithValue("@max", Convert.ToInt32(txtMaxMarks.Text));
                     cmd.Parameters.AddWithValue("@path", (object)dbPath ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@session", academicSession);
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
@@ -241,14 +245,15 @@ namespace SchoolSystem
             JOIN Student s ON e.student_id = s.student_id
             JOIN CourseAssignment ca ON ca.assignment_id = @aid
             LEFT JOIN AssignmentSubmission sub ON s.student_id = sub.student_id AND sub.assignment_id = @aid
-            WHERE e.course_id = @cid 
+            WHERE e.course_id = @cid
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem"; // <--- THIS FILTERS OUT OLD STUDENTS
+              AND (@Session = '' OR e.academic_session = @Session)";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@aid", hfGradingAssignmentId.Value);
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);
+                    cmd.Parameters.AddWithValue("@Session", academicSession);
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);

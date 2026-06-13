@@ -42,6 +42,8 @@ namespace SchoolSystem
                     JOIN [Student] s      ON e.student_id = s.student_id
                     LEFT JOIN [Program] p ON s.Program_id = p.program_id
                     WHERE e.course_id = @id
+                      AND e.status = 'Approved'
+                      AND e.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
                     ORDER BY s.student_name", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
                 cmd.Parameters.AddWithValue("@email", Session["UserEmail"].ToString());

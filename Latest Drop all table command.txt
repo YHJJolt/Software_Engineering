@@ -1,49 +1,61 @@
 -- ============================================================
--- SCRIPT TO CLEAN/DELETE ALL SCHOOL SYSTEM STRUCTURES
--- DROPPED IN ORDER OF DEPENDENCY (CHILD TABLES FIRST)
+-- CLEANUP SCRIPT: Drop Constraints, Triggers, and Tables Safely
 -- ============================================================
 
--- 1. Drop third-level / deepest child tables
-IF OBJECT_ID('dbo.PaymentDetail', 'U') IS NOT NULL DROP TABLE [PaymentDetail];
-IF OBJECT_ID('dbo.ModuleFile', 'U') IS NOT NULL DROP TABLE [ModuleFile];
+-- 1. Drop Stored Procedures & Triggers
+IF OBJECT_ID('sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE sp_ProcessGraduations;
+IF OBJECT_ID('trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER trg_GeneratePayment;
+IF OBJECT_ID('trg_Payment_SetInactive', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_SetInactive;
+IF OBJECT_ID('trg_Payment_SetActive', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_SetActive;
+IF OBJECT_ID('trg_Payment_DeleteReactivate', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_DeleteReactivate;
+IF OBJECT_ID('trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER trg_CalculateGradesAndGPA;
+GO
+
+-- 2. BREAK FOREIGN KEY CONSTRAINTS (Breaks the circular locks between tables)
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Course_Lecturer' AND parent_object_id = OBJECT_ID('Course'))
+    ALTER TABLE [Course] DROP CONSTRAINT [fk_Course_Lecturer];
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Course_Program' AND parent_object_id = OBJECT_ID('Course'))
+    ALTER TABLE [Course] DROP CONSTRAINT [fk_Course_Program];
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Program_Lecturer' AND parent_object_id = OBJECT_ID('Program'))
+    ALTER TABLE [Program] DROP CONSTRAINT [fk_Program_Lecturer];
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Student_Program' AND parent_object_id = OBJECT_ID('Student'))
+    ALTER TABLE [Student] DROP CONSTRAINT [fk_Student_Program];
+GO
+
+-- 3. Drop Deepest Child Tables (Submissions, Grades, Favs, Records)
 IF OBJECT_ID('dbo.AssignmentSubmission', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
 IF OBJECT_ID('dbo.CourseGrade', 'U') IS NOT NULL DROP TABLE [CourseGrade];
 IF OBJECT_ID('dbo.AttendanceRecord', 'U') IS NOT NULL DROP TABLE [AttendanceRecord];
-IF OBJECT_ID('dbo.StudentNotifRead', 'U') IS NOT NULL DROP TABLE [StudentNotifRead];
-IF OBJECT_ID('dbo.LecturerNotifRead', 'U') IS NOT NULL DROP TABLE [LecturerNotifRead];
-IF OBJECT_ID('dbo.AdminNotifRead', 'U') IS NOT NULL DROP TABLE [AdminNotifRead];
-
--- 2. Drop second-level child tables
-IF OBJECT_ID('dbo.Payment', 'U') IS NOT NULL DROP TABLE [Payment];
-IF OBJECT_ID('dbo.Enrollment', 'U') IS NOT NULL DROP TABLE [Enrollment];
-IF OBJECT_ID('dbo.CourseModule', 'U') IS NOT NULL DROP TABLE [CourseModule];
+IF OBJECT_ID('dbo.PaymentDetail', 'U') IS NOT NULL DROP TABLE [PaymentDetail];
+IF OBJECT_ID('dbo.ModuleFile', 'U') IS NOT NULL DROP TABLE [ModuleFile];
 IF OBJECT_ID('dbo.CourseAssignment', 'U') IS NOT NULL DROP TABLE [CourseAssignment];
 IF OBJECT_ID('dbo.LecturerCourseFavourite', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite];
 IF OBJECT_ID('dbo.StudentCourseFavourite', 'U') IS NOT NULL DROP TABLE [StudentCourseFavourite];
+IF OBJECT_ID('dbo.CourseAssignment_Session', 'U') IS NOT NULL DROP TABLE [CourseAssignment_Session];
+GO
+
+-- 4. Drop Mid-Level Dynamic Tables
+IF OBJECT_ID('dbo.Enrollment', 'U') IS NOT NULL DROP TABLE [Enrollment];
+IF OBJECT_ID('dbo.Payment', 'U') IS NOT NULL DROP TABLE [Payment];
 IF OBJECT_ID('dbo.Grades', 'U') IS NOT NULL DROP TABLE [Grades];
+IF OBJECT_ID('dbo.CourseModule', 'U') IS NOT NULL DROP TABLE [CourseModule];
 IF OBJECT_ID('dbo.LecturerCalendar', 'U') IS NOT NULL DROP TABLE [LecturerCalendar];
-IF OBJECT_ID('dbo.StudentCalendar', 'U') IS NOT NULL DROP TABLE [StudentCalendar]; -- Added to tracking clean up
+IF OBJECT_ID('dbo.StudentCalendar', 'U') IS NOT NULL DROP TABLE [StudentCalendar];
+IF OBJECT_ID('dbo.StudentNotifRead', 'U') IS NOT NULL DROP TABLE [StudentNotifRead];
+GO
 
--- 3. Drop first-level child tables
-IF OBJECT_ID('dbo.Announcement', 'U') IS NOT NULL DROP TABLE [Announcement];
+-- 5. Drop Major Entities (Now safe since constraints are broken)
 IF OBJECT_ID('dbo.Course', 'U') IS NOT NULL DROP TABLE [Course];
-
--- 4. Drop foundational core entities that depend on Admin/Program
+IF OBJECT_ID('dbo.Announcement', 'U') IS NOT NULL DROP TABLE [Announcement];
 IF OBJECT_ID('dbo.Student', 'U') IS NOT NULL DROP TABLE [Student];
 IF OBJECT_ID('dbo.Program', 'U') IS NOT NULL DROP TABLE [Program];
-IF OBJECT_ID('dbo.Lecturer', 'U') IS NOT NULL DROP TABLE [Lecturer];
+GO
 
--- 5. Drop base master tables
+-- 6. Drop Core Base Tables & Calendars
 IF OBJECT_ID('dbo.Calendar', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('dbo.LecturerNotifRead', 'U') IS NOT NULL DROP TABLE [LecturerNotifRead];
+IF OBJECT_ID('dbo.AdminNotifRead', 'U') IS NOT NULL DROP TABLE [AdminNotifRead];
+IF OBJECT_ID('dbo.SystemSettings', 'U') IS NOT NULL DROP TABLE [SystemSettings];
+IF OBJECT_ID('dbo.Lecturer', 'U') IS NOT NULL DROP TABLE [Lecturer];
 IF OBJECT_ID('dbo.Admin (HoP)', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
-
--- 6. Clean up Stored Procedures and Triggers explicitly if they linger
-IF OBJECT_ID('dbo.sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE [sp_ProcessGraduations];
-IF OBJECT_ID('dbo.trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER [trg_GeneratePayment];
-IF OBJECT_ID('dbo.trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER [trg_CalculateGradesAndGPA];
-IF OBJECT_ID('dbo.trg_Payment_SetInactive', 'TR') IS NOT NULL DROP TRIGGER [trg_Payment_SetInactive];
-IF OBJECT_ID('dbo.trg_Payment_SetActive', 'TR') IS NOT NULL DROP TRIGGER [trg_Payment_SetActive];
-IF OBJECT_ID('dbo.trg_Payment_DeleteReactivate', 'TR') IS NOT NULL DROP TRIGGER [trg_Payment_DeleteReactivate];
-
-PRINT 'Database layout successfully cleared without constraint errors.';
 GO

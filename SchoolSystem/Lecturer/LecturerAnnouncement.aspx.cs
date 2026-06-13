@@ -16,6 +16,19 @@ namespace SchoolSystem
             {
                 LecturerCourseMaster master = (LecturerCourseMaster)this.Master;
                 master.PageTitle = "Announcements";
+                EnsureAnnouncementSessionColumn();
+            }
+        }
+
+        private static void EnsureAnnouncementSessionColumn()
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+            string sql = @"IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Announcement') AND name = 'academic_session')
+                           ALTER TABLE Announcement ADD academic_session VARCHAR(7) NULL";
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                new SqlCommand(sql, conn).ExecuteNonQuery();
             }
         }
 
@@ -27,12 +40,13 @@ namespace SchoolSystem
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = @"SELECT a.announcement_id, a.title, a.content, a.category, 
-                      a.created_at, 
+                string sql = @"SELECT a.announcement_id, a.title, a.content, a.category,
+                      a.created_at,
                       ISNULL(l.lecturer_name, 'Admin') as lecturer_name
                    FROM Announcement a
                    LEFT JOIN Lecturer l ON a.Lecturer_id = l.lecturer_id
-                   WHERE a.Course_id = @CourseID 
+                   WHERE a.Course_id = @CourseID
+                     AND a.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
                    ORDER BY a.created_at DESC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
@@ -73,17 +87,20 @@ namespace SchoolSystem
                         if (HttpContext.Current.Session["UserEmail"] == null)
                             return false;
 
-                        sql = @"INSERT INTO Announcement 
-                        (title, content, category, Lecturer_id, Course_id, created_at) 
-                        VALUES (@title, @content, @category, 
-                                (SELECT lecturer_id FROM Lecturer WHERE lecturer_email = @Email), 
-                                @CourseID, GETDATE())";
+                        sql = @"INSERT INTO Announcement
+                        (title, content, category, Lecturer_id, Course_id, academic_session, created_at)
+                        VALUES (@title, @content, @category,
+                                (SELECT lecturer_id FROM Lecturer WHERE lecturer_email = @Email),
+                                @CourseID,
+                                (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'),
+                                GETDATE())";
                     }
                     else
                     {
                         sql = @"UPDATE Announcement 
                         SET title=@title, content=@content, category=@category 
-                        WHERE announcement_id=@id AND Course_id=@CourseID";
+                        WHERE announcement_id=@id AND Course_id=@CourseID
+                          AND academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')";
                     }
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -121,7 +138,8 @@ namespace SchoolSystem
                 string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string sql = "DELETE FROM Announcement WHERE announcement_id=@id AND Course_id=@CourseID";
+                    string sql = @"DELETE FROM Announcement WHERE announcement_id=@id AND Course_id=@CourseID
+                                    AND academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')";
                     SqlCommand cmd = new SqlCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@id", id);
                     cmd.Parameters.AddWithValue("@CourseID", courseId);
@@ -143,9 +161,9 @@ namespace SchoolSystem
             public string Content { get; set; }
             public string Category { get; set; }
             public string Created_at { get; set; }
-            public string Created_time { get; set; }   
-            public string Lecturer_name { get; set; }  
-            public string Lecturer_img { get; set; }   
+            public string Created_time { get; set; }
+            public string Lecturer_name { get; set; }
+            public string Lecturer_img { get; set; }
             public string Admin_id { get; set; }
         }
     }

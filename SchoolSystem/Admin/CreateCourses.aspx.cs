@@ -23,7 +23,6 @@ namespace SchoolSystem
             if (!IsPostBack)
             {
                 PopulatePrograms();
-                PopulateLecturers();
             }
         }
 
@@ -55,34 +54,6 @@ namespace SchoolSystem
             }
         }
 
-        private void PopulateLecturers()
-        {
-            try
-            {
-                ddlLecturer.Items.Clear();
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    string query = "SELECT lecturer_id, lecturer_name FROM Lecturer ORDER BY lecturer_name ASC";
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        conn.Open();
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            ddlLecturer.DataSource = reader;
-                            ddlLecturer.DataTextField = "lecturer_name";
-                            ddlLecturer.DataValueField = "lecturer_id";
-                            ddlLecturer.DataBind();
-                        }
-                    }
-                }
-                ddlLecturer.Items.Insert(0, new ListItem("-- Select Lecturer --", "0"));
-            }
-            catch (Exception ex)
-            {
-                ScriptManager.RegisterStartupScript(this, GetType(), "errorAlert", $"Swal.fire('Error', 'Failed to load lecturers: {ex.Message}', 'error');", true);
-            }
-        }
-
         protected void BtnSubmit_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
@@ -100,8 +71,8 @@ namespace SchoolSystem
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     // 2. Added course_img to the INSERT statement
-                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Lecturer_id, Program_id, Calendar_id, course_img) 
-                                   VALUES (@Code, @Name, @Credits, @Fee, @LecID, @ProgID, 1, @Image)";
+                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Program_id, Calendar_id, course_img) 
+                                   VALUES (@Code, @Name, @Credits, @Fee, @ProgID, 1, @Image)";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
@@ -116,7 +87,6 @@ namespace SchoolSystem
                         decimal.TryParse(txtCourseFee.Text, out fee);
                         cmd.Parameters.AddWithValue("@Fee", fee);
 
-                        cmd.Parameters.AddWithValue("@LecID", ddlLecturer.SelectedValue);
                         cmd.Parameters.AddWithValue("@ProgID", ddlProgram.SelectedValue);
 
                         // 3. Handle the Image Parameter
@@ -132,6 +102,21 @@ namespace SchoolSystem
 
                         conn.Open();
                         cmd.ExecuteNonQuery();
+
+                        // Link the new course to its initial program via the junction table
+                        int newCourseId;
+                        using (SqlCommand idCmd = new SqlCommand("SELECT CAST(SCOPE_IDENTITY() AS INT)", conn))
+                        {
+                            newCourseId = (int)idCmd.ExecuteScalar();
+                        }
+
+                        using (SqlCommand cpCmd = new SqlCommand(
+                            "INSERT INTO CourseProgram (course_id, program_id) VALUES (@CourseId, @ProgramId)", conn))
+                        {
+                            cpCmd.Parameters.AddWithValue("@CourseId", newCourseId);
+                            cpCmd.Parameters.AddWithValue("@ProgramId", ddlProgram.SelectedValue);
+                            cpCmd.ExecuteNonQuery();
+                        }
                     }
                 }
 

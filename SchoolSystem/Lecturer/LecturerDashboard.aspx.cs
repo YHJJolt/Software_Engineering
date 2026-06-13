@@ -27,37 +27,34 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // Query courses directly from Course table matching the Lecturer ID
+                // Count distinct active course assignments for this lecturer
                 string sqlCourses = @"
-            SELECT COUNT(c.course_id) 
-            FROM Course c 
-            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id 
-            WHERE l.lecturer_email = @Email";
+            SELECT COUNT(DISTINCT cas.course_id)
+            FROM CourseAssignment_Session cas
+            JOIN Lecturer l ON cas.lecturer_id = l.lecturer_id
+            WHERE l.lecturer_email = @Email AND cas.assign_status = 'Active'";
 
-                // Counts only the active cohort (students still in the semester they enrolled in),
-                // so students who advanced to the next semester are excluded
+                // Count students enrolled in the lecturer's active-session courses
                 string sqlStudents = @"
-            SELECT COUNT(e.student_id)
+            SELECT COUNT(DISTINCT e.student_id)
             FROM Enrollment e
-            JOIN Student s ON e.student_id = s.student_id
-            JOIN Course c ON e.course_id = c.course_id
-            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            JOIN CourseAssignment_Session cas ON e.course_id = cas.course_id AND e.academic_session = cas.academic_session
+            JOIN Lecturer l ON cas.lecturer_id = l.lecturer_id
             WHERE l.lecturer_email = @Email
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem";
+              AND cas.assign_status = 'Active'";
 
-                // Pass rate scoped to the active cohort (matches the Course Rates table below)
+                // Pass rate across all active-session courses for this lecturer
                 string sqlPassRate = @"
             SELECT
                 CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
             FROM CourseGrade cg
             JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
-            JOIN Student s ON e.student_id = s.student_id
-            JOIN Course c ON e.course_id = c.course_id
-            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            JOIN CourseAssignment_Session cas ON e.course_id = cas.course_id AND e.academic_session = cas.academic_session
+            JOIN Lecturer l ON cas.lecturer_id = l.lecturer_id
             WHERE l.lecturer_email = @Email
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem";
+              AND cas.assign_status = 'Active'";
 
                 conn.Open();
 
@@ -88,20 +85,21 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // FIXED: Subqueries and joins now strictly evaluate grades matching active cohort records
+                // Course pass rates grouped by course+session for this lecturer
                 string sql = @"
-                    SELECT 
-                        c.course_code, 
+                    SELECT
+                        c.course_code,
                         c.course_name,
+                        cas.academic_session,
                         COUNT(cg.letter_grade) as TotalGraded,
                         CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(cg.letter_grade), 0) * 100 as PassRate
-                    FROM Course c
-                    JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
-                    LEFT JOIN Enrollment e ON c.course_id = e.course_id AND e.status = 'Approved'
-                    LEFT JOIN Student s ON e.student_id = s.student_id AND e.enrolled_semester = s.student_sem
+                    FROM CourseAssignment_Session cas
+                    JOIN Lecturer l ON cas.lecturer_id = l.lecturer_id
+                    JOIN Course c ON cas.course_id = c.course_id
+                    LEFT JOIN Enrollment e ON c.course_id = e.course_id AND e.academic_session = cas.academic_session AND e.status = 'Approved'
                     LEFT JOIN CourseGrade cg ON e.Enrollment_id = cg.Enrollment_id
-                    WHERE l.lecturer_email = @Email
-                    GROUP BY c.course_code, c.course_name";
+                    WHERE l.lecturer_email = @Email AND cas.assign_status = 'Active'
+                    GROUP BY c.course_code, c.course_name, cas.academic_session";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());
@@ -128,13 +126,15 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-            SELECT c.course_id, c.course_code, c.course_name, c.course_img
+            SELECT DISTINCT c.course_id, c.course_code, c.course_name, c.course_img,
+                   cas.academic_session
             FROM Course c
-            JOIN Lecturer l ON c.Lecturer_id = l.lecturer_id
+            JOIN CourseAssignment_Session cas ON cas.course_id = c.course_id
+            JOIN Lecturer l ON cas.lecturer_id = l.lecturer_id
             INNER JOIN LecturerCourseFavourite f
                    ON f.course_id   = c.course_id
                   AND f.lecturer_id = l.lecturer_id
-            WHERE l.lecturer_email = @Email
+            WHERE l.lecturer_email = @Email AND cas.assign_status = 'Active'
             ORDER BY c.course_name ASC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);

@@ -11,11 +11,11 @@ namespace SchoolSystem.Student
         {
             if (!IsPostBack)
             {
-                StudentCourseMaster master = (StudentCourseMaster)this.Master;
-                master.PageTitle = "Announcement Detail";
+                ((StudentCourseMaster)this.Master).PageTitle = "Announcement Detail";
 
                 string aid = Request.QueryString["id"];
                 string courseId = Request.QueryString["course_id"];
+                string session = Request.QueryString["session"] ?? "";
 
                 if (string.IsNullOrEmpty(aid) || string.IsNullOrEmpty(courseId))
                 {
@@ -23,14 +23,13 @@ namespace SchoolSystem.Student
                     return;
                 }
 
-                // Guard: ensure student is enrolled in this course before showing detail
                 if (!IsStudentEnrolled(courseId))
                 {
                     Response.Redirect("~/Student/StudentAnnouncements.aspx");
                     return;
                 }
 
-                LoadAnnouncement(aid, courseId);
+                LoadAnnouncement(aid, courseId, session);
             }
         }
 
@@ -42,8 +41,8 @@ namespace SchoolSystem.Student
                 string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string sql = @"SELECT COUNT(1) FROM Enrollment 
-                                   WHERE student_id = @StudentID 
+                    string sql = @"SELECT COUNT(1) FROM Enrollment
+                                   WHERE student_id = @StudentID
                                      AND course_id  = @CourseID
                                      AND status     = 'Approved'";
                     SqlCommand cmd = new SqlCommand(sql, conn);
@@ -56,7 +55,7 @@ namespace SchoolSystem.Student
             catch { return false; }
         }
 
-        private void LoadAnnouncement(string aid, string courseId)
+        private void LoadAnnouncement(string aid, string courseId, string session)
         {
             string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -67,11 +66,13 @@ namespace SchoolSystem.Student
                     FROM Announcement a
                     LEFT JOIN Lecturer l ON a.Lecturer_id = l.lecturer_id
                     WHERE a.announcement_id = @id
-                      AND a.Course_id       = @CourseID";
+                      AND a.Course_id       = @CourseID
+                      AND (@Session = '' OR a.academic_session = @Session)";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@id", aid);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);
+                cmd.Parameters.AddWithValue("@Session", session);
                 conn.Open();
                 SqlDataReader dr = cmd.ExecuteReader();
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Web;
 using System.Web.Services;
 
 namespace SchoolSystem.Student
@@ -13,30 +12,32 @@ namespace SchoolSystem.Student
         {
             if (!IsPostBack)
             {
-                StudentCourseMaster master = (StudentCourseMaster)this.Master;
-                master.PageTitle = "Announcements";
+                ((StudentCourseMaster)this.Master).PageTitle = "Announcements";
             }
         }
 
         [WebMethod]
-        public static List<Announcement> GetAnnouncements(int courseId)
+        public static List<Announcement> GetAnnouncements(int courseId, string session)
         {
             List<Announcement> list = new List<Announcement>();
-            string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+            string connStr = System.Configuration.ConfigurationManager
+                                .ConnectionStrings["SchoolSystemDB"].ConnectionString;
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-            SELECT a.announcement_id, a.title, a.content, a.category,
-                   a.created_at,
-                   ISNULL(l.lecturer_name, 'Admin') AS lecturer_name
-            FROM Announcement a
-            LEFT JOIN Lecturer l ON a.Lecturer_id = l.lecturer_id
-            WHERE a.Course_id = @CourseID
-            ORDER BY a.created_at DESC";
+                    SELECT a.announcement_id, a.title, a.content, a.category,
+                           a.created_at,
+                           ISNULL(l.lecturer_name, 'Admin') AS lecturer_name
+                    FROM Announcement a
+                    LEFT JOIN Lecturer l ON a.Lecturer_id = l.lecturer_id
+                    WHERE a.Course_id = @CourseID
+                      AND (@Session = '' OR a.academic_session = @Session)
+                    ORDER BY a.created_at DESC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);
+                cmd.Parameters.AddWithValue("@Session", session ?? "");
                 conn.Open();
                 SqlDataReader dr = cmd.ExecuteReader();
 

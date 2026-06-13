@@ -9,6 +9,7 @@ namespace SchoolSystem
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int courseId;
+        string academicSession;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -19,6 +20,8 @@ namespace SchoolSystem
                 Response.Redirect("~/Lecturer/LecturerDashboard.aspx");
                 return;
             }
+
+            academicSession = Request.QueryString["session"] ?? "";
 
             ((LecturerCourseMaster)this.Master).PageTitle = "People";
 
@@ -42,9 +45,10 @@ namespace SchoolSystem
             LEFT JOIN [Program] p ON s.Program_id  = p.program_id
             WHERE e.course_id = @id
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem -- <--- Filters to ONLY current semester students
+              AND (@Session = '' OR e.academic_session = @Session)
             ORDER BY s.student_name", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
 
                 DataTable dt = new DataTable();
                 new SqlDataAdapter(cmd).Fill(dt);

@@ -10,6 +10,7 @@ namespace SchoolSystem
     {
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int courseId;
+        string academicSession;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -20,6 +21,8 @@ namespace SchoolSystem
                 Response.Redirect("~/Lecturer/LecturerDashboard.aspx");
                 return;
             }
+
+            academicSession = Request.QueryString["session"] ?? "";
 
             ((LecturerCourseMaster)this.Master).PageTitle = "Home";
 
@@ -38,12 +41,17 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
-                // Removed c.course_status from the SELECT statement below
                 SqlCommand cmd = new SqlCommand(@"
-                    SELECT c.course_code, c.course_name, c.credit_hours,
-                           c.course_fee, p.program_name
+                    SELECT c.course_code, c.course_name, c.credit_hours, c.course_fee,
+                           CASE
+                               WHEN EXISTS (SELECT 1 FROM sys.tables WHERE name = 'CourseProgram')
+                               THEN (SELECT TOP 1 p.program_name
+                                     FROM CourseProgram cp
+                                     JOIN Program p ON cp.program_id = p.program_id
+                                     WHERE cp.course_id = c.course_id)
+                               ELSE NULL
+                           END AS program_name
                     FROM [Course] c
-                    LEFT JOIN [Program] p ON c.Program_id = p.program_id
                     WHERE c.course_id = @id", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
                 using (SqlDataReader rdr = cmd.ExecuteReader())
@@ -67,60 +75,60 @@ namespace SchoolSystem
             {
                 conn.Open();
 
-                // 1. Total enrolled (Current Semester & Approved)
+                // 1. Total enrolled (session-scoped)
                 var c1 = new SqlCommand(@"
-            SELECT COUNT(*) 
+            SELECT COUNT(*)
             FROM [Enrollment] e
-            JOIN [Student] s ON e.student_id = s.student_id
-            WHERE e.course_id = @id 
+            WHERE e.course_id = @id
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem", conn);
+              AND (@Session = '' OR e.academic_session = @Session)", conn);
                 c1.Parameters.AddWithValue("@id", courseId);
+                c1.Parameters.AddWithValue("@Session", academicSession);
                 litEnrolled.Text = c1.ExecuteScalar().ToString();
 
-                // 2. Avg attendance % (Current Semester)
+                // 2. Avg attendance % (session-scoped)
                 var c2 = new SqlCommand(@"
             SELECT AVG(
                 CAST(cg.attended_hours AS FLOAT) / CAST(NULLIF(cg.total_hours, 0) AS FLOAT) * 100.0
             )
             FROM CourseGrade cg
             JOIN Enrollment e ON cg.Enrollment_id = e.enrollment_id
-            JOIN Student s ON e.student_id = s.student_id
             WHERE e.course_id = @id
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem
+              AND (@Session = '' OR e.academic_session = @Session)
               AND cg.total_hours > 0", conn);
                 c2.Parameters.AddWithValue("@id", courseId);
+                c2.Parameters.AddWithValue("@Session", academicSession);
                 object avg = c2.ExecuteScalar();
                 litAvgAttendance.Text = (avg != DBNull.Value && avg != null)
                     ? Math.Round(Convert.ToDouble(avg), 1, MidpointRounding.AwayFromZero).ToString("0.0") + "%" : "N/A";
 
-                // 3. Pass rate (Current Semester)
+                // 3. Pass rate (session-scoped)
                 var c3 = new SqlCommand(@"
             SELECT CAST(SUM(CASE WHEN cg.letter_grade <> 'F' THEN 1 ELSE 0 END) AS FLOAT)
                    / NULLIF(COUNT(cg.letter_grade), 0) * 100
             FROM CourseGrade cg
             JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
-            JOIN Student s ON e.student_id = s.student_id
             WHERE e.course_id = @id
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem", conn);
+              AND (@Session = '' OR e.academic_session = @Session)", conn);
                 c3.Parameters.AddWithValue("@id", courseId);
+                c3.Parameters.AddWithValue("@Session", academicSession);
                 object rate = c3.ExecuteScalar();
                 litPassRate.Text = (rate != DBNull.Value && rate != null)
                     ? Convert.ToDouble(rate).ToString("0.0") + "%" : "N/A";
 
-                // 4. At risk (Failing grade F - Current Semester)
+                // 4. At risk — grade F, session-scoped
                 var c4 = new SqlCommand(@"
-            SELECT COUNT(*) 
+            SELECT COUNT(*)
             FROM CourseGrade cg
             JOIN Enrollment e ON cg.Enrollment_id = e.Enrollment_id
-            JOIN Student s ON e.student_id = s.student_id
-            WHERE e.course_id = @id 
+            WHERE e.course_id = @id
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem 
+              AND (@Session = '' OR e.academic_session = @Session)
               AND cg.letter_grade = 'F'", conn);
                 c4.Parameters.AddWithValue("@id", courseId);
+                c4.Parameters.AddWithValue("@Session", academicSession);
                 litAtRisk.Text = c4.ExecuteScalar().ToString();
             }
         }
@@ -141,9 +149,10 @@ namespace SchoolSystem
             LEFT JOIN [CourseGrade] cg ON e.enrollment_id = cg.Enrollment_id
             WHERE e.course_id = @id
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem
+              AND (@Session = '' OR e.academic_session = @Session)
             ORDER BY e.enrollment_date DESC", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
                 DataTable dt = new DataTable();
                 new SqlDataAdapter(cmd).Fill(dt);
 

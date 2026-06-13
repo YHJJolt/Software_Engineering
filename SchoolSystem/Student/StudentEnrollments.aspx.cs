@@ -60,6 +60,7 @@ namespace SchoolSystem
                     FROM Enrollment e
                     JOIN Course c ON e.course_id = c.course_id
                     WHERE e.student_id = @sid
+                      AND e.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
                     ORDER BY e.enrolled_semester DESC";
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
@@ -77,15 +78,23 @@ namespace SchoolSystem
         {
             using (SqlConnection con = new SqlConnection(connStr))
             {
-                // Gets courses from the student's program that they HAVEN'T enrolled in yet
+                // Gets courses from the student's program that are Active in the current session
+                // and haven't been enrolled yet by this student
                 string sql = @"
                     SELECT c.course_id, c.course_code, c.course_name, ISNULL(c.course_fee, 0) as course_fee
                     FROM Course c
-                    JOIN Student s ON c.program_id = s.program_id
+                    JOIN CourseProgram cp ON cp.course_id = c.course_id
+                    JOIN Student s ON cp.program_id = s.program_id
+                    JOIN CourseAssignment_Session ca ON ca.course_id = c.course_id
+                    JOIN SystemSettings ss ON ss.setting_key = 'current_session'
                     WHERE s.student_id = @sid
-                    AND c.course_id NOT IN (
-                        SELECT course_id FROM Enrollment WHERE student_id = @sid
-                    )";
+                      AND ca.academic_session = ss.setting_value
+                      AND ca.assign_status = 'Active'
+                      AND c.course_id NOT IN (
+                          SELECT course_id FROM Enrollment 
+                          WHERE student_id = @sid 
+                            AND academic_session = ss.setting_value
+                      )";
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
                     cmd.Parameters.AddWithValue("@sid", currentStudentId);
@@ -128,8 +137,8 @@ namespace SchoolSystem
                 {
                     // Inserts the Pending request into the Enrollment table!
                     string sql = @"
-                        INSERT INTO Enrollment (student_id, course_id, status, enrolled_semester) 
-                        SELECT @sid, @cid, 'Pending', student_sem 
+                        INSERT INTO Enrollment (student_id, course_id, status, enrolled_semester, academic_session) 
+                        SELECT @sid, @cid, 'Pending', student_sem, (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
                         FROM Student WHERE student_id = @sid";
 
                     using (SqlCommand cmd = new SqlCommand(sql, con))
@@ -156,7 +165,8 @@ namespace SchoolSystem
                     SELECT c.course_code, c.course_name 
                     FROM Enrollment e
                     JOIN Course c ON e.course_id = c.course_id
-                    WHERE e.student_id = @sid AND e.status = 'Pending'";
+                    WHERE e.student_id = @sid AND e.status = 'Pending'
+                      AND e.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')";
 
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {

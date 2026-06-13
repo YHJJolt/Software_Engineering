@@ -36,6 +36,7 @@ namespace SchoolSystem
         private void LoadCourseDetails()
         {
             string cid = Request.QueryString["id"] ?? Request.QueryString["course_id"];
+            string session = Request.QueryString["session"] ?? "";
 
             if (!string.IsNullOrEmpty(cid))
             {
@@ -48,15 +49,17 @@ namespace SchoolSystem
                     SqlDataReader rdr = cmd.ExecuteReader();
                     if (rdr.Read())
                     {
+                        // Append session to every inner-course link so all pages stay scoped to the same session
+                        string qs = "?id=" + cid + (string.IsNullOrEmpty(session) ? "" : "&session=" + Uri.EscapeDataString(session));
                         litCourseCode.Text = rdr["course_code"].ToString();
-                        linkHome.HRef = "CourseHome.aspx?id=" + cid;
-                        linkPeople.HRef = "CoursePeople.aspx?id=" + cid;
-                        linkAttendance.HRef = "ManageAttendance.aspx?id=" + cid;
-                        linkGrades.HRef = "LecturerGrades.aspx?id=" + cid;
-                        linkModules.HRef = "CourseModules.aspx?id=" + cid;
-                        linkAssignments.HRef = "CourseAssignments.aspx?id=" + cid;
-                        linkAnnouncements.HRef = "LecturerAnnouncement.aspx?id=" + cid;
-                        linkSidebarProfile.HRef = "LecturerProfile.aspx?course_id=" + cid;
+                        linkHome.HRef = "CourseHome.aspx" + qs;
+                        linkPeople.HRef = "CoursePeople.aspx" + qs;
+                        linkAttendance.HRef = "ManageAttendance.aspx" + qs;
+                        linkGrades.HRef = "LecturerGrades.aspx" + qs;
+                        linkModules.HRef = "CourseModules.aspx" + qs;
+                        linkAssignments.HRef = "CourseAssignments.aspx" + qs;
+                        linkAnnouncements.HRef = "LecturerAnnouncement.aspx" + qs;
+                        linkSidebarProfile.HRef = "LecturerProfile.aspx?course_id=" + cid + (string.IsNullOrEmpty(session) ? "" : "&session=" + Uri.EscapeDataString(session));
                     }
                 }
             }

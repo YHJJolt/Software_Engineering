@@ -23,50 +23,51 @@
     <script>
     // @ts-nocheck
     let rawData = [];
-    let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>
+    let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>;
+let currentSession = '<%= Uri.EscapeDataString(Request.QueryString["session"] ?? "") %>';
 
-    $(document).ready(function () {
-        if (currentCourseId == 0) {
-            alert("Course ID is missing in URL. Please access via your course dashboard.");
-            return;
+$(document).ready(function () {
+    if (currentCourseId == 0) {
+        alert("Course ID is missing in URL. Please access via your course dashboard.");
+        return;
+    }
+    loadAnnouncements();
+});
+
+function loadAnnouncements() {
+    $.ajax({
+        url: 'StudentAnnouncements.aspx/GetAnnouncements',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({ courseId: currentCourseId, session: decodeURIComponent(currentSession) }),
+        success: function (res) {
+            rawData = res.d;
+            filterData();
+        },
+        error: function () {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load announcements.', confirmButtonColor: '#121420' });
         }
-        loadAnnouncements();
     });
+}
 
-    function loadAnnouncements() {
-        $.ajax({
-            url: 'StudentAnnouncements.aspx/GetAnnouncements',
-            type: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify({ courseId: currentCourseId }),
-            success: function (res) {
-                rawData = res.d;
-                filterData();
-            },
-            error: function () {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load announcements.', confirmButtonColor: '#121420' });
-            }
-        });
-    }
+function filterData() {
+    const query = $("#announceSearch").val().toLowerCase();
+    const filtered = rawData.filter(a => a.Title.toLowerCase().includes(query));
+    renderList(filtered);
+}
 
-    function filterData() {
-        const query = $("#announceSearch").val().toLowerCase();
-        const filtered = rawData.filter(a => a.Title.toLowerCase().includes(query));
-        renderList(filtered);
-    }
+function renderList(data) {
+    let html = "";
+    if (data.length === 0) {
+        html = '<div style="text-align:center; padding:50px; color:#999;">No announcements found.</div>';
+    } else {
+        data.forEach(a => {
+            const maxLen = 120;
+            const isLong = a.Content.length > maxLen;
+            const shortContent = isLong ? a.Content.substring(0, maxLen) + '...' : a.Content;
 
-    function renderList(data) {
-        let html = "";
-        if (data.length === 0) {
-            html = '<div style="text-align:center; padding:50px; color:#999;">No announcements found.</div>';
-        } else {
-            data.forEach(a => {
-                const maxLen = 120;
-                const isLong = a.Content.length > maxLen;
-                const shortContent = isLong ? a.Content.substring(0, maxLen) + '...' : a.Content;
-
-                html += `
-                    <div class="announcement-card" onclick="window.location.href='StudentAnnouncementDetail.aspx?id=${a.Announcement_id}&course_id=${currentCourseId}'" style="cursor:pointer;">
+            html += `
+                    <div class="announcement-card" onclick="window.location.href='StudentAnnouncementDetail.aspx?id=${a.Announcement_id}&course_id=${currentCourseId}&session=${currentSession}'" style="cursor:pointer;">
                         <div class="announcement-avatar"><i class="fa-solid fa-bullhorn"></i></div>
                         <div class="announcement-content">
                             <span class="cat-tag cat-${a.Category}">${a.Category}</span>
@@ -81,9 +82,9 @@
                         </div>
                         <!-- No edit/delete buttons — students are read-only -->
                     </div>`;
-            });
-        }
-        $("#announcementsList").html(html);
+        });
     }
+    $("#announcementsList").html(html);
+}
 </script>
 </asp:Content>

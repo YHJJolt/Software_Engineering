@@ -52,76 +52,17 @@ namespace SchoolSystem
         // ══════════════════════════════════════════════════════════════
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserEmail"] == null) { Response.Redirect("~/Login.aspx"); return; }
-
-            if (IsPostBack) { hfToastMsg.Value = ""; hfToastType.Value = ""; }
-
             if (!IsPostBack)
             {
-                txtStudPassword.Text = "stud123";
-                txtStudPassword.Attributes["type"] = "password";
-                txtLectPassword.Text = "lect123";
-                txtLectPassword.Attributes["type"] = "password";
-
+                LoadStudents();
+                LoadLecturers();
+                LoadProgramAdd();
+                LoadAllStatistics();
                 hfNextStudId.Value = GetNextId("[Student]", "student_id").ToString();
                 hfNextLectId.Value = GetNextId("[Lecturer]", "lecturer_id").ToString();
-
-                LoadAllStatistics();
-                LoadProgramAdd();
-                LoadStudents();
-                LoadLecturers();
             }
-            else
-            {
-                LoadAllStatistics();
-                LoadProgramAdd();
-                LoadStudents();
-                LoadLecturers();
-            }
-
-            WriteDropdownData();
         }
 
-        private void WriteDropdownData()
-        {
-            var sbProg = new System.Text.StringBuilder();
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                conn.Open();
-                DataTable dt = new DataTable();
-                new SqlDataAdapter(new SqlCommand(
-                    "SELECT program_id, program_name FROM [Program] ORDER BY program_name", conn)).Fill(dt);
-                foreach (DataRow row in dt.Rows)
-                {
-                    if (sbProg.Length > 0) sbProg.Append("||");
-                    sbProg.Append(row["program_id"]).Append("|").Append(row["program_name"]);
-                }
-            }
-
-            var sbDept = new System.Text.StringBuilder();
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                conn.Open();
-                DataTable dt = new DataTable();
-                new SqlDataAdapter(new SqlCommand(
-                    "SELECT DISTINCT lecturer_department FROM [Lecturer] " +
-                    "WHERE lecturer_department IS NOT NULL AND lecturer_department <> '' " +
-                    "ORDER BY lecturer_department", conn)).Fill(dt);
-                foreach (DataRow row in dt.Rows)
-                {
-                    if (sbDept.Length > 0) sbDept.Append("||");
-                    sbDept.Append(row[0].ToString());
-                }
-            }
-
-            litDropdownData.Text = string.Format(
-                "<script>var _progData='{0}';var _deptData='{1}';</script>",
-                JsStr(sbProg.ToString()), JsStr(sbDept.ToString()));
-        }
-
-        // ══════════════════════════════════════════════════════════════
-        // STATISTICS
-        // ══════════════════════════════════════════════════════════════
         private void LoadAllStatistics()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -144,9 +85,13 @@ namespace SchoolSystem
         }
 
         // ══════════════════════════════════════════════════════════════
-        // ADVANCE SEMESTER (NEW LOGIC)
+        // ADVANCE SESSION
+        // Advances student semesters AND rolls the global academic session.
+        // Sem 1 / JAN2026 → Sem 2 / APR2026 → Sem 3 / AUG2026 → ...
         // ══════════════════════════════════════════════════════════════
-        protected void btnAdvanceSemester_Click(object sender, EventArgs e)
+        private static readonly string[] SessionOrder = { "JAN", "APR", "AUG" };
+
+        protected void btnAdvanceSession_Click(object sender, EventArgs e)
         {
             try
             {
@@ -155,28 +100,70 @@ namespace SchoolSystem
                     conn.Open();
 
                     // 1. Advance all active students by 1 semester
-                    string advanceSql = "UPDATE Student SET student_sem = student_sem + 1 WHERE student_isactive = 'Active'";
-                    using (SqlCommand cmdAdvance = new SqlCommand(advanceSql, conn))
+                    using (SqlCommand cmd = new SqlCommand(
+                        "UPDATE Student SET student_sem = student_sem + 1 WHERE student_isactive = 'Active'", conn))
                     {
-                        cmdAdvance.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // 2. The Sweeper: Run the stored procedure to graduate students who hit the program limit
-                    using (SqlCommand cmdGraduate = new SqlCommand("sp_ProcessGraduations", conn))
+                    // 2. Graduate students who have reached their program limit
+                    using (SqlCommand cmd = new SqlCommand("sp_ProcessGraduations", conn))
                     {
-                        cmdGraduate.CommandType = CommandType.StoredProcedure;
-                        cmdGraduate.ExecuteNonQuery();
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // 3. Roll the global academic session forward in SystemSettings
+                    string current;
+                    using (SqlCommand cmd = new SqlCommand(
+                        "SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'", conn))
+                    {
+                        current = cmd.ExecuteScalar()?.ToString() ?? "JAN2026";
+                    }
+
+                    // Mark all Active course assignments from the outgoing session as Inactive
+                    using (SqlCommand cmd = new SqlCommand(
+                        "UPDATE CourseAssignment_Session SET assign_status = 'Inactive' WHERE academic_session = @OldSession AND assign_status = 'Active'", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@OldSession", current);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string next = GetNextSession(current);
+                    using (SqlCommand cmd = new SqlCommand(
+                        "UPDATE SystemSettings SET setting_value = @val WHERE setting_key = 'current_session'", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@val", next);
+                        cmd.ExecuteNonQuery();
                     }
                 }
 
-                SetToast("✓ Semester advanced and graduations processed successfully.", "success");
+                SetToast("✓ Session advanced and graduations processed successfully.", "success");
                 LoadStudents();
                 LoadAllStatistics();
             }
             catch (Exception ex)
             {
-                SetToast("⚠ Error advancing semester: " + ex.Message, "error");
+                SetToast("⚠ Error advancing session: " + ex.Message, "error");
             }
+        }
+
+        // Converts e.g. "JAN2026" → "APR2026", "AUG2026" → "JAN2027"
+        private string GetNextSession(string session)
+        {
+            if (string.IsNullOrWhiteSpace(session) || session.Length < 7)
+                return "JAN2026";
+
+            string month = session.Substring(0, 3).ToUpper();
+            int year = int.Parse(session.Substring(3));
+
+            int idx = Array.IndexOf(SessionOrder, month);
+            if (idx == -1) idx = 0;
+
+            int nextIdx = (idx + 1) % SessionOrder.Length;
+            if (nextIdx == 0) year++;
+
+            return SessionOrder[nextIdx] + year;
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -204,9 +191,6 @@ namespace SchoolSystem
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        // LOAD GRIDS
-        // ══════════════════════════════════════════════════════════════
         private void LoadStudents()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -418,7 +402,6 @@ namespace SchoolSystem
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
                         conn.Open();
-                        // Allows toggling between Active and Inactive (Ignores Graduated so they don't accidentally get reactivated)
                         new SqlCommand(@"UPDATE [Student] SET student_isactive=
                             CASE WHEN student_isactive='Active' THEN 'Inactive' ELSE 'Active' END
                             WHERE student_id=@id AND student_isactive != 'Graduated'", conn)
@@ -513,18 +496,38 @@ namespace SchoolSystem
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
                         conn.Open();
-                        new SqlCommand(@"DELETE cg FROM [CourseGrade] cg INNER JOIN [Enrollment] e ON cg.Enrollment_id = e.enrollment_id INNER JOIN [Course] c ON e.course_id = c.course_id WHERE c.Lecturer_id = @id", conn)
+
+                        // Block deletion if this lecturer is set as a Program's Head of Program
+                        using (SqlCommand chk = new SqlCommand(
+                            "SELECT COUNT(1) FROM [Program] WHERE Lecturer_id = @id", conn))
+                        {
+                            chk.Parameters.AddWithValue("@id", id);
+                            if ((int)chk.ExecuteScalar() > 0)
+                            {
+                                SetToast("✗ Cannot delete: this lecturer is set as Head of Program for one or more programs. Reassign the program first.", "error");
+                                break;
+                            }
+                        }
+
+                        // Remove this lecturer's course-session assignments
+                        new SqlCommand("DELETE FROM [CourseAssignment_Session] WHERE lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
 
-                        new SqlCommand(@"DELETE e FROM [Enrollment] e INNER JOIN [Course] c ON e.course_id = c.course_id WHERE c.Lecturer_id = @id", conn)
+                        // Remove this lecturer's favourites
+                        new SqlCommand("DELETE FROM [LecturerCourseFavourite] WHERE lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
 
-                        new SqlCommand("DELETE FROM [Course] WHERE Lecturer_id = @id", conn)
+                        // Remove any handbook/policy rules authored by this lecturer
+                        new SqlCommand("DELETE FROM [Rule] WHERE Lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
 
+                        // Remove announcements posted by this lecturer
                         new SqlCommand("DELETE FROM [Announcement] WHERE Lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
 
+                        // Finally, remove the lecturer record itself
+                        // (Course, Enrollment, and CourseGrade are intentionally left untouched -
+                        //  they belong to the course/students, not the lecturer)
                         new SqlCommand("DELETE FROM [Lecturer] WHERE lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
                     }

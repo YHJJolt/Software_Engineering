@@ -83,7 +83,7 @@ namespace SchoolSystem
             LEFT JOIN AttendanceRecord ar ON e.enrollment_id = ar.enrollment_id AND ar.attendance_date = @Date
             WHERE e.course_id = @CourseID
               AND e.status = 'Approved'
-              AND e.enrolled_semester = s.student_sem -- <--- Filters out past students
+              AND (@Session = '' OR e.academic_session = @Session)
         )
         SELECT * FROM AttendanceData
         WHERE (
@@ -96,6 +96,7 @@ namespace SchoolSystem
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);
+                cmd.Parameters.AddWithValue("@Session", Request.QueryString["session"] ?? "");
                 cmd.Parameters.AddWithValue("@Filter", ddlAttendanceFilter.SelectedValue);
                 cmd.Parameters.AddWithValue("@Search", txtSearch.Text.Trim());
                 cmd.Parameters.AddWithValue("@Date", selectedDate.Date);

@@ -11,134 +11,107 @@ namespace SchoolSystem
 {
 
 
-    public partial class Courses
+    public partial class CourseAllocation
     {
 
         /// <summary>
-        /// upGridView control.
+        /// litActiveSession control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upGridView;
+        protected global::System.Web.UI.WebControls.Literal litActiveSession;
 
         /// <summary>
-        /// ddlProgramFilter control.
+        /// upWorkspace control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlProgramFilter;
+        protected global::System.Web.UI.UpdatePanel upWorkspace;
 
         /// <summary>
-        /// txtSearch control.
+        /// hdnEditAssignId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+        protected global::System.Web.UI.WebControls.HiddenField hdnEditAssignId;
 
         /// <summary>
-        /// btnSearch control.
+        /// hdnDeleteId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSearch;
+        protected global::System.Web.UI.WebControls.HiddenField hdnDeleteId;
 
         /// <summary>
-        /// hdnCourseId control.
+        /// btnDeleteConfirm control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hdnCourseId;
+        protected global::System.Web.UI.WebControls.Button btnDeleteConfirm;
 
         /// <summary>
-        /// gvCourses control.
+        /// ddlCourse control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvCourses;
+        protected global::System.Web.UI.WebControls.DropDownList ddlCourse;
 
         /// <summary>
-        /// pnlEditModal control.
+        /// rfvCourse control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlEditModal;
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvCourse;
 
         /// <summary>
-        /// hdnEditCourseId control.
+        /// ddlLecturer control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hdnEditCourseId;
+        protected global::System.Web.UI.WebControls.DropDownList ddlLecturer;
 
         /// <summary>
-        /// imgEditPreview control.
+        /// rfvLecturer control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Image imgEditPreview;
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvLecturer;
 
         /// <summary>
-        /// fuEditCourseImage control.
+        /// ddlStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.FileUpload fuEditCourseImage;
+        protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
 
         /// <summary>
-        /// txtEditCode control.
+        /// btnAssign control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditCode;
-
-        /// <summary>
-        /// txtEditName control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditName;
-
-        /// <summary>
-        /// txtEditFee control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditFee;
-
-        /// <summary>
-        /// cblEditPrograms control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblEditPrograms;
+        protected global::System.Web.UI.WebControls.Button btnAssign;
 
         /// <summary>
         /// btnCancelEdit control.
@@ -150,12 +123,21 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.Button btnCancelEdit;
 
         /// <summary>
-        /// btnSaveUpdate control.
+        /// gvAssignments control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSaveUpdate;
+        protected global::System.Web.UI.WebControls.GridView gvAssignments;
+
+        /// <summary>
+        /// pnlEmpty control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlEmpty;
     }
 }

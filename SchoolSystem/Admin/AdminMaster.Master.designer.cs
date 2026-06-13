@@ -87,6 +87,15 @@ namespace SchoolSystem
         protected global::System.Web.UI.HtmlControls.HtmlAnchor linkCourses;
 
         /// <summary>
+        /// linkCourseAllocation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor linkCourseAllocation;
+
+        /// <summary>
         /// linkEnrollment control.
         /// </summary>
         /// <remarks>

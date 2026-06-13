@@ -128,6 +128,7 @@ namespace SchoolSystem
                     INNER JOIN Course        c   ON e.course_id    = c.course_id
                     LEFT  JOIN CourseGrade   cg  ON cg.Enrollment_id = e.enrollment_id
                     LEFT  JOIN CourseAssignment ca ON ca.course_id  = c.course_id
+                                                  AND ca.academic_session = e.academic_session
                     LEFT  JOIN AssignmentSubmission sub
                                                  ON sub.assignment_id = ca.assignment_id
                                                 AND sub.student_id    = e.student_id

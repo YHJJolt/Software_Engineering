@@ -48,7 +48,7 @@ namespace SchoolSystem
                 // ADDED: e.enrolled_semester to the SELECT statement
                 string sql = @"SELECT e.enrollment_id, s.student_name as name, s.student_email as email, 
                       p.program_name, e.enrolled_semester, c.course_code, c.course_name, 
-                      e.enrollment_date, e.status 
+                      e.enrollment_date, e.status, e.academic_session
                FROM Enrollment e
                INNER JOIN Student s ON e.student_id = s.student_id
                INNER JOIN Program p ON s.Program_id = p.program_id

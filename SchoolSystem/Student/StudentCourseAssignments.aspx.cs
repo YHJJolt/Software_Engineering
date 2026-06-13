@@ -13,6 +13,7 @@ namespace SchoolSystem
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int currentCourseId = 0;
         int currentStudentId = 0;
+        string academicSession = "";
 
         protected void Page_PreInit(object sender, EventArgs e)
         {
@@ -25,7 +26,7 @@ namespace SchoolSystem
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
-            
+
             // ADD THIS LINE TO OVERRIDE THE MASTER PAGE TITLE
             ((StudentCourseMaster)this.Master).PageTitle = "Assignments";
             currentStudentId = GetStudentId();
@@ -33,6 +34,7 @@ namespace SchoolSystem
             if (Request.QueryString["id"] != null)
             {
                 currentCourseId = Convert.ToInt32(Request.QueryString["id"]);
+                academicSession = Request.QueryString["session"] ?? "";
             }
             else
             {
@@ -77,13 +79,15 @@ namespace SchoolSystem
                            sub.submission_file, sub.submitted_at, sub.marks_awarded, sub.feedback, sub.is_published
                     FROM CourseAssignment ca
                     LEFT JOIN AssignmentSubmission sub ON ca.assignment_id = sub.assignment_id AND sub.student_id = @sid
-                    WHERE ca.course_id = @cid 
+                    WHERE ca.course_id = @cid
+                      AND (@Session = '' OR ca.academic_session = @Session)
                     ORDER BY ca.due_date {sortOrder}";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);
                     cmd.Parameters.AddWithValue("@sid", currentStudentId);
+                    cmd.Parameters.AddWithValue("@Session", academicSession);
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);

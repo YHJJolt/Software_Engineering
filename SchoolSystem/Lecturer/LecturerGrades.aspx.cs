@@ -32,20 +32,21 @@ namespace SchoolSystem
             int courseId = GetCourseId();
             if (courseId == 0) return;
 
-            // FIXED: The only change needed. Filters by Active Semester and Approved Status.
+            string academicSession = Request.QueryString["session"] ?? "";
             string sql = @"
                 SELECT s.student_id, s.student_name, s.student_code
                 FROM Student s
                 INNER JOIN Enrollment e ON s.student_id = e.student_id
                 WHERE e.course_id = @CourseId
                   AND e.status = 'Approved'
-                  AND e.enrolled_semester = s.student_sem
+                  AND (@Session = '' OR e.academic_session = @Session)
                 ORDER BY s.student_name ASC";
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseId", courseId);
+                cmd.Parameters.AddWithValue("@Session", academicSession);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 conn.Open();
