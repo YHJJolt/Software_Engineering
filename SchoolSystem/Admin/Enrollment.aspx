@@ -6,11 +6,14 @@
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-user-plus" style="margin-right: 10px;"></i>Enrollment Management
+    </h1>
+</asp:Content>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="enrollment-page">
-    <div class="header">
-        <h1><i class="fas fa-user-plus"></i>Enrollment Management</h1>
-    </div>
 
     <div class="action-bar">
         <div class="filter-group">

@@ -25,12 +25,15 @@
 
 </asp:Content>
 
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-chart-line" style="margin-right: 10px;"></i>Student Performance
+    </h1>
+</asp:Content>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
     <div class="performance-page">
-    <div class="header">
-        <h1><i class="fas fa-chart-line"></i>Student Performance</h1>
-    </div>
 <div class="pg">
     <div class="tab-row">
         <div>
@@ -61,7 +64,8 @@
                     <div class="info-group"><div class="info-label">Student Name:</div><div class="info-val large" id="studentName">—</div></div>
                     <div class="info-group"><div class="info-label">Student ID:</div><div class="info-val" id="studentID">—</div></div>
                     <div class="info-group"><div class="info-label">Programme:</div><div class="info-val" id="studentProg">—</div></div>
-                    <div class="info-group"><div class="info-label">Semester:</div><div class="info-val" id="semesterDisplay">—</div></div>
+                    <%-- CHANGED to Session --%>
+                    <div class="info-group"><div class="info-label">Session:</div><div class="info-val" id="semesterDisplay">—</div></div> 
                 </div>
 
                 <div class="top-mid">
@@ -127,7 +131,8 @@
                         </div>
                     </div>
                     <div id="semFilterWrap" style="display: flex; flex-direction: column; width: 100%; margin-top: 5px; align-items: flex-start;">
-                        <div class="info-label" style="margin-bottom: 4px; width: auto;">Filter Semester</div>
+                        <%-- CHANGED to Session --%>
+                        <div class="info-label" style="margin-bottom: 4px; width: auto;">Filter Session</div>
                         <select id="commonSemSel" onchange="unifiedChangeSem(this.value)"></select>
                     </div>
                 </div>
@@ -138,7 +143,8 @@
             <div class="card">
                 <div class="section-title">
                     <span class="section-card-title">Enrolled Courses</span>
-                    <span class="title-center">Semester <span id="eSecTitle">1</span></span>
+                    <%-- CHANGED to Session --%>
+                    <span class="title-center">Session <span id="eSecTitle">...</span></span>
                     <span id="eCountBadge" class="badge b-blue">0 Courses</span>
                 </div>
                 <div id="eCourseList"></div>
@@ -170,7 +176,8 @@
             <div class="card" id="courseGradesCard">
                 <div class="section-title">
                     <span class="section-card-title">Course Grades</span>
-                    <span class="title-center">Semester <span id="gSecTitle">1</span></span>
+                    <%-- CHANGED to Session --%>
+                    <span class="title-center">Session <span id="gSecTitle">...</span></span>
                     <span id="gCountBadge" class="badge b-blue">0 Courses</span>
                 </div>
                 <div id="gCourseList"></div>
@@ -233,7 +240,8 @@
         document.getElementById('studentID').textContent = student.id || '—';
         document.getElementById('studentProg').textContent = student.programme || '—';
 
-        var sems = Object.keys(semData).sort(function (a, b) { return a - b; });
+        // CHANGED: Sorts strings alphabetically instead of numerically
+        var sems = Object.keys(semData).sort();
         var sel = document.getElementById('commonSemSel');
 
         if (sems.length === 0) {
@@ -253,20 +261,19 @@
 
         sems.forEach(function (s) {
             var opt = document.createElement('option');
-            opt.value = s; opt.textContent = 'Semester ' + s;
+            opt.value = s; opt.textContent = s; // Outputs "JAN2026"
             sel.appendChild(opt);
         });
 
-        var defaultSem = sems.includes(String(student.currentSem))
-            ? String(student.currentSem)
-            : sems[sems.length - 1];
+        // Set default to the latest session found
+        var defaultSem = sems[sems.length - 1];
         sel.value = defaultSem;
         unifiedChangeSem(defaultSem);
     })();
 
-    // ── Semester change ──────────────────────────────────────────────
+    // ── Session change ──────────────────────────────────────────────
     function unifiedChangeSem(val) {
-        var sem = parseInt(val);
+        var sem = val; // CHANGED: Removed parseInt() to keep it as a string
         var d = semData[sem];
         if (!d) return;
 
@@ -277,7 +284,6 @@
         var count = d.courses.length;
         document.getElementById('eCountBadge').textContent = count + ' Courses';
         document.getElementById('gCountBadge').textContent = count + ' Courses';
-
         var totalCredits = d.credits.reduce(function (a, b) { return a + parseInt(b); }, 0);
         document.getElementById('eTotalCredits').textContent = totalCredits;
 
@@ -295,7 +301,7 @@
         // Grabs the real GPA computed safely from the database!
         document.getElementById('gSemGpaBox').textContent = d.realGpa || '0.00';
 
-        // Grade distribution counts — totalled across ALL semesters
+        // Grade distribution counts — totalled across ALL sessions
         var exc = 0, good = 0, avg = 0, poor = 0;
         Object.values(semData).forEach(function (sd) {
             sd.gpa.forEach(function (g) {
@@ -323,7 +329,7 @@
         var el = document.getElementById('eCourseList');
         el.innerHTML = '';
         if (d.courses.length === 0) {
-            el.innerHTML = '<div class="no-data">No enrolled courses for this semester.</div>';
+            el.innerHTML = '<div class="no-data">No enrolled courses for this session.</div>';
             return;
         }
         d.courses.forEach(function (c, i) {
@@ -362,7 +368,7 @@
         var el = document.getElementById('gCourseList');
         el.innerHTML = '';
         if (d.courses.length === 0) {
-            el.innerHTML = '<div class="no-data">No grade data for this semester.</div>';
+            el.innerHTML = '<div class="no-data">No grade data for this session.</div>';
             return;
         }
         d.courses.forEach(function (c, i) {

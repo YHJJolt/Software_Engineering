@@ -34,9 +34,11 @@
                             <h4 style="margin: 0 0 5px 0; color: var(--navy-accent); font-weight: 800; font-size: 18px;">Academic Term</h4>
                             <p style="margin: 0; color: #64748b; font-size: 14px;">Select and request your modules for the upcoming term.</p>
                         </div>
+                        
+                        <%-- UPDATED SESSION BADGE --%>
                         <div style="background: var(--navy-accent); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-calendar-check" style="color: var(--antique-gold);"></i> 
-                            Current Semester: <asp:Literal ID="litCurrentSem" runat="server"></asp:Literal>
+                            Current Session: <%= CurrentSessionLabel %>
                         </div>
                     </div>
 
@@ -59,12 +61,6 @@
                             <Columns>
                                 <asp:BoundField DataField="course_code" HeaderText="Course Code" ItemStyle-CssClass="searchable-text" />
                                 <asp:BoundField DataField="course_name" HeaderText="Course Name" ItemStyle-CssClass="searchable-text" />
-                                
-                                <asp:TemplateField HeaderText="Sem" HeaderStyle-CssClass="center-align" ItemStyle-CssClass="center-align">
-                                    <ItemTemplate>
-                                        <span style="font-weight: 700; color: #64748b;">Sem <%# Eval("enrolled_semester") %></span>
-                                    </ItemTemplate>
-                                </asp:TemplateField>
 
                                 <asp:TemplateField HeaderText="Status" HeaderStyle-CssClass="center-align" ItemStyle-CssClass="center-align">
                                     <ItemTemplate>

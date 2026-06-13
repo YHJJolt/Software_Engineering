@@ -7,7 +7,7 @@
         <div id="successToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body fs-6">
-                    <i class="fas fa-check-circle me-2"></i> <span id="toastMessage">Success!</span>
+                    <i id="toastIcon" class="fas fa-check-circle me-2"></i> <span id="toastMessage">Success!</span>
                 </div>
                 <button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>

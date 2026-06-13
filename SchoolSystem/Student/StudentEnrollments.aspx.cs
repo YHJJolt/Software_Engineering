@@ -12,6 +12,9 @@ namespace SchoolSystem
         string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int currentStudentId = 0;
 
+        // 1. Added property to fetch the global session from the database
+        protected string CurrentSessionLabel { get; set; } = "";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["UserEmail"] == null) Response.Redirect("~/Login.aspx");
@@ -43,11 +46,23 @@ namespace SchoolSystem
                     pnlInactive.Visible = false;
                     pnlActiveStudent.Visible = true;
 
-                    LoadCurrentSemester();
+                    // 2. Fetch the global session instead of the student's semester
+                    LoadCurrentSession();
                     LoadMyStatus();
                     LoadAvailableCourses();
                     LoadPendingQueue();
                 }
+            }
+        }
+
+        private void LoadCurrentSession()
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'", conn))
+            {
+                conn.Open();
+                CurrentSessionLabel = cmd.ExecuteScalar()?.ToString() ?? "N/A";
             }
         }
 
@@ -56,12 +71,12 @@ namespace SchoolSystem
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT c.course_code, c.course_name, e.status, e.enrolled_semester 
+                    SELECT c.course_code, c.course_name, e.status 
                     FROM Enrollment e
                     JOIN Course c ON e.course_id = c.course_id
                     WHERE e.student_id = @sid
                       AND e.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
-                    ORDER BY e.enrolled_semester DESC";
+                    ORDER BY c.course_code ASC";
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
                     cmd.Parameters.AddWithValue("@sid", currentStudentId);
@@ -104,25 +119,8 @@ namespace SchoolSystem
                     rptAvailableCourses.DataSource = dt;
                     rptAvailableCourses.DataBind();
 
-                    // ADD THIS LINE: Show or hide the empty state message
+                    // Show or hide the empty state message
                     divNoAvailable.Visible = (dt.Rows.Count == 0);
-                }
-            }
-        }
-
-        private void LoadCurrentSemester()
-        {
-            using (SqlConnection con = new SqlConnection(connStr))
-            {
-                using (SqlCommand cmd = new SqlCommand("SELECT student_sem FROM Student WHERE student_id = @sid", con))
-                {
-                    cmd.Parameters.AddWithValue("@sid", currentStudentId);
-                    con.Open();
-                    object result = cmd.ExecuteScalar();
-                    if (result != null)
-                    {
-                        litCurrentSem.Text = result.ToString();
-                    }
                 }
             }
         }

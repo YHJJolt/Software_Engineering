@@ -30,39 +30,39 @@ namespace SchoolSystem
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     string query = @"
-                SELECT 
-                    p.program_id,
-                    p.program_code,
-                    ISNULL(p.program_name, 'N/A') AS program_name,
-                    p.program_level,
-                    p.program_fee,
-                    p.program_semester,
-                    p.program_credits,
-                    ISNULL(l.lecturer_name, 'N/A') AS lecturer_name,
-                    ISNULL(a.admin_name, 'N/A') AS hop_name,
-                    ISNULL((
-                        SELECT COUNT(DISTINCT e.student_id)
-                        FROM Enrollment e
-                        JOIN Course c ON e.course_id = c.course_id
-                        WHERE c.program_id = p.program_id
-                    ), 0) AS student_count,
+                    SELECT 
+                        p.program_id,
+                        p.program_code,
+                        ISNULL(p.program_name, 'N/A') AS program_name,
+                        p.program_level,
+                        p.program_fee,
+                        p.program_semester,
+                        p.program_credits,
+                        ISNULL(l.lecturer_name, 'N/A') AS lecturer_name,
+                        ISNULL(a.admin_name, 'N/A') AS hop_name,
+                        ISNULL((
+                            SELECT COUNT(DISTINCT e.student_id)
+                            FROM Enrollment e
+                            JOIN CourseProgram cp ON e.course_id = cp.course_id
+                            WHERE cp.program_id = p.program_id
+                        ), 0) AS student_count,
 
-                    CASE WHEN p.program_isactive = 1 THEN 'Active' 
-                         ELSE 'Discontinued' END AS program_status
-                FROM Program p
-                LEFT JOIN Lecturer l ON p.Lecturer_id = l.lecturer_id
-                LEFT JOIN [Admin (HoP)] a ON p.Admin_admin_id = a.admin_id
-                WHERE (@Search = '' 
-                    OR p.program_name  LIKE '%' + @Search + '%'
-                    OR p.program_code  LIKE '%' + @Search + '%'
-                    OR p.program_level LIKE '%' + @Search + '%'
-                    OR ISNULL(l.lecturer_name, '') LIKE '%' + @Search + '%'
-                    OR ISNULL(a.admin_name, '')    LIKE '%' + @Search + '%'
-                    OR (CASE WHEN p.program_isactive = 1 THEN 'Active' ELSE 'Discontinued' END)
-                       LIKE '%' + @Search + '%')
-                AND (@status = '' OR p.program_isactive = @status)
-                AND (@level  = '' OR p.program_level    = @level)
-                ORDER BY p.program_name;";
+                        CASE WHEN p.program_isactive = 1 THEN 'Active' 
+                                ELSE 'Discontinued' END AS program_status
+                    FROM Program p
+                    LEFT JOIN Lecturer l ON p.Lecturer_id = l.lecturer_id
+                    LEFT JOIN [Admin (HoP)] a ON p.Admin_admin_id = a.admin_id
+                    WHERE (@Search = '' 
+                        OR p.program_name  LIKE '%' + @Search + '%'
+                        OR p.program_code  LIKE '%' + @Search + '%'
+                        OR p.program_level LIKE '%' + @Search + '%'
+                        OR ISNULL(l.lecturer_name, '') LIKE '%' + @Search + '%'
+                        OR ISNULL(a.admin_name, '')    LIKE '%' + @Search + '%'
+                        OR (CASE WHEN p.program_isactive = 1 THEN 'Active' ELSE 'Discontinued' END)
+                            LIKE '%' + @Search + '%')
+                    AND (@status = '' OR p.program_isactive = @status)
+                    AND (@level  = '' OR p.program_level    = @level)
+                    ORDER BY p.program_name;";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
@@ -340,6 +340,38 @@ namespace SchoolSystem
                 return;
             }
 
+            // --- INPUT VALIDATION ---
+            if (!int.TryParse(txtEditSemester.Text.Trim(), out int semChk) || semChk <= 0)
+            {
+                popUpForm.Visible = true; upModal.Update();
+                ScriptManager.RegisterStartupScript(this, GetType(), "semErr",
+                    "Swal.fire('Invalid', 'Total Semesters must be greater than 0.', 'warning');", true);
+                return;
+            }
+
+            if (!decimal.TryParse(txtEditFee.Text.Trim(), out decimal feeChk) || feeChk <= 0)
+            {
+                popUpForm.Visible = true; upModal.Update();
+                ScriptManager.RegisterStartupScript(this, GetType(), "feeErr",
+                    "Swal.fire('Invalid', 'Total Fees must be greater than 0.', 'warning');", true);
+                return;
+            }
+
+            if (!int.TryParse(txtEditCreditHours.Text.Trim(), out int credChk) || credChk <= 0)
+            {
+                popUpForm.Visible = true; upModal.Update();
+                ScriptManager.RegisterStartupScript(this, GetType(), "credErr",
+                    "Swal.fire('Invalid', 'Total Credit Hours must be greater than 0.', 'warning');", true);
+                return;
+            }
+            if (ProgramCodeExists(txtEditCode.Text.Trim(), programId))
+            {
+                popUpForm.Visible = true; upModal.Update();
+                ScriptManager.RegisterStartupScript(this, GetType(), "codeErr",
+                    "Swal.fire('Duplicate', 'That Program Code is already in use.', 'warning');", true);
+                return;
+            }
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
@@ -424,6 +456,21 @@ namespace SchoolSystem
         {
             popUpForm.Visible = false;
             upModal.Update();
+        }
+
+        private bool ProgramCodeExists(string code, int excludeId = 0)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string q = "SELECT COUNT(1) FROM Program WHERE program_code = @code AND program_id <> @id";
+                using (SqlCommand cmd = new SqlCommand(q, conn))
+                {
+                    cmd.Parameters.AddWithValue("@code", code);
+                    cmd.Parameters.AddWithValue("@id", excludeId);
+                    conn.Open();
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
         }
     }
 }

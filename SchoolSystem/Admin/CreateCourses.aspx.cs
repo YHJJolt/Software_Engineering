@@ -58,6 +58,27 @@ namespace SchoolSystem
         {
             if (!Page.IsValid) return;
 
+            string code = txtCode.Text.Trim();
+
+            if (!int.TryParse(txtCreditHours.Text.Trim(), out int credits) || credits <= 0)
+            { ShowError("Credit Hours must be a whole number greater than 0."); return; }
+
+            if (!decimal.TryParse(txtCourseFee.Text.Trim(), out decimal fee) || fee <= 0)
+            { ShowError("Course Fee must be 0 or a positive number."); return; }
+
+            if (CourseCodeExists(code))
+            { ShowError("Course Code '" + code + "' already exists."); return; }
+
+            if (fuCourseImage.HasFile)
+            {
+                string ext = System.IO.Path.GetExtension(fuCourseImage.FileName).ToLowerInvariant();
+                string[] allowed = { ".jpg", ".jpeg", ".png" };
+                if (Array.IndexOf(allowed, ext) < 0)
+                { ShowError("Cover image must be a .jpg, .jpeg or .png file."); return; }
+                if (fuCourseImage.PostedFile.ContentLength > 5 * 1024 * 1024)
+                { ShowError("Cover image must be 5MB or smaller."); return; }
+            }
+
             try
             {
                 // 1. Process the Image Upload
@@ -70,24 +91,24 @@ namespace SchoolSystem
 
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    // 2. Added course_img to the INSERT statement
-                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Program_id, Calendar_id, course_img) 
-                                   VALUES (@Code, @Name, @Credits, @Fee, @ProgID, 1, @Image)";
+                    conn.Open();
+
+                    // 2. FIXED: Removed Program_id from the INSERT. 
+                    // Added SELECT SCOPE_IDENTITY() directly to the string so we don't lose the ID.
+                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Calendar_id, course_img) 
+                                   VALUES (@Code, @Name, @Credits, @Fee, 1, @Image);
+                                   SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+                    int newCourseId;
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@Code", txtCode.Text.Trim());
                         cmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
 
-                        int credits = 0;
-                        int.TryParse(txtCreditHours.Text, out credits);
+                   
                         cmd.Parameters.AddWithValue("@Credits", credits);
-
-                        decimal fee = 0;
-                        decimal.TryParse(txtCourseFee.Text, out fee);
                         cmd.Parameters.AddWithValue("@Fee", fee);
-
-                        cmd.Parameters.AddWithValue("@ProgID", ddlProgram.SelectedValue);
 
                         // 3. Handle the Image Parameter
                         if (imageBytes != null)
@@ -97,26 +118,20 @@ namespace SchoolSystem
                         else
                         {
                             // If no file uploaded, insert NULL into the DB
-                            cmd.Parameters.Add("@Image", System.Data.SqlDbType.VarBinary, -1).Value = DBNull.Value;
+                            cmd.Parameters.Add("@Image", SqlDbType.VarBinary, -1).Value = DBNull.Value;
                         }
 
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
+                        // Execute and grab the new ID immediately
+                        newCourseId = (int)cmd.ExecuteScalar();
+                    }
 
-                        // Link the new course to its initial program via the junction table
-                        int newCourseId;
-                        using (SqlCommand idCmd = new SqlCommand("SELECT CAST(SCOPE_IDENTITY() AS INT)", conn))
-                        {
-                            newCourseId = (int)idCmd.ExecuteScalar();
-                        }
-
-                        using (SqlCommand cpCmd = new SqlCommand(
-                            "INSERT INTO CourseProgram (course_id, program_id) VALUES (@CourseId, @ProgramId)", conn))
-                        {
-                            cpCmd.Parameters.AddWithValue("@CourseId", newCourseId);
-                            cpCmd.Parameters.AddWithValue("@ProgramId", ddlProgram.SelectedValue);
-                            cpCmd.ExecuteNonQuery();
-                        }
+                    // 4. Link the new course to its initial program via the junction table
+                    using (SqlCommand cpCmd = new SqlCommand(
+                        "INSERT INTO CourseProgram (course_id, program_id) VALUES (@CourseId, @ProgramId)", conn))
+                    {
+                        cpCmd.Parameters.AddWithValue("@CourseId", newCourseId);
+                        cpCmd.Parameters.AddWithValue("@ProgramId", ddlProgram.SelectedValue);
+                        cpCmd.ExecuteNonQuery();
                     }
                 }
 
@@ -148,6 +163,28 @@ namespace SchoolSystem
         protected void BtnCancel_Click(object sender, EventArgs e)
         {
             Response.Redirect("~/Admin/Courses.aspx");
+        }
+
+        private bool CourseCodeExists(string code, int excludeId = 0)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string q = "SELECT COUNT(1) FROM Course WHERE course_code = @code AND course_id <> @id";
+                using (SqlCommand cmd = new SqlCommand(q, conn))
+                {
+                    cmd.Parameters.AddWithValue("@code", code);
+                    cmd.Parameters.AddWithValue("@id", excludeId);
+                    conn.Open();
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
+        }
+
+        private void ShowError(string msg)
+        {
+            string safe = msg.Replace("'", "\\'");
+            ScriptManager.RegisterStartupScript(this, GetType(), "err",
+                $"Swal.fire('Error', '{safe}', 'error');", true);
         }
     }
 }

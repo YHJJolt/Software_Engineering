@@ -7,10 +7,15 @@
     
 </asp:Content>
 
-<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-book" style="margin-right: 10px;"></i>Course Management
+    </h1>
+</asp:Content>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="course-mgmt-page">
     <div class="header">
-        <h1><i class="fas fa-book"></i>Manage Courses</h1>
         <div class="header-button-grp">
             <a runat="server" href="~/Admin/CreateCourses.aspx" class="btn btn-primary">+ New Course</a>
         </div>

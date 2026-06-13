@@ -4492,3 +4492,8 @@ fi
         grid-template-columns: 1fr;
     }
 }
+
+/* Keep SweetAlert popups above all modals */
+.swal2-container {
+    z-index: 100000 !important;
+}

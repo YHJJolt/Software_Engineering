@@ -9,12 +9,15 @@
     
 </asp:Content>
 
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-users" style="margin-right: 10px;"></i>User Management
+    </h1>
+</asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     
     <div class="user-mgmt-page">
-    <div class="header"><h1><i class="fas fa-users"></i>User Management</h1></div>
-
     <asp:HiddenField ID="hfReopenModal"  runat="server" />
     <asp:HiddenField ID="hfActiveTab"    runat="server" Value="students" />
     <asp:HiddenField ID="hfViewType"     runat="server" />

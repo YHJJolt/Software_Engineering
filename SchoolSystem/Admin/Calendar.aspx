@@ -1,13 +1,17 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Calendar.aspx.cs" Inherits="SchoolSystem.Calendar" MasterPageFile="~/Admin/AdminMaster.Master"%>
-<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-<asp:ScriptManagerProxy runat="server" />
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</asp:Content>
 
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-calendar-alt" style="margin-right: 10px;"></i>Calendar
+    </h1>
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 <div class="calendar-page">
-    <div class="header">
-        <h1><i class="fas fa-calendar-alt"></i> Calendar</h1>
-    </div>
-
     <div class="calendar-container">
         <button type="button" class="btn-add-event" onclick="prepareAddModal()">
             <i class="fa-solid fa-plus"></i> Add New Event

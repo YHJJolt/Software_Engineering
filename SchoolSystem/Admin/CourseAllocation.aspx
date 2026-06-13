@@ -1,17 +1,19 @@
 ﻿<%@ Page Title="CourseAllocation" Language="C#" MasterPageFile="~/Admin/AdminMaster.Master" AutoEventWireup="true" CodeBehind="CourseAllocation.aspx.cs" Inherits="SchoolSystem.CourseAllocation" %>
+
 <asp:Content ID="Styling" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
-<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-<div class="course-assign-page">
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Course Allocation
+    </h1>
+</asp:Content>
 
-    <%-- ===== PAGE HEADER ===== --%>
-    <div class="header">
-        <h1><i class="fas fa-chalkboard-teacher"></i>Course Allocation</h1>
-    </div>
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
+<div class="course-assign-page">
 
     <%-- ===== GLOBAL SESSION FILTER ===== --%>
     <div class="session-filter-bar">
@@ -84,8 +86,10 @@
 
         <%-- ===== RIGHT: ALLOCATIONS TABLE ===== --%>
         <div class="assign-table-panel">
+            <%-- ADDED DataKeyNames HERE --%>
             <asp:GridView ID="gvAssignments" runat="server" CssClass="assign-table"
                 AutoGenerateColumns="False" GridLines="None"
+                DataKeyNames="assign_id" 
                 OnRowCommand="GvAssignments_RowCommand">
                 <EmptyDataRowStyle CssClass="empty-row" />
                 <Columns>
@@ -104,10 +108,12 @@
                     <asp:TemplateField HeaderText="Actions">
                         <ItemTemplate>
                             <div class="action-container">
+                                <%-- ADDED CausesValidation="false" HERE --%>
                                 <asp:LinkButton ID="btnEdit" runat="server"
                                     CssClass="btn-icon btn-edit" ToolTip="Edit"
                                     CommandName="EditAssign"
-                                    CommandArgument='<%# Eval("assign_id") %>'>
+                                    CommandArgument='<%# Eval("assign_id") %>'
+                                    CausesValidation="false">
                                     <i class="fas fa-pencil-alt"></i>
                                 </asp:LinkButton>
                                 <asp:LinkButton ID="btnDelete" runat="server"
@@ -134,7 +140,6 @@
 
         </ContentTemplate>
     </asp:UpdatePanel>
-
 </div><%-- end course-assign-page --%>
 
 <script>
@@ -154,7 +159,7 @@
                 __doPostBack('<%= btnDeleteConfirm.UniqueID %>', '');
             }
         });
-    return false;
-}
+        return false;
+    }
 </script>
 </asp:Content>

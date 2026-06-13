@@ -107,6 +107,15 @@ namespace SchoolSystem
 
         protected void btnSaveAssignment_Click(object sender, EventArgs e)
         {
+            string title = txtAssignmentTitle.Text.Trim();
+            if (string.IsNullOrEmpty(title)) { ShowToast("Assignment title cannot be empty.", "error"); return; }
+            if (!DateTime.TryParse(txtDueDate.Text, out DateTime dueDate) || dueDate <= DateTime.Now)
+            { ShowToast("Due date must be set in the future.", "error"); return; }
+            if (!int.TryParse(txtMaxMarks.Text.Trim(), out int maxMarks) || maxMarks < 0)
+            { ShowToast("Max marks must be 0 or a positive number.", "error"); return; }
+            if (AssignmentTitleExists(title))
+            { ShowToast("An assignment named '" + title + "' already exists for this course and session.", "error"); return; }
+
             string dbPath = null;
             if (fuAssignmentFile.HasFile)
             {
@@ -179,6 +188,15 @@ namespace SchoolSystem
 
         protected void btnUpdateAssignment_Click(object sender, EventArgs e)
         {
+            string title = txtEditTitle.Text.Trim();
+            int aid = int.TryParse(hfEditAssignmentId.Value, out int a) ? a : 0;
+
+            if (string.IsNullOrEmpty(title)) { ShowToast("Assignment title cannot be empty.", "error"); return; }
+            if (!int.TryParse(txtEditMaxMarks.Text.Trim(), out int maxMarks) || maxMarks < 0)
+            { ShowToast("Max marks must be 0 or a positive number.", "error"); return; }
+            if (AssignmentTitleExists(title, aid))
+            { ShowToast("An assignment named '" + title + "' already exists for this course and session.", "error"); return; }
+
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 string query = "UPDATE CourseAssignment SET title = @title, description = @desc, assignment_type = @type, max_marks = @max, due_date = @date WHERE assignment_id = @aid";
@@ -267,6 +285,30 @@ namespace SchoolSystem
 
         protected void btnSaveGrades_Click(object sender, EventArgs e)
         {
+            // Fetch this assignment's max_marks for boundary checking
+            int maxMarks = 0;
+            using (SqlConnection con0 = new SqlConnection(connStr))
+            using (SqlCommand cmd0 = new SqlCommand("SELECT max_marks FROM CourseAssignment WHERE assignment_id = @aid", con0))
+            {
+                cmd0.Parameters.AddWithValue("@aid", hfGradingAssignmentId.Value);
+                con0.Open();
+                object mm = cmd0.ExecuteScalar();
+                if (mm != null && mm != DBNull.Value) maxMarks = Convert.ToInt32(mm);
+            }
+
+            // Validate every entered mark BEFORE saving any of them
+            foreach (GridViewRow row in gvGrades.Rows)
+            {
+                TextBox txtMarks = (TextBox)row.FindControl("txtMarks");
+                if (txtMarks == null || string.IsNullOrEmpty(txtMarks.Text)) continue;
+
+                if (!decimal.TryParse(txtMarks.Text.Trim(), out decimal mk) || mk < 0)
+                { ShowToast("Marks cannot be negative or invalid.", "error"); return; }
+
+                if (mk > maxMarks)
+                { ShowToast($"Marks cannot exceed the maximum of {maxMarks}.", "error"); return; }
+            }
+
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 con.Open();
@@ -355,15 +397,38 @@ namespace SchoolSystem
             ScriptManager.RegisterStartupScript(this, this.GetType(), "ModalCleanup", cleanupScript, true);
         }
 
-        private void ShowToast(string message)
+        private void ShowToast(string message, string type = "success")
         {
+            string safe = System.Web.HttpUtility.JavaScriptStringEncode(message);
+            bool isError = type == "error";
+            string bgClass = isError ? "bg-danger" : "bg-success";
+            string iconClass = isError ? "fas fa-times-circle me-2" : "fas fa-check-circle me-2";
+
             string script = $@"
-                document.getElementById('toastMessage').innerText = '{message}';
-                var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-                var toastList = toastElList.map(function(toastEl) {{ return new bootstrap.Toast(toastEl, {{ delay: 3000 }}); }});
-                toastList.forEach(toast => toast.show());
+                var toastEl = document.getElementById('successToast');
+                toastEl.classList.remove('bg-success', 'bg-danger');
+                toastEl.classList.add('{bgClass}');
+                document.getElementById('toastIcon').className = '{iconClass}';
+                document.getElementById('toastMessage').innerText = '{safe}';
+                var t = bootstrap.Toast.getOrCreateInstance(toastEl, {{ delay: 3000 }});
+                t.show();
             ";
             ScriptManager.RegisterStartupScript(this, this.GetType(), "ToastScript", script, true);
+        }
+
+        private bool AssignmentTitleExists(string title, int excludeId = 0)
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT COUNT(1) FROM CourseAssignment WHERE course_id = @cid AND title = @title AND academic_session = @session AND assignment_id <> @id", con))
+            {
+                cmd.Parameters.AddWithValue("@cid", currentCourseId);
+                cmd.Parameters.AddWithValue("@title", title);
+                cmd.Parameters.AddWithValue("@session", academicSession);
+                cmd.Parameters.AddWithValue("@id", excludeId);
+                con.Open();
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+            }
         }
     }
 }

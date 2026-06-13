@@ -69,6 +69,29 @@ namespace SchoolSystem
         protected void BtnSubmit_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            // --- INPUT VALIDATION ---
+            string code = txtCode.Text.Trim();
+
+            if (!int.TryParse(txtSemester.Text.Trim(), out int sem) || sem <= 0)
+            {
+                ShowError("Total Semesters must be a whole number greater than 0.");
+                return;
+            }
+            if (!decimal.TryParse(txtFee.Text.Trim(), out decimal fee) || fee <= 0)
+            {
+                ShowError("Total Fees must be greater than 0.");
+                return;
+            }
+            if (!int.TryParse(txtCredits.Text.Trim(), out int cred) || cred <= 0)
+            {
+                ShowError("Total Credit Hours must be a whole number greater than 0.");
+                return;
+            }
+            if (ProgramCodeExists(code))
+            {
+                ShowError("Program Code '" + code + "' already exists. Please use a unique code.");
+                return;
+            }
 
             try
             {
@@ -131,6 +154,21 @@ namespace SchoolSystem
             string safeMsg = msg.Replace("'", "\\'");
             ScriptManager.RegisterStartupScript(this, GetType(), "errorMsg",
                 $"Swal.fire('Error', '{safeMsg}', 'error');", true);
+        }
+
+        private bool ProgramCodeExists(string code, int excludeId = 0)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string q = "SELECT COUNT(1) FROM Program WHERE program_code = @code AND program_id <> @id";
+                using (SqlCommand cmd = new SqlCommand(q, conn))
+                {
+                    cmd.Parameters.AddWithValue("@code", code);
+                    cmd.Parameters.AddWithValue("@id", excludeId);
+                    conn.Open();
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
         }
     }
 }

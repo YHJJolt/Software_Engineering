@@ -4,6 +4,7 @@
 
 -- 1. Drop Stored Procedures & Triggers
 IF OBJECT_ID('sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE sp_ProcessGraduations;
+IF OBJECT_ID('sp_AdvanceToNewSession', 'P') IS NOT NULL DROP PROCEDURE sp_AdvanceToNewSession;
 IF OBJECT_ID('trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER trg_GeneratePayment;
 IF OBJECT_ID('trg_Payment_SetInactive', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_SetInactive;
 IF OBJECT_ID('trg_Payment_SetActive', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_SetActive;
@@ -11,18 +12,13 @@ IF OBJECT_ID('trg_Payment_DeleteReactivate', 'TR') IS NOT NULL DROP TRIGGER trg_
 IF OBJECT_ID('trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER trg_CalculateGradesAndGPA;
 GO
 
--- 2. BREAK FOREIGN KEY CONSTRAINTS (Breaks the circular locks between tables)
-IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Course_Lecturer' AND parent_object_id = OBJECT_ID('Course'))
-    ALTER TABLE [Course] DROP CONSTRAINT [fk_Course_Lecturer];
-IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Course_Program' AND parent_object_id = OBJECT_ID('Course'))
-    ALTER TABLE [Course] DROP CONSTRAINT [fk_Course_Program];
-IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Program_Lecturer' AND parent_object_id = OBJECT_ID('Program'))
-    ALTER TABLE [Program] DROP CONSTRAINT [fk_Program_Lecturer];
+-- 2. BREAK FOREIGN KEY CONSTRAINTS 
+-- (Only dropping the one that might cause circular student/program locks, others are handled by drop order)
 IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Student_Program' AND parent_object_id = OBJECT_ID('Student'))
     ALTER TABLE [Student] DROP CONSTRAINT [fk_Student_Program];
 GO
 
--- 3. Drop Deepest Child Tables (Submissions, Grades, Favs, Records)
+-- 3. Drop Deepest Child Tables & Junctions
 IF OBJECT_ID('dbo.AssignmentSubmission', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
 IF OBJECT_ID('dbo.CourseGrade', 'U') IS NOT NULL DROP TABLE [CourseGrade];
 IF OBJECT_ID('dbo.AttendanceRecord', 'U') IS NOT NULL DROP TABLE [AttendanceRecord];
@@ -32,6 +28,7 @@ IF OBJECT_ID('dbo.CourseAssignment', 'U') IS NOT NULL DROP TABLE [CourseAssignme
 IF OBJECT_ID('dbo.LecturerCourseFavourite', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite];
 IF OBJECT_ID('dbo.StudentCourseFavourite', 'U') IS NOT NULL DROP TABLE [StudentCourseFavourite];
 IF OBJECT_ID('dbo.CourseAssignment_Session', 'U') IS NOT NULL DROP TABLE [CourseAssignment_Session];
+IF OBJECT_ID('dbo.CourseProgram', 'U') IS NOT NULL DROP TABLE [CourseProgram];
 GO
 
 -- 4. Drop Mid-Level Dynamic Tables
@@ -44,7 +41,7 @@ IF OBJECT_ID('dbo.StudentCalendar', 'U') IS NOT NULL DROP TABLE [StudentCalendar
 IF OBJECT_ID('dbo.StudentNotifRead', 'U') IS NOT NULL DROP TABLE [StudentNotifRead];
 GO
 
--- 5. Drop Major Entities (Now safe since constraints are broken)
+-- 5. Drop Major Entities
 IF OBJECT_ID('dbo.Course', 'U') IS NOT NULL DROP TABLE [Course];
 IF OBJECT_ID('dbo.Announcement', 'U') IS NOT NULL DROP TABLE [Announcement];
 IF OBJECT_ID('dbo.Student', 'U') IS NOT NULL DROP TABLE [Student];

@@ -4,14 +4,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
+
+</asp:Content>
+
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-th-large" style="margin-right: 10px;"></i>Dashboard
+    </h1>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-
     <div class="dashboard-page">
-        <div class="header">
-            <h1><i class="fas fa-th-large me-2"></i>Dashboard</h1>
-        </div>
         <div class="dashboard-wrapper">
             <div class="stats-row">
                 <div class="stat-card stat-students">

@@ -181,6 +181,13 @@ namespace SchoolSystem
         {
             if (fuSubmission.HasFile && !string.IsNullOrEmpty(hfSelectedAssignmentId.Value))
             {
+                string ext = Path.GetExtension(fuSubmission.FileName).ToLowerInvariant();
+                string[] allowedDocs = { ".pdf", ".docx", ".pptx", ".zip" };
+
+                
+                if (Array.IndexOf(allowedDocs, ext) < 0)
+                { ShowToast("Only .pdf, .docx, .pptx, or .zip files are allowed.", "error"); return; }
+
                 string folderPath = Server.MapPath("~/Uploads/Submissions/");
                 if (!Directory.Exists(folderPath)) { Directory.CreateDirectory(folderPath); }
 
@@ -259,13 +266,21 @@ namespace SchoolSystem
             return $"<a href='javascript:void(0);' onclick='openCustomPreview(\"{url}\", \"{safeTitle} - Guidelines\")' class='btn btn-outline-info btn-sm fw-bold'><i class='fas fa-file-pdf me-1'></i> View Guidelines</a>";
         }
 
-        private void ShowToast(string message)
+        private void ShowToast(string message, string type = "success")
         {
+            string safe = System.Web.HttpUtility.JavaScriptStringEncode(message);
+            bool isError = type == "error";
+            string bgClass = isError ? "bg-danger" : "bg-success";
+            string iconClass = isError ? "fas fa-times-circle me-2" : "fas fa-check-circle me-2";
+
             string script = $@"
-                document.getElementById('toastMessage').innerText = '{message}';
-                var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-                var toastList = toastElList.map(function(toastEl) {{ return new bootstrap.Toast(toastEl, {{ delay: 3000 }}); }});
-                toastList.forEach(toast => toast.show());
+                var toastEl = document.getElementById('successToast');
+                toastEl.classList.remove('bg-success', 'bg-danger');
+                toastEl.classList.add('{bgClass}');
+                document.getElementById('toastIcon').className = '{iconClass}';
+                document.getElementById('toastMessage').innerText = '{safe}';
+                var t = bootstrap.Toast.getOrCreateInstance(toastEl, {{ delay: 3000 }});
+                t.show();
             ";
             ScriptManager.RegisterStartupScript(this, this.GetType(), "ToastScript", script, true);
         }

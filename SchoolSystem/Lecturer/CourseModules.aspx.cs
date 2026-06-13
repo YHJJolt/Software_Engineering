@@ -108,13 +108,20 @@ namespace SchoolSystem
 
         protected void btnAddModule_Click(object sender, EventArgs e)
         {
+            string moduleName = txtModuleName.Text.Trim();
+            string currentSession = GetCurrentSession();
+            if (string.IsNullOrEmpty(moduleName)) { CloseModalAndCleanup(); ShowToast("Module name cannot be empty.", "error"); return; }
+            if (ModuleNameExists(moduleName, currentSession))
+            { CloseModalAndCleanup(); ShowToast("A module named '" + moduleName + "' already exists for this course this session.", "error"); return; }
+
             using (SqlConnection con = new SqlConnection(connStr))
             {
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO CourseModule (course_id, module_name, module_description) VALUES (@cid, @name, @desc)", con))
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO CourseModule (course_id, module_name, module_description, academic_session) VALUES (@cid, @name, @desc, @session)", con))
                 {
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);
                     cmd.Parameters.AddWithValue("@name", txtModuleName.Text);
                     cmd.Parameters.AddWithValue("@desc", txtModuleDescription.Text);
+                    cmd.Parameters.AddWithValue("@session", currentSession);
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
@@ -162,6 +169,12 @@ namespace SchoolSystem
 
         protected void btnUpdateModule_Click(object sender, EventArgs e)
         {
+            string moduleName = txtModuleName.Text.Trim();
+            string currentSession = GetCurrentSession();
+            if (string.IsNullOrEmpty(moduleName)) { CloseModalAndCleanup(); ShowToast("Module name cannot be empty."); return; }
+            if (ModuleNameExists(moduleName, currentSession))
+            { CloseModalAndCleanup(); ShowToast("A module named '" + moduleName + "' already exists for this course this session."); return; }
+
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 using (SqlCommand cmd = new SqlCommand("UPDATE CourseModule SET module_name = @name, module_description = @desc WHERE module_id = @mid", con))
@@ -214,35 +227,51 @@ namespace SchoolSystem
 
         protected void btnUploadFile_Click(object sender, EventArgs e)
         {
-            if (fuModuleFile.HasFile && !string.IsNullOrEmpty(hfSelectedModuleId.Value))
+            // A module must be selected (safety)
+            if (string.IsNullOrEmpty(hfSelectedModuleId.Value))
+            { CloseModalAndCleanup(); ShowToast("No module selected.", "error"); return; }
+
+            // File is required
+            if (!fuModuleFile.HasFile)
+            { CloseModalAndCleanup(); ShowToast("Please select a file to upload.", "error"); return; }
+
+            // File title is required
+            string fileTitle = txtFileTitle.Text.Trim();
+            if (string.IsNullOrEmpty(fileTitle))
+            { CloseModalAndCleanup(); ShowToast("File title cannot be empty.", "error"); return; }
+
+            // File type check
+            string ext = Path.GetExtension(fuModuleFile.FileName).ToLowerInvariant();
+            string[] allowedDocs = { ".pdf", ".docx", ".pptx", ".zip" };
+            if (Array.IndexOf(allowedDocs, ext) < 0)
+            { CloseModalAndCleanup(); ShowToast("Only .pdf, .docx, .pptx, or .zip files are allowed.", "error"); return; }
+
+            string folderPath = Server.MapPath("~/Uploads/Modules/");
+            if (!Directory.Exists(folderPath)) { Directory.CreateDirectory(folderPath); }
+
+            string fileName = Path.GetFileName(fuModuleFile.FileName);
+            string savePath = folderPath + fileName;
+            string dbPath = "~/Uploads/Modules/" + fileName;
+
+            fuModuleFile.SaveAs(savePath);
+
+            using (SqlConnection con = new SqlConnection(connStr))
             {
-                string folderPath = Server.MapPath("~/Uploads/Modules/");
-                if (!Directory.Exists(folderPath)) { Directory.CreateDirectory(folderPath); }
-
-                string fileName = Path.GetFileName(fuModuleFile.FileName);
-                string savePath = folderPath + fileName;
-                string dbPath = "~/Uploads/Modules/" + fileName;
-
-                fuModuleFile.SaveAs(savePath);
-
-                using (SqlConnection con = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO ModuleFile (module_id, file_title, file_description, file_name, file_path) VALUES (@mid, @title, @desc, @fname, @path)", con))
                 {
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO ModuleFile (module_id, file_title, file_description, file_name, file_path) VALUES (@mid, @title, @desc, @fname, @path)", con))
-                    {
-                        cmd.Parameters.AddWithValue("@mid", hfSelectedModuleId.Value);
-                        cmd.Parameters.AddWithValue("@title", txtFileTitle.Text);
-                        cmd.Parameters.AddWithValue("@desc", txtFileDescription.Text);
-                        cmd.Parameters.AddWithValue("@fname", fileName);
-                        cmd.Parameters.AddWithValue("@path", dbPath);
-                        con.Open();
-                        cmd.ExecuteNonQuery();
-                    }
+                    cmd.Parameters.AddWithValue("@mid", hfSelectedModuleId.Value);
+                    cmd.Parameters.AddWithValue("@title", fileTitle);
+                    cmd.Parameters.AddWithValue("@desc", txtFileDescription.Text);
+                    cmd.Parameters.AddWithValue("@fname", fileName);
+                    cmd.Parameters.AddWithValue("@path", dbPath);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
                 }
-                txtFileTitle.Text = ""; txtFileDescription.Text = "";
-                BindModules();
-                CloseModalAndCleanup();
-                ShowToast("Content uploaded successfully!");
             }
+            txtFileTitle.Text = ""; txtFileDescription.Text = "";
+            BindModules();
+            CloseModalAndCleanup();
+            ShowToast("Content uploaded successfully!");
         }
 
         // BEAUTIFUL MODAL DELETE FILE FUNCTION
@@ -286,15 +315,21 @@ namespace SchoolSystem
             ScriptManager.RegisterStartupScript(upnlModules, upnlModules.GetType(), "ModalCleanup", cleanupScript, true);
         }
 
-        private void ShowToast(string message)
+        private void ShowToast(string message, string type = "success")
         {
+            string safe = System.Web.HttpUtility.JavaScriptStringEncode(message);
+            bool isError = type == "error";
+            string bgClass = isError ? "bg-danger" : "bg-success";
+            string iconClass = isError ? "fas fa-times-circle me-2" : "fas fa-check-circle me-2";
+
             string script = $@"
-                document.getElementById('toastMessage').innerText = '{message}';
-                var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-                var toastList = toastElList.map(function(toastEl) {{
-                    return new bootstrap.Toast(toastEl, {{ delay: 3000 }});
-                }});
-                toastList.forEach(toast => toast.show());
+                var toastEl = document.getElementById('successToast');
+                toastEl.classList.remove('bg-success', 'bg-danger');
+                toastEl.classList.add('{bgClass}');
+                document.getElementById('toastIcon').className = '{iconClass}';
+                document.getElementById('toastMessage').innerText = '{safe}';
+                var t = bootstrap.Toast.getOrCreateInstance(toastEl, {{ delay: 3000 }});
+                t.show();
             ";
             ScriptManager.RegisterStartupScript(this, this.GetType(), "ToastScript", script, true);
         }
@@ -305,6 +340,32 @@ namespace SchoolSystem
             if (fileName.EndsWith(".pptx") || fileName.EndsWith(".ppt")) return "far fa-file-powerpoint text-warning";
             if (fileName.EndsWith(".docx") || fileName.EndsWith(".doc")) return "far fa-file-word text-primary";
             return "far fa-file text-secondary";
+        }
+
+        private bool ModuleNameExists(string name, string session, int excludeId = 0)
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT COUNT(1) FROM CourseModule WHERE course_id = @cid AND module_name = @name AND academic_session = @session AND module_id <> @id", con))
+            {
+                cmd.Parameters.AddWithValue("@cid", currentCourseId);
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@session", session);
+                cmd.Parameters.AddWithValue("@id", excludeId);
+                con.Open();
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+            }
+        }
+
+        private string GetCurrentSession()
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(
+                "SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'", con))
+            {
+                con.Open();
+                return cmd.ExecuteScalar()?.ToString() ?? "JAN2026";
+            }
         }
     }
 }

@@ -37,7 +37,15 @@
                 </div>
             </a>
         </div>
-        <div id="admin-topbar">
+        
+        <%-- UPDATED TOPBAR: Flexbox layout to hold title on the left, bell on the right --%>
+        <div id="admin-topbar" style="display: flex; align-items: center; justify-content: space-between;">
+            
+            <%-- 1. THIS IS THE NEW SLOT FOR YOUR TITLES --%>
+            <div class="topbar-title" style="flex-grow: 1;">
+                <asp:ContentPlaceHolder ID="TopbarTitle" runat="server"></asp:ContentPlaceHolder>
+            </div>
+
             <%-- NOTIFICATION BELL --%>
             <div class="notif-container">
                 <div class="notif-bell-wrapper" onclick="toggleNotifs(event)">
@@ -129,7 +137,6 @@
         document.getElementById('notifDropdown').addEventListener('click', function (e) {
             e.stopPropagation();
         });
-
         document.addEventListener('click', function (event) {
             var container = document.querySelector('.notif-container');
             if (container && !container.contains(event.target)) {

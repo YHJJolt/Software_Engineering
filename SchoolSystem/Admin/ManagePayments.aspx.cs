@@ -228,6 +228,14 @@ namespace SchoolSystem
         {
             if (!Page.IsValid) return;
 
+            if (!decimal.TryParse(txtAmount.Text.Trim(), out decimal amt) || amt <= 0)
+            {
+                pnlModal.Visible = true; upModal.Update();
+                ScriptManager.RegisterStartupScript(this, GetType(), "amtErr",
+                    "Swal.fire('Invalid Amount', 'Payment amount must be greater than 0.', 'warning');", true);
+                return;
+            }
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connStr))

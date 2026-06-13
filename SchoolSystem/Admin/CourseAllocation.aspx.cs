@@ -137,11 +137,31 @@ namespace SchoolSystem
             string status = ddlStatus.SelectedValue;
             int editId = int.Parse(hdnEditAssignId.Value);
 
+            // Must pick a real course + lecturer (not the "-- Select --" placeholder)
+            if (courseId == 0 || lecturerId == 0)
+            {
+                ShowAlert("Missing Info", "Please select both a course and a lecturer.", "warning");
+                return;
+            }
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     conn.Open();
+
+                    // Status check: cannot assign an Inactive lecturer
+                    using (SqlCommand st = new SqlCommand(
+                        "SELECT teacher_isactive FROM Lecturer WHERE lecturer_id = @LecturerId", conn))
+                    {
+                        st.Parameters.AddWithValue("@LecturerId", lecturerId);
+                        string lecStatus = st.ExecuteScalar()?.ToString();
+                        if (!string.Equals(lecStatus, "Active", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ShowAlert("Inactive Lecturer", "You cannot assign a lecturer whose status is Inactive.", "warning");
+                            return;
+                        }
+                    }
 
                     if (editId > 0)
                     {
@@ -217,9 +237,31 @@ namespace SchoolSystem
                     {
                         if (r.Read())
                         {
-                            ddlCourse.SelectedValue = r["course_id"].ToString();
-                            ddlLecturer.SelectedValue = r["lecturer_id"].ToString();
-                            ddlStatus.SelectedValue = r["assign_status"].ToString();
+                            string cId = r["course_id"].ToString();
+                            string lId = r["lecturer_id"].ToString();
+                            string status = r["assign_status"].ToString();
+
+                            // Safely bind Course
+                            if (ddlCourse.Items.FindByValue(cId) != null)
+                            {
+                                ddlCourse.ClearSelection();
+                                ddlCourse.Items.FindByValue(cId).Selected = true;
+                            }
+
+                            // Safely bind Lecturer
+                            if (ddlLecturer.Items.FindByValue(lId) != null)
+                            {
+                                ddlLecturer.ClearSelection();
+                                ddlLecturer.Items.FindByValue(lId).Selected = true;
+                            }
+
+                            // Safely bind Status
+                            if (ddlStatus.Items.FindByValue(status) != null)
+                            {
+                                ddlStatus.ClearSelection();
+                                ddlStatus.Items.FindByValue(status).Selected = true;
+                            }
+
                             hdnEditAssignId.Value = assignId.ToString();
                         }
                     }

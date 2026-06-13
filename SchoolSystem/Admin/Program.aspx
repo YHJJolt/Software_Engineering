@@ -5,13 +5,14 @@
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-graduation-cap" style="margin-right: 10px;"></i>Program Management
+    </h1>
+</asp:Content>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="program-mgmt-page">
-    <%-- Header --%>
-    <div class="header">
-        <h1><i class="fas fa-graduation-cap"></i>Program Management</h1>
-    </div>
-
     <%-- Action Bar --%>
     <div class="action-bar">
         <div class="search-group">

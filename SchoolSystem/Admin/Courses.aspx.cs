@@ -223,10 +223,58 @@ namespace SchoolSystem
             }
         }
 
+        private bool CourseCodeExists(string code, int excludeId = 0)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string q = "SELECT COUNT(1) FROM Course WHERE course_code = @code AND course_id <> @id";
+                using (SqlCommand cmd = new SqlCommand(q, conn))
+                {
+                    cmd.Parameters.AddWithValue("@code", code);
+                    cmd.Parameters.AddWithValue("@id", excludeId);
+                    conn.Open();
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
+        }
+
+        private void ShowEditError(string msg)
+        {
+            pnlEditModal.Visible = true;
+            string safe = msg.Replace("'", "\\'");
+            ScriptManager.RegisterStartupScript(this, GetType(), "err",
+                $"Swal.fire('Error', '{safe}', 'error');", true);
+        }
+
+        private void ShowError(string msg)
+        {
+            string safe = msg.Replace("'", "\\'");
+            ScriptManager.RegisterStartupScript(this, GetType(), "err",
+                $"Swal.fire('Error', '{safe}', 'error');", true);
+        }
         protected void BtnSaveUpdate_Click(object sender, EventArgs e)
         {
             try
             {
+                string code = txtEditCode.Text.Trim();
+                int courseId = int.TryParse(hdnEditCourseId.Value, out int cidTmp) ? cidTmp : 0;
+
+                if (!decimal.TryParse(txtEditFee.Text.Trim(), out decimal feeVal) || feeVal <= 0)
+                { ShowEditError("Course Fee must be greater than 0."); return; }
+
+                if (CourseCodeExists(code, courseId))
+                { ShowEditError("Course Code '" + code + "' already exists."); return; }
+
+                if (fuEditCourseImage.HasFile)
+                {
+                    string ext = System.IO.Path.GetExtension(fuEditCourseImage.FileName).ToLowerInvariant();
+                    string[] allowed = { ".jpg", ".jpeg", ".png" };
+                    if (Array.IndexOf(allowed, ext) < 0)
+                    { ShowEditError("Cover image must be .jpg, .jpeg or .png."); return; }
+                    if (fuEditCourseImage.PostedFile.ContentLength > 5 * 1024 * 1024)
+                    { ShowEditError("Cover image must be 5MB or smaller."); return; }
+                }
+
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     string sql = "";

@@ -7,13 +7,15 @@
     
 </asp:Content>
 
+<asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
+    <h1 style="margin: 0; font-size: 24px; color: #1e293b;">
+        <i class="fas fa-credit-card" style="margin-right: 10px;"></i>Payment Management
+    </h1>
+</asp:Content>
+
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server"> 
 
     <div class="payment-mgmt-page">
-    <div class="header">
-        <h1><i class="fas fa-credit-card"></i>Payment Management</h1>
-    </div>
-
     <asp:UpdatePanel ID="upGridView" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
             

@@ -418,7 +418,29 @@ BEGIN
 END
 GO
 
--- 2. TRIGGER: Auto Generate Payment
+-- 2. STORED PROCEDURE: Advance To New Session
+CREATE PROCEDURE sp_AdvanceToNewSession
+    @NewSessionName NVARCHAR(20) -- e.g., 'APR2026'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Update the global current session in System Settings
+    UPDATE [SystemSettings]
+    SET setting_value = @NewSessionName
+    WHERE setting_key = 'current_session';
+
+    -- 2. Advance the semester counter (+1) for all currently active students
+    UPDATE [Student]
+    SET student_sem = student_sem + 1
+    WHERE student_isactive = 'Active';
+
+    -- 3. Run the graduation check (graduates students who just hit their max semester)
+    EXEC sp_ProcessGraduations;
+END
+GO
+
+-- 3. TRIGGER: Auto Generate Payment
 CREATE TRIGGER trg_GeneratePayment
 ON [Enrollment]
 AFTER INSERT, UPDATE
@@ -465,7 +487,7 @@ BEGIN
 END
 GO
 
--- 3. TRIGGER: Set student to 'Inactive' when payment is overdue
+-- 4. TRIGGER: Set student to 'Inactive' when payment is overdue
 CREATE TRIGGER trg_Payment_SetInactive
 ON [Payment]
 AFTER INSERT, UPDATE
@@ -480,7 +502,7 @@ BEGIN
 END
 GO
 
--- 4. TRIGGER: Restore student to 'Active' when payment is made
+-- 5. TRIGGER: Restore student to 'Active' when payment is made
 CREATE TRIGGER trg_Payment_SetActive
 ON [Payment]
 AFTER UPDATE
@@ -498,7 +520,7 @@ BEGIN
 END
 GO
 
--- 5. TRIGGER: Restore student to 'Active' when overdue unpaid record is deleted
+-- 6. TRIGGER: Restore student to 'Active' when overdue unpaid record is deleted
 CREATE TRIGGER trg_Payment_DeleteReactivate
 ON [Payment]
 AFTER DELETE
@@ -514,7 +536,7 @@ BEGIN
 END
 GO
 
--- 6. TRIGGER: Auto Calculate GPA & CGPA
+-- 7. TRIGGER: Auto Calculate GPA & CGPA
 CREATE TRIGGER trg_CalculateGradesAndGPA
 ON [AssignmentSubmission]
 AFTER INSERT, UPDATE

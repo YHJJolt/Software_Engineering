@@ -18,6 +18,26 @@ namespace SchoolSystem
             try
             {
                 string connString = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+
+                DateTime startDt = DateTime.Parse(start);
+                DateTime? endDt = string.IsNullOrWhiteSpace(end) ? (DateTime?)null : DateTime.Parse(end);
+
+                // Time logic: end cannot be before start
+                if (endDt.HasValue && endDt.Value < startDt)
+                    return new { status = "error", message = "End date cannot be earlier than the start date." };
+
+                // Duplicate: same title on same start date
+                using (SqlConnection vconn = new SqlConnection(connString))
+                using (SqlCommand chk = new SqlCommand(
+                    "SELECT COUNT(1) FROM Calendar WHERE event_title = @t AND CAST(start_date AS DATE) = @d", vconn))
+                {
+                    chk.Parameters.AddWithValue("@t", title);
+                    chk.Parameters.AddWithValue("@d", startDt.Date);
+                    vconn.Open();
+                    if (Convert.ToInt32(chk.ExecuteScalar()) > 0)
+                        return new { status = "error", message = "An event with this name already exists on that date." };
+                }
+
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
                     string query = @"INSERT INTO Calendar (event_title, event_desc, start_date, end_date, event_type, admin_id) 
@@ -72,6 +92,25 @@ namespace SchoolSystem
             try
             {
                 string connString = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+
+                DateTime startDt = DateTime.Parse(start);
+                DateTime? endDt = string.IsNullOrWhiteSpace(end) ? (DateTime?)null : DateTime.Parse(end);
+
+                if (endDt.HasValue && endDt.Value < startDt)
+                    return new { status = "error", message = "End date cannot be earlier than the start date." };
+
+                using (SqlConnection vconn = new SqlConnection(connString))
+                using (SqlCommand chk = new SqlCommand(
+                    "SELECT COUNT(1) FROM Calendar WHERE event_title = @t AND CAST(start_date AS DATE) = @d AND calendar_id <> @id", vconn))
+                {
+                    chk.Parameters.AddWithValue("@t", title);
+                    chk.Parameters.AddWithValue("@d", startDt.Date);
+                    chk.Parameters.AddWithValue("@id", id);
+                    vconn.Open();
+                    if (Convert.ToInt32(chk.ExecuteScalar()) > 0)
+                        return new { status = "error", message = "An event with this name already exists on that date." };
+                }
+
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
                     string query = @"UPDATE Calendar SET event_title=@title, event_desc=@desc, 

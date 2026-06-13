@@ -15,7 +15,6 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Read selected student from query string, default to 1
             SelectedStudentId = 1;
             if (!string.IsNullOrEmpty(Request.QueryString["sid"]))
             {
@@ -66,7 +65,6 @@ namespace SchoolSystem
             int actualID = 0;
             double cgpa = 0.0;
 
-            // Grabs the actual CGPA from the new Grades table
             string sql = @"
                 SELECT TOP 1 s.student_id, s.student_name, s.student_email, s.student_sem, 
                              p.program_name, ISNULL(g.cgpa, 0) AS cgpa
@@ -104,11 +102,13 @@ namespace SchoolSystem
         private string GetSemesterData(int studentId)
         {
             string connStr = GetConnectionString();
-            var semMap = new Dictionary<int, List<CourseRow>>();
 
-            // FIXED: Now accurately groups courses by enrolled_semester instead of student_sem
+            // CHANGED: Dictionary now uses string as the key to hold "JAN2026"
+            var sessionMap = new Dictionary<string, List<CourseRow>>();
+
+            // CHANGED: SQL now pulls academic_session instead of enrolled_semester
             string sql = @"
-                SELECT e.enrolled_semester AS semester, c.course_name, c.credit_hours, 
+                SELECT e.academic_session, c.course_name, c.credit_hours, 
                        ISNULL(cg.letter_grade, 'N/A') AS letter_grade, 
                        ISNULL(cg.grade_point, 0) AS grade_point, 
                        ISNULL(cg.total_hours, 0) AS total_hours, 
@@ -117,7 +117,7 @@ namespace SchoolSystem
                 JOIN   [Course]      c  ON c.course_id      = e.course_id
                 LEFT JOIN [CourseGrade] cg ON cg.Enrollment_id = e.enrollment_id
                 WHERE  e.student_id = @sid AND e.status = 'Approved'
-                ORDER  BY e.enrolled_semester, c.course_name";
+                ORDER  BY e.academic_session, c.course_name";
 
             using (var conn = new SqlConnection(connStr))
             using (var cmd = new SqlCommand(sql, conn))
@@ -128,9 +128,11 @@ namespace SchoolSystem
                 {
                     while (r.Read())
                     {
-                        int sem = Convert.ToInt32(r["semester"]);
-                        if (!semMap.ContainsKey(sem)) semMap[sem] = new List<CourseRow>();
-                        semMap[sem].Add(new CourseRow
+                        // Map using the session string
+                        string session = r["academic_session"].ToString();
+                        if (!sessionMap.ContainsKey(session)) sessionMap[session] = new List<CourseRow>();
+
+                        sessionMap[session].Add(new CourseRow
                         {
                             CourseName = r["course_name"].ToString(),
                             CreditHours = Convert.ToInt32(r["credit_hours"]),
@@ -145,7 +147,7 @@ namespace SchoolSystem
 
             var sb = new StringBuilder("{");
             bool first = true;
-            foreach (var kvp in semMap)
+            foreach (var kvp in sessionMap)
             {
                 if (!first) sb.Append(","); first = false;
                 var courses = new List<string>(); var credits = new List<string>();
@@ -164,7 +166,6 @@ namespace SchoolSystem
                     grades.Add("\"" + Escape(row.LetterGrade) + "\"");
                     gpas.Add(row.GradePoint.ToString("F1"));
 
-                    // Accurately calculates true weighted GPA
                     sumPts += row.GradePoint * row.CreditHours;
                     sumCr += row.CreditHours;
                 }
@@ -173,7 +174,7 @@ namespace SchoolSystem
 
                 sb.AppendFormat(
                     "\"{0}\":{{\"courses\":[{1}],\"credits\":[{2}],\"total\":[{3}],\"attended\":[{4}],\"grades\":[{5}],\"gpa\":[{6}],\"realGpa\":\"{7:F2}\"}}",
-                    kvp.Key,
+                    Escape(kvp.Key),
                     string.Join(",", courses), string.Join(",", credits),
                     string.Join(",", totals), string.Join(",", attended),
                     string.Join(",", grades), string.Join(",", gpas),
