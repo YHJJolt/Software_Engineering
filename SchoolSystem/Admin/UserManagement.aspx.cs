@@ -58,6 +58,7 @@ namespace SchoolSystem
                 LoadLecturers();
                 LoadProgramAdd();
                 LoadAllStatistics();
+                WriteDropdownData();
                 hfNextStudId.Value = GetNextId("[Student]", "student_id").ToString();
                 hfNextLectId.Value = GetNextId("[Lecturer]", "lecturer_id").ToString();
             }
@@ -82,6 +83,31 @@ namespace SchoolSystem
                 cmd.CommandText = "SELECT COUNT(*) FROM [Lecturer] WHERE teacher_isactive='Inactive'";
                 lblInactiveLecturers.Text = cmd.ExecuteScalar().ToString();
             }
+        }
+
+        private void WriteDropdownData()
+        {
+            var progs = new System.Collections.Generic.List<string>();
+            var depts = new System.Collections.Generic.List<string>();
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                DataTable dtP = new DataTable();
+                new SqlDataAdapter(new SqlCommand(
+                    "SELECT program_id, program_name FROM [Program] ORDER BY program_name", conn)).Fill(dtP);
+                foreach (DataRow r in dtP.Rows)
+                    progs.Add(r["program_id"] + "|" + r["program_name"]);
+
+                DataTable dtD = new DataTable();
+                new SqlDataAdapter(new SqlCommand(
+                    "SELECT DISTINCT lecturer_department FROM [Lecturer] ORDER BY lecturer_department", conn)).Fill(dtD);
+                foreach (DataRow r in dtD.Rows)
+                    depts.Add(r["lecturer_department"].ToString());
+            }
+
+            litDropdownData.Text =
+                "<script>var _progData='" + string.Join("||", progs) + "'; var _deptData='" + string.Join("||", depts) + "';</script>";
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -414,6 +440,23 @@ namespace SchoolSystem
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
                         conn.Open();
+
+                        // Delete attendance records tied to this student's enrollments
+                        new SqlCommand(@"DELETE ar FROM [AttendanceRecord] ar 
+                                          INNER JOIN [Enrollment] e ON ar.enrollment_id = e.enrollment_id 
+                                          WHERE e.student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        // Delete payment detail rows tied to this student's enrollments
+                        new SqlCommand(@"DELETE pd FROM [PaymentDetail] pd 
+                                          INNER JOIN [Enrollment] e ON pd.enrollment_id = e.enrollment_id 
+                                          WHERE e.student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        // Delete assignment submissions made by this student
+                        new SqlCommand("DELETE FROM [AssignmentSubmission] WHERE student_id = @id", conn)
+                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
                         new SqlCommand(@"DELETE cg FROM [CourseGrade] cg INNER JOIN [Enrollment] e ON cg.Enrollment_id = e.enrollment_id WHERE e.student_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
 
@@ -425,6 +468,8 @@ namespace SchoolSystem
 
                         new SqlCommand("DELETE FROM [Grades] WHERE Student_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        // StudentCalendar and StudentNotifRead have ON DELETE CASCADE - no manual delete needed
 
                         new SqlCommand("DELETE FROM [Student] WHERE student_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
@@ -465,6 +510,8 @@ namespace SchoolSystem
                             }
                         }
                     }
+                    hfToastMsg.Value = "";
+                    hfToastType.Value = "";
                     break;
             }
 
@@ -480,18 +527,6 @@ namespace SchoolSystem
 
             switch (e.CommandName)
             {
-                case "Toggle":
-                    using (SqlConnection conn = new SqlConnection(connStr))
-                    {
-                        conn.Open();
-                        new SqlCommand(@"UPDATE [Lecturer] SET teacher_isactive=
-                            CASE WHEN teacher_isactive='Active' THEN 'Inactive' ELSE 'Active' END
-                            WHERE lecturer_id=@id", conn)
-                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
-                    }
-                    SetToast("✓ Status updated.", "success");
-                    break;
-
                 case "DeleteL":
                     using (SqlConnection conn = new SqlConnection(connStr))
                     {
@@ -517,13 +552,11 @@ namespace SchoolSystem
                         new SqlCommand("DELETE FROM [LecturerCourseFavourite] WHERE lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
 
-                        // Remove any handbook/policy rules authored by this lecturer
-                        new SqlCommand("DELETE FROM [Rule] WHERE Lecturer_id = @id", conn)
-                        { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
-
                         // Remove announcements posted by this lecturer
                         new SqlCommand("DELETE FROM [Announcement] WHERE Lecturer_id = @id", conn)
                         { Parameters = { new SqlParameter("@id", id) } }.ExecuteNonQuery();
+
+                        // LecturerCalendar and LecturerNotifRead - LecturerCalendar has ON DELETE CASCADE, no manual delete needed
 
                         // Finally, remove the lecturer record itself
                         // (Course, Enrollment, and CourseGrade are intentionally left untouched -
@@ -564,6 +597,8 @@ namespace SchoolSystem
                             }
                         }
                     }
+                    hfToastMsg.Value = "";
+                    hfToastType.Value = "";
                     break;
             }
 

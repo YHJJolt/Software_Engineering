@@ -267,13 +267,13 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.TextBox txtStudEmail;
 
         /// <summary>
-        /// txtStudPassword control.
+        /// TextBox1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtStudPassword;
+        protected global::System.Web.UI.WebControls.TextBox TextBox1;
 
         /// <summary>
         /// txtStudContact control.
@@ -339,13 +339,13 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.TextBox txtLectEmail;
 
         /// <summary>
-        /// txtLectPassword control.
+        /// TextBox2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLectPassword;
+        protected global::System.Web.UI.WebControls.TextBox TextBox2;
 
         /// <summary>
         /// txtLectContact control.

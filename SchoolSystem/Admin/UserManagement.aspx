@@ -195,10 +195,6 @@
                         <asp:TemplateField HeaderText="Actions">
                             <ItemTemplate>
                                 <asp:LinkButton runat="server" CssClass="act-icon c-blue" CommandName="ViewL" CommandArgument='<%# Eval("lecturer_id") %>' ToolTip="View"><i class="fas fa-eye"></i></asp:LinkButton>
-                                <asp:LinkButton runat="server" CssClass="act-icon c-org" CommandName="Toggle" CommandArgument='<%# Eval("lecturer_id") %>'
-                                    ToolTip='<%# Eval("teacher_isactive").ToString()=="Active"?"Deactivate":"Activate" %>'
-                                    OnClientClick='<%# "return confirmToggle(\""+Eval("lecturer_name")+"\",\""+Eval("lecturer_code")+"\",\""+Eval("teacher_isactive")+"\",\"lecturer\");" %>'>
-                                    <i class='<%# Eval("teacher_isactive").ToString()=="Active"?"fas fa-toggle-on":"fas fa-toggle-off" %>'></i></asp:LinkButton>
                                 <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="DeleteL" CommandArgument='<%# Eval("lecturer_id") %>'
                                     ToolTip="Delete" OnClientClick='<%# "return confirmDelete(\""+Eval("lecturer_name")+"\",\""+Eval("lecturer_code")+"\",\"lecturer\");" %>'>
                                     <i class="fas fa-trash"></i></asp:LinkButton>
@@ -234,8 +230,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" style="font-size:12px;">Password <span style="color:#dc2626">*</span></label>
                             <div class="pw-wrapper">
-                                <asp:TextBox ID="txtStudPassword" runat="server" CssClass="form-control bg-light" ReadOnly="true" />
-                                <button type="button" class="pw-toggle" onclick="togglePw('<%=txtStudPassword.ClientID%>',this)"><i class="fas fa-eye"></i></button>
+                                <asp:TextBox ID="TextBox1" runat="server" CssClass="form-control bg-light" ReadOnly="true" Text="stud123" />
                             </div>
                             <div class="form-text" style="font-size:11px;">Default setting. Cannot be edited.</div>
                         </div>
@@ -288,8 +283,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold" style="font-size:12px;">Password <span style="color:#dc2626">*</span></label>
                             <div class="pw-wrapper">
-                                <asp:TextBox ID="txtLectPassword" runat="server" CssClass="form-control bg-light" ReadOnly="true" />
-                                <button type="button" class="pw-toggle" onclick="togglePw('<%=txtLectPassword.ClientID%>',this)"><i class="fas fa-eye"></i></button>
+                                <asp:TextBox ID="TextBox2" runat="server" CssClass="form-control bg-light" ReadOnly="true" Text="lect123" />
                             </div>
                             <div class="form-text" style="font-size:11px;">Default setting. Cannot be edited.</div>
                         </div>

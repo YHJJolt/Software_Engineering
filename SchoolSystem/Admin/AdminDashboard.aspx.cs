@@ -33,7 +33,8 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
-                litStudents.Text = Convert.ToString(new SqlCommand("SELECT COUNT(*) FROM [Student]", conn).ExecuteScalar());
+                // Counts current students only (Active + Inactive), excluding graduated alumni
+                litStudents.Text = Convert.ToString(new SqlCommand("SELECT COUNT(*) FROM [Student] WHERE student_isactive <> 'Graduated'", conn).ExecuteScalar());
                 litLecturers.Text = Convert.ToString(new SqlCommand("SELECT COUNT(*) FROM [Lecturer]", conn).ExecuteScalar());
                 litCourses.Text = Convert.ToString(new SqlCommand("SELECT COUNT(*) FROM [Course]", conn).ExecuteScalar());
             }
@@ -43,7 +44,8 @@ namespace SchoolSystem
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "SELECT p.program_name, COUNT(s.student_id) as Total FROM [Program] p LEFT JOIN [Student] s ON p.program_id = s.Program_id GROUP BY p.program_name";
+                // Excludes graduated alumni so the chart total matches the Students stat card
+                string sql = "SELECT p.program_name, COUNT(s.student_id) as Total FROM [Program] p LEFT JOIN [Student] s ON p.program_id = s.Program_id AND s.student_isactive <> 'Graduated' GROUP BY p.program_name";
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 conn.Open();
                 SqlDataReader rdr = cmd.ExecuteReader();
