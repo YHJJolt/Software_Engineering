@@ -4,6 +4,10 @@
         <style>
             .input-box { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; margin-bottom: 12px; box-sizing: border-box; }
             .pw-section { border-top: 1px solid #eee; margin-top: 25px; padding-top: 10px; }
+            .pw-wrap { position: relative; margin-bottom: 12px; }
+            .pw-wrap .pw-input { margin-bottom: 0; padding-right: 42px; }
+            .pw-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 15px; }
+            .pw-toggle:hover { color: var(--navy-accent); }
         </style>
 </asp:Content>
 
@@ -34,9 +38,18 @@
 
             <div class="pw-section">
                 <span class="info-label">Change Password</span>
-                <asp:TextBox ID="txtCurrentPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="Current password"></asp:TextBox>
-                <asp:TextBox ID="txtNewPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="New password (min 6 characters)"></asp:TextBox>
-                <asp:TextBox ID="txtConfirmPw" runat="server" TextMode="Password" CssClass="input-box" placeholder="Confirm new password"></asp:TextBox>
+                <div class="pw-wrap">
+                    <asp:TextBox ID="txtCurrentPw" runat="server" TextMode="Password" CssClass="input-box pw-input" placeholder="Current password"></asp:TextBox>
+                    <i class="fas fa-eye pw-toggle" onclick="togglePw(this)"></i>
+                </div>
+                <div class="pw-wrap">
+                    <asp:TextBox ID="txtNewPw" runat="server" TextMode="Password" CssClass="input-box pw-input" placeholder="New password (min 6 characters)"></asp:TextBox>
+                    <i class="fas fa-eye pw-toggle" onclick="togglePw(this)"></i>
+                </div>
+                <div class="pw-wrap">
+                    <asp:TextBox ID="txtConfirmPw" runat="server" TextMode="Password" CssClass="input-box pw-input" placeholder="Confirm new password"></asp:TextBox>
+                    <i class="fas fa-eye pw-toggle" onclick="togglePw(this)"></i>
+                </div>
                 <asp:Button ID="btnChangePw" runat="server" Text="Change Password" CssClass="btn-save" OnClick="btnChangePw_Click" CausesValidation="false" />
             </div>
 
@@ -50,4 +63,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePw(icon) {
+        var input = icon.previousElementSibling;
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
 </asp:Content>
