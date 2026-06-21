@@ -211,6 +211,8 @@
     var semData = <%=StudentJsonData%>;
     var allStudents = <%=AllStudentsJson%>;
     var currentSid  = <%=SelectedStudentId%>;
+    var allSessions = <%=AllSessionsJson%>;
+    var currentSession = "<%=CurrentSession%>";
     var badgeClass = {
         'A': 'b-purple', 'A-': 'b-purple',
         'B+': 'b-blue', 'B': 'b-blue',
@@ -240,11 +242,14 @@
         document.getElementById('studentID').textContent = student.id || '—';
         document.getElementById('studentProg').textContent = student.programme || '—';
 
-        // CHANGED: Sorts strings alphabetically instead of numerically
-        var sems = Object.keys(semData).sort();
         var sel = document.getElementById('commonSemSel');
 
-        if (sems.length === 0) {
+        // Build the filter from EVERY academic session in the system (ordered chronologically),
+        // so the admin can switch sessions even when this student only has data in one of them.
+        var sessions = (allSessions && allSessions.length) ? allSessions.slice() : Object.keys(semData);
+        sessions.sort(function (a, b) { return sessionRank(a) - sessionRank(b); });
+
+        if (sessions.length === 0) {
             sel.innerHTML = '<option>No data</option>';
             document.getElementById('semesterDisplay').textContent = '—';
             document.getElementById('eCourseList').innerHTML = '<div class="no-data">No enrollment data found for this student.</div>';
@@ -259,27 +264,58 @@
             return;
         }
 
-        sems.forEach(function (s) {
+        sel.innerHTML = '';
+        sessions.forEach(function (s) {
             var opt = document.createElement('option');
-            opt.value = s; opt.textContent = s; // Outputs "JAN2026"
+            opt.value = s; opt.textContent = s; // e.g. "APR2026"
             sel.appendChild(opt);
         });
 
-        // Set default to the latest session found
-        var defaultSem = sems[sems.length - 1];
+        // Land on the student's most recent session that actually has data; otherwise
+        // fall back to the global current session, then the newest session in the list.
+        var withData = Object.keys(semData);
+        withData.sort(function (a, b) { return sessionRank(a) - sessionRank(b); });
+        var defaultSem = withData.length ? withData[withData.length - 1]
+                        : (currentSession && sessions.indexOf(currentSession) !== -1 ? currentSession
+                        : sessions[sessions.length - 1]);
         sel.value = defaultSem;
         unifiedChangeSem(defaultSem);
     })();
 
+    // Ranks a session string chronologically (year, then JAN < APR < AUG).
+    function sessionRank(s) {
+        if (!s || s.length < 7) return 0;
+        var order = { JAN: 0, APR: 1, AUG: 2 };
+        var m = order[s.substring(0, 3).toUpperCase()];
+        var y = parseInt(s.substring(3), 10);
+        return (isNaN(y) ? 0 : y) * 3 + (m === undefined ? 0 : m);
+    }
+
     // ── Session change ──────────────────────────────────────────────
     function unifiedChangeSem(val) {
-        var sem = val; // CHANGED: Removed parseInt() to keep it as a string
-        var d = semData[sem];
-        if (!d) return;
+        var sem = val; // keep as a string, e.g. "APR2026"
 
         document.getElementById('semesterDisplay').textContent = sem;
         document.getElementById('eSecTitle').textContent = sem;
         document.getElementById('gSecTitle').textContent = sem;
+
+        var d = semData[sem];
+        if (!d) {
+            // This student has no enrolment data for the chosen session — show a clean empty state.
+            document.getElementById('eCountBadge').textContent = '0 Courses';
+            document.getElementById('gCountBadge').textContent = '0 Courses';
+            document.getElementById('eTotalCredits').textContent = '—';
+            document.getElementById('eAttRate').textContent = '—';
+            document.getElementById('gSemGpaBox').textContent = '0.00';
+            var na = document.getElementById('statusIndicator');
+            na.className = 'status-pill stat-na';
+            na.textContent = 'UNAVAILABLE';
+            document.getElementById('eCourseList').innerHTML = '<div class="no-data">No enrolled courses for this session.</div>';
+            document.getElementById('gCourseList').innerHTML = '<div class="no-data">No grade data for this session.</div>';
+            document.getElementById('eChart').innerHTML = '';
+            document.getElementById('gChart').innerHTML = '';
+            return;
+        }
 
         var count = d.courses.length;
         document.getElementById('eCountBadge').textContent = count + ' Courses';
