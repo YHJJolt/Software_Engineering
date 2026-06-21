@@ -11,6 +11,8 @@ namespace SchoolSystem
         protected string StudentJsonData = "{}";
         protected string StudentMetaJson = "{}";
         protected string AllStudentsJson = "[]";
+        protected string AllSessionsJson = "[]";
+        protected string CurrentSession = "";
         protected int SelectedStudentId = 1;
 
         protected void Page_Load(object sender, EventArgs e)
@@ -26,6 +28,70 @@ namespace SchoolSystem
             AllStudentsJson = GetAllStudents();
             StudentMetaJson = GetStudentMeta(SelectedStudentId);
             StudentJsonData = GetSemesterData(SelectedStudentId);
+            CurrentSession = GetCurrentSession();
+            AllSessionsJson = GetAllSessions(CurrentSession);
+        }
+
+        // Returns the global active session (e.g. "APR2026") stored in SystemSettings.
+        private string GetCurrentSession()
+        {
+            using (var conn = new SqlConnection(GetConnectionString()))
+            using (var cmd = new SqlCommand(
+                "SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'", conn))
+            {
+                conn.Open();
+                return cmd.ExecuteScalar()?.ToString() ?? "";
+            }
+        }
+
+        // Returns every academic session that exists in the system, ordered chronologically,
+        // so the Filter Session dropdown lists all sessions and not just the ones the
+        // currently viewed student happens to be enrolled in.
+        private string GetAllSessions(string currentSession)
+        {
+            var sessions = new List<string>();
+
+            using (var conn = new SqlConnection(GetConnectionString()))
+            using (var cmd = new SqlCommand(
+                @"SELECT DISTINCT academic_session
+                  FROM   [Enrollment]
+                  WHERE  academic_session IS NOT NULL AND academic_session <> ''", conn))
+            {
+                conn.Open();
+                using (var r = cmd.ExecuteReader())
+                    while (r.Read())
+                        sessions.Add(r["academic_session"].ToString());
+            }
+
+            // Make sure the active session is always selectable, even before anyone enrols in it.
+            if (!string.IsNullOrEmpty(currentSession) && !sessions.Contains(currentSession))
+                sessions.Add(currentSession);
+
+            sessions.Sort(CompareSessions);
+
+            var items = new List<string>();
+            foreach (var s in sessions) items.Add("\"" + Escape(s) + "\"");
+            return "[" + string.Join(",", items) + "]";
+        }
+
+        // Chronological comparison for session strings: by year, then JAN < APR < AUG.
+        private static readonly string[] SessionMonths = { "JAN", "APR", "AUG" };
+        private int CompareSessions(string a, string b)
+        {
+            int ya = SessionYear(a), yb = SessionYear(b);
+            if (ya != yb) return ya.CompareTo(yb);
+            return SessionMonthIndex(a).CompareTo(SessionMonthIndex(b));
+        }
+        private int SessionYear(string s)
+        {
+            int y;
+            return (s != null && s.Length >= 7 && int.TryParse(s.Substring(3), out y)) ? y : 0;
+        }
+        private int SessionMonthIndex(string s)
+        {
+            if (s == null || s.Length < 3) return 0;
+            int idx = Array.IndexOf(SessionMonths, s.Substring(0, 3).ToUpper());
+            return idx < 0 ? 0 : idx;
         }
 
         private string GetAllStudents()

@@ -45,7 +45,8 @@ namespace SchoolSystem
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 // Excludes graduated alumni so the chart total matches the Students stat card
-                string sql = "SELECT p.program_name, COUNT(s.student_id) as Total FROM [Program] p LEFT JOIN [Student] s ON p.program_id = s.Program_id AND s.student_isactive <> 'Graduated' GROUP BY p.program_name";
+                string sql = "SELECT p.program_name, COUNT(s.student_id) as Total FROM [Program] p LEFT JOIN [Student] s " +
+                    "ON p.program_id = s.Program_id AND s.student_isactive <> 'Graduated' GROUP BY p.program_name";
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 conn.Open();
                 SqlDataReader rdr = cmd.ExecuteReader();

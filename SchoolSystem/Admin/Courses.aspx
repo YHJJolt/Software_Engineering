@@ -15,12 +15,6 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="course-mgmt-page">
-    <div class="header">
-        <div class="header-button-grp">
-            <a runat="server" href="~/Admin/CreateCourses.aspx" class="btn btn-primary">+ New Course</a>
-        </div>
-    </div>
-
     <asp:UpdatePanel ID="upGridView" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
             <div class="action-bar">
@@ -32,6 +26,9 @@
                     <asp:TextBox ID="txtSearch" runat="server" CssClass="search-box" placeholder="Search courses..."></asp:TextBox>
                     <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary" OnClick="BtnApplyPageSize_Click" />
                 </div>
+                    <div class="header-button-grp">
+                        <a runat="server" href="~/Admin/CreateCourses.aspx" class="btn btn-primary">+ New Course</a>
+                    </div>
             </div>
 
             <asp:HiddenField ID="hdnCourseId" runat="server" />
