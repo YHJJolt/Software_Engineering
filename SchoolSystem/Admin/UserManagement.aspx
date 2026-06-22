@@ -6,7 +6,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </asp:Content>
 
 <asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
@@ -105,7 +106,7 @@
                     
                     <%-- ADDED ADVANCE SEMESTER BUTTON --%>
                     <asp:LinkButton ID="btnAdvanceSession" runat="server" CssClass="btn btn-warning fw-bold text-dark" OnClick="btnAdvanceSession_Click"
-                        OnClientClick="return confirm('Are you sure you want to advance the academic session?\n\nAll active students will move to the next semester and the global session will roll forward (e.g. JAN→APR→AUG). Students who reach their program limit will be automatically graduated. This action cannot be undone.');">
+                        OnClientClick="return confirmAdvanceSession();">
                         <i class="fas fa-forward me-1"></i> Advance Session
                     </asp:LinkButton>
 
@@ -328,6 +329,25 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // @ts-nocheck
+        // SweetAlert confirmation for advancing the academic session (replaces the native browser confirm)
+        function confirmAdvanceSession() {
+            Swal.fire({
+                title: 'Advance Academic Session?',
+                html: 'All active students will move to the next semester and the global session will roll forward (e.g. JAN &rarr; APR &rarr; AUG).<br><br>Students who reach their program limit will be automatically graduated.<br><br><b>This action cannot be undone.</b>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, advance session',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#C5A059',
+                cancelButtonColor: '#6c757d'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    __doPostBack('<%= btnAdvanceSession.UniqueID %>', '');
+                }
+            });
+            return false; // cancel the immediate postback; it only fires after confirmation
+        }
+
         function showToast(msg, type) { var t = document.getElementById('umToast'); t.textContent = msg; t.className = 'um-toast ' + (type || 'success'); t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 3200); }
 
         function initProgDropdown() {
@@ -375,50 +395,50 @@
         function onLectNameInput() {
             var n = document.getElementById('<%=txtLectName.ClientID%>');
             var e = document.getElementById('<%=txtLectEmail.ClientID%>');
-    var id = document.getElementById('<%=hfNextLectId.ClientID%>').value || '1';
-    toTitleCase(n);
-    e.value = n.value ? buildEmail(n.value, id, 'lect.com') : '';
-}
+            var id = document.getElementById('<%=hfNextLectId.ClientID%>').value || '1';
+            toTitleCase(n);
+            e.value = n.value ? buildEmail(n.value, id, 'lect.com') : '';
+        }
 
-function togglePw(id, btn) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    var show = (el.type === 'text');
-    el.type = show ? 'password' : 'text';
-    btn.querySelector('i').className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
-}
+        function togglePw(id, btn) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var show = (el.type === 'text');
+            el.type = show ? 'password' : 'text';
+            btn.querySelector('i').className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
 
-function chk(fieldId, errId, testFn) {
-    var el = document.getElementById(fieldId);
-    var err = document.getElementById(errId);
-    var val = el ? el.value.trim() : '';
-    var fail = !testFn(val);
-    if (err) err.style.display = fail ? 'block' : 'none';
-    if (el) el.classList.toggle('is-invalid', fail);
-    return !fail;
-}
-function validateOptionalPhone(fieldId, errId) {
-    var el = document.getElementById(fieldId);
-    var err = document.getElementById(errId);
-    var val = el ? el.value.trim() : '';
-    if (!val) { if (err) err.style.display = 'none'; if (el) el.classList.remove('is-invalid'); return true; }
-    var fail = !/^01\d-\d{7,8}$/.test(val);
-    if (err) err.style.display = fail ? 'block' : 'none';
-    if (el) el.classList.toggle('is-invalid', fail);
-    return !fail;
-}
-function validateStudForm() {
-    var ok = true;
-    ok = chk('<%=txtStudName.ClientID%>', 'errStudName', function (v) { return v.length > 0; }) && ok;
-            ok = validateOptionalPhone('<%=txtStudContact.ClientID%>', 'errStudContact') && ok;
-            var semEl = document.getElementById('<%=txtStudSem.ClientID%>');
-            var semVal = semEl ? parseInt(semEl.value) : 0;
-            var semFail = isNaN(semVal) || semVal < 1 || semVal > 12;
-            var semErr = document.getElementById('errStudSem');
-            if (semErr) semErr.style.display = semFail ? 'block' : 'none';
-            if (semEl) semEl.classList.toggle('is-invalid', semFail);
-            if (semFail) ok = false;
-            var progEl = document.getElementById('<%=ddlProgramAdd.ClientID%>');
+        function chk(fieldId, errId, testFn) {
+            var el = document.getElementById(fieldId);
+            var err = document.getElementById(errId);
+            var val = el ? el.value.trim() : '';
+            var fail = !testFn(val);
+            if (err) err.style.display = fail ? 'block' : 'none';
+            if (el) el.classList.toggle('is-invalid', fail);
+            return !fail;
+        }
+        function validateOptionalPhone(fieldId, errId) {
+            var el = document.getElementById(fieldId);
+            var err = document.getElementById(errId);
+            var val = el ? el.value.trim() : '';
+            if (!val) { if (err) err.style.display = 'none'; if (el) el.classList.remove('is-invalid'); return true; }
+            var fail = !/^01\d-\d{7,8}$/.test(val);
+            if (err) err.style.display = fail ? 'block' : 'none';
+            if (el) el.classList.toggle('is-invalid', fail);
+            return !fail;
+        }
+        function validateStudForm() {
+            var ok = true;
+            ok = chk('<%=txtStudName.ClientID%>', 'errStudName', function (v) { return v.length > 0; }) && ok;
+    ok = validateOptionalPhone('<%=txtStudContact.ClientID%>', 'errStudContact') && ok;
+    var semEl = document.getElementById('<%=txtStudSem.ClientID%>');
+    var semVal = semEl ? parseInt(semEl.value) : 0;
+    var semFail = isNaN(semVal) || semVal < 1 || semVal > 12;
+    var semErr = document.getElementById('errStudSem');
+    if (semErr) semErr.style.display = semFail ? 'block' : 'none';
+    if (semEl) semEl.classList.toggle('is-invalid', semFail);
+    if (semFail) ok = false;
+    var progEl = document.getElementById('<%=ddlProgramAdd.ClientID%>');
             var progFail = !progEl || !progEl.value;
             var progErr = document.getElementById('errStudProg');
             if (progErr) progErr.style.display = progFail ? 'block' : 'none';
@@ -441,8 +461,8 @@ function validateStudForm() {
 
         function clearStudForm() {
             ['<%=txtStudName.ClientID%>','<%=txtStudContact.ClientID%>']
-            .forEach(function(id){var e=document.getElementById(id);if(e){e.value='';e.classList.remove('is-invalid');}});
-            var s=document.getElementById('<%=txtStudSem.ClientID%>');if(s){s.value='1';s.classList.remove('is-invalid');}
+                .forEach(function (id) { var e = document.getElementById(id); if (e) { e.value = ''; e.classList.remove('is-invalid'); } });
+            var s = document.getElementById('<%=txtStudSem.ClientID%>');if(s){s.value='1';s.classList.remove('is-invalid');}
             document.getElementById('<%=txtStudEmail.ClientID%>').value='';
             var p=document.getElementById('<%=ddlProgramAdd.ClientID%>');
             if(p){p.value='';p.style.color='#6c757d';p.classList.remove('is-invalid');}

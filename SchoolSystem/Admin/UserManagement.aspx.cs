@@ -164,13 +164,16 @@ namespace SchoolSystem
                     }
                 }
 
-                SetToast("✓ Session advanced and graduations processed successfully.", "success");
                 LoadStudents();
                 LoadAllStatistics();
+
+                System.Web.UI.ScriptManager.RegisterStartupScript(this, GetType(), "advSuccess",
+                    "Swal.fire({ title: 'Session Advanced', text: 'Session advanced and graduations processed successfully. All active students have moved to the next semester.', icon: 'success', confirmButtonColor: '#C5A059' });", true);
             }
             catch (Exception ex)
             {
-                SetToast("⚠ Error advancing session: " + ex.Message, "error");
+                System.Web.UI.ScriptManager.RegisterStartupScript(this, GetType(), "advError",
+                    "Swal.fire({ title: 'Error', text: 'Error advancing session: " + JsStr(ex.Message) + "', icon: 'error', confirmButtonColor: '#C5A059' });", true);
             }
         }
 
