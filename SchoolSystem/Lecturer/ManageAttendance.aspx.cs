@@ -65,34 +65,34 @@ namespace SchoolSystem
                 // Joins AttendanceRecord on the selected date so the dropdown shows what was
                 // already saved for that day (and can be changed and re-saved).
                 string sql = @"
-        WITH AttendanceData AS (
-            SELECT
-                e.Enrollment_id,
-                s.student_code,
-                s.student_name,
-                ISNULL(cg.total_hours, 0) AS total_hours,       -- FIX: Handle DBNull for new records
-                ISNULL(cg.attended_hours, 0) AS attended_hours, -- FIX: Handle DBNull for new records
-                ISNULL(ar.status, 'NotMarked') AS day_status,   -- Saved mark for the selected date
-                CASE
-                    WHEN ISNULL(cg.total_hours, 0) = 0 THEN 0.0
-                    ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(cg.total_hours AS FLOAT)) * 100
-                END as AttendancePercentage
-            FROM Enrollment e
-            JOIN Student s ON e.student_id = s.student_id
-            LEFT JOIN CourseGrade cg ON e.enrollment_id = cg.Enrollment_id
-            LEFT JOIN AttendanceRecord ar ON e.enrollment_id = ar.enrollment_id AND ar.attendance_date = @Date
-            WHERE e.course_id = @CourseID
-              AND e.status = 'Approved'
-              AND (@Session = '' OR e.academic_session = @Session)
-        )
-        SELECT * FROM AttendanceData
-        WHERE (
-               (@Filter = 'All')
-               OR (@Filter = 'High' AND AttendancePercentage >= 75.0)
-               OR (@Filter = 'Low' AND AttendancePercentage < 75.0)
-              )
-          AND (student_name LIKE '%' + @Search + '%' OR student_code LIKE '%' + @Search + '%')
-        ORDER BY student_name ASC";
+                    WITH AttendanceData AS (
+                        SELECT
+                            e.Enrollment_id,
+                            s.student_code,
+                            s.student_name,
+                            ISNULL(cg.total_hours, 0) AS total_hours,       
+                            ISNULL(cg.attended_hours, 0) AS attended_hours, 
+                            ISNULL(ar.status, 'NotMarked') AS day_status,   
+                            CASE
+                                WHEN ISNULL(cg.total_hours, 0) = 0 THEN 0.0
+                                ELSE (CAST(ISNULL(cg.attended_hours, 0) AS FLOAT) / CAST(cg.total_hours AS FLOAT)) * 100
+                            END as AttendancePercentage
+                        FROM Enrollment e
+                        JOIN Student s ON e.student_id = s.student_id
+                        LEFT JOIN CourseGrade cg ON e.enrollment_id = cg.Enrollment_id
+                        LEFT JOIN AttendanceRecord ar ON e.enrollment_id = ar.enrollment_id AND ar.attendance_date = @Date
+                        WHERE e.course_id = @CourseID
+                          AND e.status = 'Approved'
+                          AND (@Session = '' OR e.academic_session = @Session)
+                    )
+                    SELECT * FROM AttendanceData
+                    WHERE (
+                           (@Filter = 'All')
+                           OR (@Filter = 'High' AND AttendancePercentage >= 75.0)
+                           OR (@Filter = 'Low' AND AttendancePercentage < 75.0)
+                          )
+                      AND (student_name LIKE '%' + @Search + '%' OR student_code LIKE '%' + @Search + '%')
+                    ORDER BY student_name ASC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);

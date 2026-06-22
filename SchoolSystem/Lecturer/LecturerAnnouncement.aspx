@@ -151,7 +151,7 @@
         }
 
         function saveAnnouncement() {
-            const editId = parseInt($("#editId").val()) || 0; // ✅ capture BEFORE modal closes
+            const editId = parseInt($("#editId").val()) || 0; 
             const payload = {
                 id: editId,
                 title: $("#txtTitle").val(),

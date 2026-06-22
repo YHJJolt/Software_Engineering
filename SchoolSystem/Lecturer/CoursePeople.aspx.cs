@@ -34,19 +34,19 @@ namespace SchoolSystem
             {
                 conn.Open();
                 SqlCommand cmd = new SqlCommand(@"
-            SELECT
-                s.student_code,
-                s.student_name,
-                s.student_email,
-                s.student_sem,
-                p.program_name
-            FROM [Enrollment] e
-            JOIN [Student] s      ON e.student_id  = s.student_id
-            LEFT JOIN [Program] p ON s.Program_id  = p.program_id
-            WHERE e.course_id = @id
-              AND e.status = 'Approved'
-              AND (@Session = '' OR e.academic_session = @Session)
-            ORDER BY s.student_name", conn);
+                    SELECT
+                        s.student_code,
+                        s.student_name,
+                        s.student_email,
+                        s.student_sem,
+                        p.program_name
+                    FROM [Enrollment] e
+                    JOIN [Student] s      ON e.student_id  = s.student_id
+                    LEFT JOIN [Program] p ON s.Program_id  = p.program_id
+                    WHERE e.course_id = @id
+                      AND e.status = 'Approved'
+                      AND (@Session = '' OR e.academic_session = @Session)
+                    ORDER BY s.student_name", conn);
                 cmd.Parameters.AddWithValue("@id", courseId);
                 cmd.Parameters.AddWithValue("@Session", academicSession);
 

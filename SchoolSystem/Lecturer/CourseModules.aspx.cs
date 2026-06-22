@@ -10,7 +10,7 @@ namespace SchoolSystem
 {
     public partial class CourseModules : System.Web.UI.Page
     {
-        string connStr = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=SchoolSystemDB;Integrated Security=True";
+        string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
         int currentCourseId = 2; // Default fallback
 
         protected void Page_Load(object sender, EventArgs e)

@@ -53,10 +53,10 @@ namespace SchoolSystem
 
                 // 1. Courses Enrolled count (Filters by Approved only, removes semester check)
                 string sqlCourses = @"
-            SELECT COUNT(*) 
-            FROM Enrollment e
-            WHERE e.student_id = @StudentId 
-              AND e.status = 'Approved'";
+                    SELECT COUNT(*) 
+                    FROM Enrollment e
+                    WHERE e.student_id = @StudentId 
+                      AND e.status = 'Approved'";
                 using (SqlCommand cmd = new SqlCommand(sqlCourses, conn))
                 {
                     cmd.Parameters.AddWithValue("@StudentId", studentId);

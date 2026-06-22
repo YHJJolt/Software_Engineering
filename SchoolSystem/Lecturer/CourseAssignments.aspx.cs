@@ -128,7 +128,10 @@ namespace SchoolSystem
 
             using (SqlConnection con = new SqlConnection(connStr))
             {
-                string query = "INSERT INTO CourseAssignment (course_id, title, description, assignment_type, due_date, max_marks, attachment_path, academic_session) VALUES (@cid, @title, @desc, @type, @date, @max, @path, @session)";
+                string query = "" +
+                    "INSERT INTO CourseAssignment (course_id, title, description, assignment_type, " +
+                    "due_date, max_marks, attachment_path, academic_session) " +
+                    "VALUES (@cid, @title, @desc, @type, @date, @max, @path, @session)";
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@cid", currentCourseId);

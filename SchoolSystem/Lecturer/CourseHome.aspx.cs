@@ -77,11 +77,11 @@ namespace SchoolSystem
 
                 // 1. Total enrolled (session-scoped)
                 var c1 = new SqlCommand(@"
-            SELECT COUNT(*)
-            FROM [Enrollment] e
-            WHERE e.course_id = @id
-              AND e.status = 'Approved'
-              AND (@Session = '' OR e.academic_session = @Session)", conn);
+                    SELECT COUNT(*)
+                    FROM [Enrollment] e
+                    WHERE e.course_id = @id
+                      AND e.status = 'Approved'
+                      AND (@Session = '' OR e.academic_session = @Session)", conn);
                 c1.Parameters.AddWithValue("@id", courseId);
                 c1.Parameters.AddWithValue("@Session", academicSession);
                 litEnrolled.Text = c1.ExecuteScalar().ToString();

@@ -82,13 +82,12 @@ namespace SchoolSystem
             {
                 int lecturerId = GetLecturerId();
                 string connString = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
-
                 using (SqlConnection conn = new SqlConnection(connString))
                 using (SqlCommand cmd = new SqlCommand(@"
-            SELECT calendar_id, event_title, event_desc, start_date, end_date, 
-                   event_type, visibility, lecturer_id
-            FROM LecturerCalendar
-            WHERE lecturer_id = @lecturerId", conn))   // Only own events for lecturer
+                    SELECT calendar_id, event_title, event_desc, start_date, end_date, 
+                           event_type, visibility, lecturer_id
+                    FROM LecturerCalendar
+                    WHERE lecturer_id = @lecturerId", conn))  
                 {
                     cmd.Parameters.AddWithValue("@lecturerId", lecturerId);
                     conn.Open();

@@ -149,7 +149,8 @@ namespace SchoolSystem
 
                     // Mark all Active course assignments from the outgoing session as Inactive
                     using (SqlCommand cmd = new SqlCommand(
-                        "UPDATE CourseAssignment_Session SET assign_status = 'Inactive' WHERE academic_session = @OldSession AND assign_status = 'Active'", conn))
+                        "UPDATE CourseAssignment_Session SET assign_status = 'Inactive' " +
+                        "WHERE academic_session = @OldSession AND assign_status = 'Active'", conn))
                     {
                         cmd.Parameters.AddWithValue("@OldSession", current);
                         cmd.ExecuteNonQuery();
