@@ -51,6 +51,7 @@
         </div>
     </form>
     <script>
+        // @ts-nocheck
         function togglePw(icon) {
             var input = icon.previousElementSibling;
             if (!input) return;
