@@ -3,6 +3,7 @@
 <asp:Content ID="Styling" ContentPlaceHolderID="head" runat="server">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </asp:Content>
 
 <asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
