@@ -204,7 +204,7 @@ CREATE TABLE [Course] (
   [credit_hours] INT NULL,
   [course_fee] NVARCHAR(45) NOT NULL, 
   [course_img] VARBINARY(MAX) NULL,
-  [Calendar_id] INT NOT NULL,
+  [Calendar_id] INT NULL,
   CONSTRAINT [fk_Course_Calendar] FOREIGN KEY ([Calendar_id]) REFERENCES [Calendar] ([calendar_id])
 );
 GO
@@ -766,3 +766,4 @@ SELECT * FROM [Enrollment];
 SELECT * FROM [CourseGrade];
 SELECT * FROM [Grades];
 SELECT * FROM [CourseAssignment_Session];
+

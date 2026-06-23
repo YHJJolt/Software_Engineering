@@ -63,13 +63,18 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-    // @ts-nocheck
-    let rawData = [];
-    let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>
+// @ts-nocheck
+let rawData = [];
+let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>
+    let currentSession = '<%= Uri.EscapeDataString(Request.QueryString["session"] ?? "") %>';
 
         $(document).ready(function () {
             if (currentCourseId == 0) {
                 alert("Course ID is missing in URL. Please access via course dashboard.");
+                return;
+            }
+            if (!decodeURIComponent(currentSession)) {
+                alert("Academic session is missing in URL. Please access via course dashboard.");
                 return;
             }
             loadAnnouncements();
@@ -86,7 +91,7 @@
                 url: 'LecturerAnnouncement.aspx/GetAnnouncements',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
-                data: JSON.stringify({ courseId: currentCourseId }),
+                data: JSON.stringify({ courseId: currentCourseId, session: decodeURIComponent(currentSession) }),
                 success: function (res) {
                     rawData = res.d;
                     filterData();
@@ -157,7 +162,8 @@
                 title: $("#txtTitle").val(),
                 content: $("#txtContent").val(),
                 category: $("#selectedCategory").val(),
-                courseId: currentCourseId
+                courseId: currentCourseId,
+                session: decodeURIComponent(currentSession)
             };
 
             if (!payload.title || !payload.content) {
@@ -225,7 +231,7 @@
                         url: 'LecturerAnnouncement.aspx/DeleteAnnouncement',
                         type: 'POST',
                         contentType: 'application/json; charset=utf-8',
-                        data: JSON.stringify({ id: id, courseId: currentCourseId }),
+                        data: JSON.stringify({ id: id, courseId: currentCourseId, session: decodeURIComponent(currentSession) }),
                         success: function () {
                             Swal.fire({
                                 icon: 'success',

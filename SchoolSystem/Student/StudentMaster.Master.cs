@@ -151,13 +151,16 @@ namespace SchoolSystem
                     DECLARE @StudentId INT;
                     SELECT @StudentId = student_id FROM Student WHERE student_email = @Email;
 
-                    MERGE INTO StudentNotifRead AS target
-                    USING (SELECT @StudentId AS student_id) AS source
-                        ON target.student_id = source.student_id
-                    WHEN MATCHED THEN
-                        UPDATE SET last_read_at = DATEADD(MINUTE, 1, GETDATE())
-                    WHEN NOT MATCHED THEN
-                        INSERT (student_id, last_read_at) VALUES (@StudentId, DATEADD(MINUTE, 1, GETDATE()));";
+                    IF @StudentId IS NOT NULL
+                    BEGIN
+                        MERGE INTO StudentNotifRead AS target
+                        USING (SELECT @StudentId AS student_id) AS source
+                            ON target.student_id = source.student_id
+                        WHEN MATCHED THEN
+                            UPDATE SET last_read_at = DATEADD(MINUTE, 1, GETDATE())
+                        WHEN NOT MATCHED THEN
+                            INSERT (student_id, last_read_at) VALUES (@StudentId, DATEADD(MINUTE, 1, GETDATE()));
+                    END;";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@Email", Session["UserEmail"].ToString());

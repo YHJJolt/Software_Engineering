@@ -93,10 +93,45 @@ namespace SchoolSystem
                 {
                     conn.Open();
 
-                    // 2. FIXED: Removed Program_id from the INSERT. 
-                    // Added SELECT SCOPE_IDENTITY() directly to the string so we don't lose the ID.
-                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Calendar_id, course_img) 
-                                   VALUES (@Code, @Name, @Credits, @Fee, 1, @Image);
+                    // Ensure a Calendar row exists to satisfy the NOT NULL FK.
+                    // If none exists, silently create a hidden placeholder event.
+                    int calendarId;
+                    using (SqlCommand calCmd = new SqlCommand("SELECT TOP 1 calendar_id FROM Calendar ORDER BY calendar_id ASC", conn))
+                    {
+                        object existing = calCmd.ExecuteScalar();
+                        if (existing != null)
+                        {
+                            calendarId = Convert.ToInt32(existing);
+                        }
+                        else
+                        {
+                            int adminId;
+                            using (SqlCommand adminCmd = new SqlCommand("SELECT TOP 1 admin_id FROM [Admin (HoP)] ORDER BY admin_id ASC", conn))
+                            {
+                                object adminResult = adminCmd.ExecuteScalar();
+                                if (adminResult == null)
+                                { ShowError("No admin account found to associate with the course calendar."); return; }
+                                adminId = Convert.ToInt32(adminResult);
+                            }
+
+                            using (SqlCommand insertCal = new SqlCommand(
+                                @"INSERT INTO Calendar (event_title, event_desc, start_date, end_date, event_type, Admin_id)
+                                  VALUES (@Title, @Desc, @Start, @End, @Type, @AdminId);
+                                  SELECT CAST(SCOPE_IDENTITY() AS INT);", conn))
+                            {
+                                insertCal.Parameters.AddWithValue("@Title", "System Placeholder");
+                                insertCal.Parameters.AddWithValue("@Desc", "Auto-generated placeholder for course association.");
+                                insertCal.Parameters.AddWithValue("@Start", DateTime.Now);
+                                insertCal.Parameters.AddWithValue("@End", DateTime.Now);
+                                insertCal.Parameters.AddWithValue("@Type", "System");
+                                insertCal.Parameters.AddWithValue("@AdminId", adminId);
+                                calendarId = (int)insertCal.ExecuteScalar();
+                            }
+                        }
+                    }
+
+                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Calendar_id, course_img)
+                                   VALUES (@Code, @Name, @Credits, @Fee, @CalendarId, @Image);
                                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
                     int newCourseId;
@@ -106,9 +141,9 @@ namespace SchoolSystem
                         cmd.Parameters.AddWithValue("@Code", txtCode.Text.Trim());
                         cmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
 
-                   
                         cmd.Parameters.AddWithValue("@Credits", credits);
                         cmd.Parameters.AddWithValue("@Fee", fee);
+                        cmd.Parameters.AddWithValue("@CalendarId", calendarId);
 
                         // 3. Handle the Image Parameter
                         if (imageBytes != null)

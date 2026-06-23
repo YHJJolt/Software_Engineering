@@ -14,16 +14,27 @@ namespace SchoolSystem
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Required to allow file uploads on the page
-            if (Page.Form != null)
+            try
             {
-                Page.Form.Enctype = "multipart/form-data";
-            }
+                // Required to allow file uploads on the page
+                if (Page.Form != null)
+                {
+                    Page.Form.Enctype = "multipart/form-data";
+                }
 
-            if (!IsPostBack)
+                if (!IsPostBack)
+                {
+                    PopulateProgramFilter();
+                    LoadAllCourses();
+                }
+            }
+            
+            catch (Exception ex)
             {
-                PopulateProgramFilter();
-                LoadAllCourses();
+                // Show detailed error
+                string error = HttpUtility.JavaScriptStringEncode(ex.Message + "\n" + ex.StackTrace);
+                ScriptManager.RegisterStartupScript(this, GetType(), "error",
+                    $"Swal.fire('Error', '{error}', 'error');", true);
             }
         }
 

@@ -45,17 +45,26 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label>Program</label>
+                    <label>Program <span class="text-danger">*</span></label>
                     <asp:DropDownList ID="ddlProgram" runat="server" CssClass="form-control">
                         <asp:ListItem Text="-- Select Program --" Value="0"></asp:ListItem>
                     </asp:DropDownList>
-                    <asp:RequiredFieldValidator ID="rfvProgram" runat="server" ControlToValidate="ddlProgram" InitialValue="0" ErrorMessage="Please select a program" ForeColor="Red" Display="Dynamic" />
+                    <asp:RequiredFieldValidator ID="rfvProgram" runat="server" 
+                        ControlToValidate="ddlProgram" 
+                        InitialValue="0" 
+                        ErrorMessage="Please select a program" 
+                        ForeColor="Red" 
+                        Display="Dynamic" 
+                        ValidationGroup="CreateCourse" />
                 </div>
             </div>
 
             <div class="form-footer">
                 <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="BtnCancel_Click" CausesValidation="false" />
-                <asp:Button ID="btnSubmit" runat="server" Text="Add Course" CssClass="btn btn-primary" OnClick="BtnSubmit_Click" />
+                <asp:Button ID="btnSubmit" runat="server" Text="Add Course" 
+                    CssClass="btn btn-primary" 
+                    OnClick="BtnSubmit_Click" 
+                    ValidationGroup="CreateCourse" />
             </div>
 
         </div>

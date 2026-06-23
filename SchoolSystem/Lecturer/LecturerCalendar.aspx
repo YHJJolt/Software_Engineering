@@ -95,70 +95,78 @@
 <!-- Libraries -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+<!-- Ensure SweetAlert popups always render in front of the event modal -->
+<style>
+    .swal2-container {
+        z-index: 100000 !important;
+    }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
 <script>
-    // @ts-nocheck
-    // ====================== CONFIG ======================
-    var calendar;
-    const typeColorMap = {
-        "General": "#6366f1", "Exam": "#f87171", "Assignment": "#4ade80",
-        "Enrolment": "#c084fc", "Meeting": "#60a5fa"
-    };
+// @ts-nocheck
+// ====================== CONFIG ======================
+var calendar;
+const typeColorMap = {
+    "General": "#6366f1", "Exam": "#f87171", "Assignment": "#4ade80",
+    "Enrolment": "#c084fc", "Meeting": "#60a5fa"
+};
 
-    // ====================== MODAL ======================
-    function openModal() {
-        document.getElementById("eventModal").style.display = "block";
-    }
-    function closeModal() {
-        document.getElementById("eventModal").style.display = "none";
-    }
-    function closeSidebar() {
-        $("#dateSidebar").fadeOut(300);
-    }
+// ====================== MODAL ======================
+function openModal() {
+    document.getElementById("eventModal").style.display = "block";
+}
+function closeModal() {
+    document.getElementById("eventModal").style.display = "none";
+}
+function closeSidebar() {
+    $("#dateSidebar").fadeOut(300);
+}
 
-    function prepareAddModal() {
-        $("#modalHeaderTitle").text("Add Event");
-        $("#saveEvent").show();
-        $("#updateEventBtn").hide();
+function prepareAddModal() {
+    $("#modalHeaderTitle").text("Add Event");
+    $("#saveEvent").show();
+    $("#updateEventBtn").hide();
 
-        $("#editEventId, #title, #desc, #startDate, #endDate").val("");
-        $("#typePicker .type-tag").removeClass("active").first().addClass("active");
-        $("#eventType").val("General");
+    $("#editEventId, #title, #desc, #startDate, #endDate").val("");
+    $("#typePicker .type-tag").removeClass("active").first().addClass("active");
+    $("#eventType").val("General");
 
-        openModal();
-    }
+    openModal();
+}
 
-    // ====================== SIDEBAR ======================
-    function showSidebar(dateStr) {
-        const sidebar = $("#dateSidebar");
-        const listContainer = $("#sidebarEventsList");
-        const title = $("#selectedDateTitle");
+// ====================== SIDEBAR ======================
+function showSidebar(dateStr) {
+    const sidebar = $("#dateSidebar");
+    const listContainer = $("#sidebarEventsList");
+    const title = $("#selectedDateTitle");
 
-        const dateObj = new Date(dateStr);
-        title.text(dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+    const dateObj = new Date(dateStr);
+    title.text(dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
 
-        const dayEvents = calendar.getEvents().filter(e => e.startStr.split('T')[0] === dateStr);
-        listContainer.empty();
-        sidebar.fadeIn(300);
+    const dayEvents = calendar.getEvents().filter(e => e.startStr.split('T')[0] === dateStr);
+    listContainer.empty();
+    sidebar.fadeIn(300);
 
-        if (dayEvents.length === 0) {
-            listContainer.append('<p style="color: #999; margin-top:15px; font-size:13px;">No events for this day.</p>');
-        } else {
-            const colorStyles = {
-                "General": { bg: "#e0e7ff", text: "#6366f1" },
-                "Exam": { bg: "#fee2e2", text: "#f87171" },
-                "Assignment": { bg: "#dcfce7", text: "#4ade80" },
-                "Enrolment": { bg: "#f3e8ff", text: "#c084fc" },
-                "Meeting": { bg: "#dbeafe", text: "#60a5fa" }
-            };
+    if (dayEvents.length === 0) {
+        listContainer.append('<p style="color: #999; margin-top:15px; font-size:13px;">No events for this day.</p>');
+    } else {
+        const colorStyles = {
+            "General": { bg: "#e0e7ff", text: "#6366f1" },
+            "Exam": { bg: "#fee2e2", text: "#f87171" },
+            "Assignment": { bg: "#dcfce7", text: "#4ade80" },
+            "Enrolment": { bg: "#f3e8ff", text: "#c084fc" },
+            "Meeting": { bg: "#dbeafe", text: "#60a5fa" }
+        };
 
-            dayEvents.forEach(event => {
-                const type = event.extendedProps.type || "General";
-                const style = colorStyles[type] || colorStyles["General"];
-                listContainer.append(`
+        dayEvents.forEach(event => {
+            const type = event.extendedProps.type || "General";
+            const style = colorStyles[type] || colorStyles["General"];
+            listContainer.append(`
                 <div style="background: ${style.bg}; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.05);">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <span style="font-weight: 700; color: ${style.text}; font-size: 14px;">${event.title}</span>
@@ -169,298 +177,298 @@
                     </div>
                 </div>
             `);
-            });
-        }
+        });
     }
+}
 
-    // ====================== DOCUMENT READY ======================
-    $(document).ready(function () {
-        $("#dateSidebar").hide();
+// ====================== DOCUMENT READY ======================
+$(document).ready(function () {
+    $("#dateSidebar").hide();
 
-        $(".type-tag").click(function () {
-            if ($(this).closest("#typePicker").length) {
-                $("#typePicker .type-tag").removeClass("active");
-                $(this).addClass("active");
-                $("#eventType").val($(this).data("type"));
-            }
-        });
-
-        $("#saveEvent").click(() => saveEvent());
-
-        var calendarEl = document.getElementById('MainContent_calendar') || document.querySelector('[id$="calendar"]');
-
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 'auto',
-            aspectRatio: 1.5,           // Better aspect ratio
-            dayMaxEvents: 4,
-            eventDisplay: 'block',
-
-            dateClick: function (info) {
-                showSidebar(info.dateStr);
-            },
-
-            events: function (fetchInfo, successCallback) {
-                $.when(
-                    $.ajax({ url: 'LecturerCalendar.aspx/GetEvents', type: 'POST', contentType: 'application/json', data: '{}' }),
-                    $.ajax({ url: 'LecturerCalendar.aspx/GetAdminEvents', type: 'POST', contentType: 'application/json', data: '{}' })
-                ).done(function (lRes, aRes) {
-                    const lecturerEvents = lRes[0].d || [];
-                    const adminEvents = Array.isArray(aRes[0].d) ? aRes[0].d : [];
-
-                    const allEvents = lecturerEvents.concat(adminEvents).map(event => {
-                        let formattedEnd = event.end;
-                        if (event.end && event.end !== event.start) {
-                            let endDate = new Date(event.end);
-                            endDate.setDate(endDate.getDate() + 1);
-                            formattedEnd = endDate.toISOString().split('T')[0];
-                        }
-                        return {
-                            ...event,
-                            end: formattedEnd,
-                            color: typeColorMap[event.type] || "#7B61FF",
-                            textColor: "#ffffff",
-                            editable: event.isOwner === true
-                        };
-                    });
-
-                    successCallback(allEvents);
-                    renderEventCards(allEvents);
-                });
-            }
-        });
-
-        calendar.render();
+    $(".type-tag").click(function () {
+        if ($(this).closest("#typePicker").length) {
+            $("#typePicker .type-tag").removeClass("active");
+            $(this).addClass("active");
+            $("#eventType").val($(this).data("type"));
+        }
     });
 
-    // ====================== CRUD ======================
-    function saveEvent() {
-        const titleVal = $("#title").val().trim();
-        const startDate = $("#startDate").val();
+    $("#saveEvent").click(() => saveEvent());
 
-        if (!titleVal) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Title Required',
-                text: 'Please enter a title for your event.',
-                confirmButtonColor: '#7B61FF'
+    var calendarEl = document.getElementById('MainContent_calendar') || document.querySelector('[id$="calendar"]');
+
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 'auto',
+        aspectRatio: 1.5,           // Better aspect ratio
+        dayMaxEvents: 4,
+        eventDisplay: 'block',
+
+        dateClick: function (info) {
+            showSidebar(info.dateStr);
+        },
+
+        events: function (fetchInfo, successCallback) {
+            $.when(
+                $.ajax({ url: 'LecturerCalendar.aspx/GetEvents', type: 'POST', contentType: 'application/json', data: '{}' }),
+                $.ajax({ url: 'LecturerCalendar.aspx/GetAdminEvents', type: 'POST', contentType: 'application/json', data: '{}' })
+            ).done(function (lRes, aRes) {
+                const lecturerEvents = lRes[0].d || [];
+                const adminEvents = Array.isArray(aRes[0].d) ? aRes[0].d : [];
+
+                const allEvents = lecturerEvents.concat(adminEvents).map(event => {
+                    let formattedEnd = event.end;
+                    if (event.end && event.end !== event.start) {
+                        let endDate = new Date(event.end);
+                        endDate.setDate(endDate.getDate() + 1);
+                        formattedEnd = endDate.toISOString().split('T')[0];
+                    }
+                    return {
+                        ...event,
+                        end: formattedEnd,
+                        color: typeColorMap[event.type] || "#7B61FF",
+                        textColor: "#ffffff",
+                        editable: event.isOwner === true
+                    };
+                });
+
+                successCallback(allEvents);
+                renderEventCards(allEvents);
             });
-            return;
         }
+    });
 
-        if (!startDate) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Missing Date',
-                text: 'Please select a start date for your event.',
-                confirmButtonColor: '#7B61FF'
-            });
-            return;
-        }
+    calendar.render();
+});
 
-        $.ajax({
-            url: 'LecturerCalendar.aspx/AddEvent',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                title: titleVal,
-                desc: $("#desc").val(),
-                start: startDate,
-                end: $("#endDate").val(),
-                type: $("#eventType").val(),
-                visibility: "Private"
-            }),
-            success: function (res) {
-                if (res.d.status === "success") {
-                    closeModal();
-                    calendar.refetchEvents();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Event Created!',
-                        text: 'Your new event has been added to the calendar.',
-                        confirmButtonColor: '#7B61FF',
-                        timer: 2500,
-                        timerProgressBar: true,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Failed to Create Event',
-                        text: res.d.message || 'Something went wrong. Please try again.',
-                        confirmButtonColor: '#7B61FF'
-                    });
-                }
-            },
-            error: function () {
+// ====================== CRUD ======================
+function saveEvent() {
+    const titleVal = $("#title").val().trim();
+    const startDate = $("#startDate").val();
+
+    if (!titleVal) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Title Required',
+            text: 'Please enter a title for your event.',
+            confirmButtonColor: '#7B61FF'
+        });
+        return;
+    }
+
+    if (!startDate) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Date',
+            text: 'Please select a start date for your event.',
+            confirmButtonColor: '#7B61FF'
+        });
+        return;
+    }
+
+    $.ajax({
+        url: 'LecturerCalendar.aspx/AddEvent',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            title: titleVal,
+            desc: $("#desc").val(),
+            start: startDate,
+            end: $("#endDate").val(),
+            type: $("#eventType").val(),
+            visibility: "Private"
+        }),
+        success: function (res) {
+            if (res.d.status === "success") {
+                closeModal();
+                calendar.refetchEvents();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Event Created!',
+                    text: 'Your new event has been added to the calendar.',
+                    confirmButtonColor: '#7B61FF',
+                    timer: 2500,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+            } else {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Network Error',
-                    text: 'Unable to connect to the server. Please try again.',
+                    title: 'Failed to Create Event',
+                    text: res.d.message || 'Something went wrong. Please try again.',
                     confirmButtonColor: '#7B61FF'
                 });
             }
-        });
-    }
-
-    function renderEventCards(events) {
-        var upcomingContainer = $("#upcomingEventsContainer");
-        var pastContainer = $("#pastEventsContainer");
-        upcomingContainer.empty();
-        pastContainer.empty();
-        events.sort(function (a, b) { return new Date(a.start) - new Date(b.start); });
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        events.forEach(function (event) {
-            var eventDate = new Date(event.start);
-            var dateRange = event.start;
-            if (event.end && event.end !== event.start) dateRange += ' \u2014 ' + event.end;
-            var accentColor = typeColorMap[event.type] || "#7B61FF";
-            var isOwner = event.isOwner === true;
-            var actionBtns = isOwner
-                ? '<div class="card-actions">' +
-                '<button type="button" class="action-btn btn-edit" onclick="openEditModal(\'' + event.id + '\')"><i class="fa-solid fa-pencil"></i></button>' +
-                '<button type="button" class="action-btn btn-delete" onclick="deleteEvent(\'' + event.id + '\')"><i class="fa-solid fa-trash-can"></i></button>' +
-                '</div>'
-                : '';
-            var sourceTag = event.source === 'admin'
-                ? '<span style="font-size:10px;background:#f1f3f4;color:#555;padding:2px 6px;border-radius:4px;margin-left:6px;">Admin</span>'
-                : '';
-            var cardHtml =
-                '<div class="event-card ' + (eventDate < today ? 'past-event' : '') + '" style="border-left: 6px solid ' + accentColor + ';">' +
-                '<div class="event-card-date">' + dateRange + sourceTag + '</div>' +
-                '<h4 class="event-card-title">' + event.title + '</h4>' +
-                '<div class="event-card-desc">' + (event.description || "No description provided.") + '</div>' +
-                actionBtns +
-                '</div>';
-            if (eventDate < today) pastContainer.append(cardHtml);
-            else upcomingContainer.append(cardHtml);
-        });
-
-        if (upcomingContainer.is(':empty')) upcomingContainer.append("<p style='color:#999;'>No upcoming events.</p>");
-        if (pastContainer.is(':empty')) pastContainer.append("<p style='color:#999;'>No past events.</p>");
-    }
-
-    function openEditModal(id) {
-        var eventObj = calendar.getEventById(id);
-        if (!eventObj) return;
-
-        $("#editEventId").val(id);
-        $("#title").val(eventObj.title);
-        $("#desc").val(eventObj.extendedProps.description);
-        $("#startDate").val(eventObj.startStr);
-
-        // ✅ FullCalendar end date is exclusive, subtract 1 day for display
-        var endVal = eventObj.endStr || eventObj.startStr;
-        if (eventObj.endStr) {
-            var d = new Date(eventObj.endStr);
-            d.setDate(d.getDate() - 1);
-            endVal = d.toISOString().split('T')[0];
+        },
+        error: function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: 'Unable to connect to the server. Please try again.',
+                confirmButtonColor: '#7B61FF'
+            });
         }
-        $("#endDate").val(endVal);
+    });
+}
 
-        var savedType = eventObj.extendedProps.type || "General";
-        $("#eventType").val(savedType);
-        $("#typePicker .type-tag").removeClass("active");
-        $(`#typePicker .type-tag[data-type='${savedType}']`).addClass("active");
+function renderEventCards(events) {
+    var upcomingContainer = $("#upcomingEventsContainer");
+    var pastContainer = $("#pastEventsContainer");
+    upcomingContainer.empty();
+    pastContainer.empty();
+    events.sort(function (a, b) { return new Date(a.start) - new Date(b.start); });
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        $("#modalHeaderTitle").text("Edit Event");
-        $("#saveEvent").hide();
-        $("#updateEventBtn").show();
-        openModal();
+    events.forEach(function (event) {
+        var eventDate = new Date(event.start);
+        var dateRange = event.start;
+        if (event.end && event.end !== event.start) dateRange += ' \u2014 ' + event.end;
+        var accentColor = typeColorMap[event.type] || "#7B61FF";
+        var isOwner = event.isOwner === true;
+        var actionBtns = isOwner
+            ? '<div class="card-actions">' +
+            '<button type="button" class="action-btn btn-edit" onclick="openEditModal(\'' + event.id + '\')"><i class="fa-solid fa-pencil"></i></button>' +
+            '<button type="button" class="action-btn btn-delete" onclick="deleteEvent(\'' + event.id + '\')"><i class="fa-solid fa-trash-can"></i></button>' +
+            '</div>'
+            : '';
+        var sourceTag = event.source === 'admin'
+            ? '<span style="font-size:10px;background:#f1f3f4;color:#555;padding:2px 6px;border-radius:4px;margin-left:6px;">Admin</span>'
+            : '';
+        var cardHtml =
+            '<div class="event-card ' + (eventDate < today ? 'past-event' : '') + '" style="border-left: 6px solid ' + accentColor + ';">' +
+            '<div class="event-card-date">' + dateRange + sourceTag + '</div>' +
+            '<h4 class="event-card-title">' + event.title + '</h4>' +
+            '<div class="event-card-desc">' + (event.description || "No description provided.") + '</div>' +
+            actionBtns +
+            '</div>';
+        if (eventDate < today) pastContainer.append(cardHtml);
+        else upcomingContainer.append(cardHtml);
+    });
+
+    if (upcomingContainer.is(':empty')) upcomingContainer.append("<p style='color:#999;'>No upcoming events.</p>");
+    if (pastContainer.is(':empty')) pastContainer.append("<p style='color:#999;'>No past events.</p>");
+}
+
+function openEditModal(id) {
+    var eventObj = calendar.getEventById(id);
+    if (!eventObj) return;
+
+    $("#editEventId").val(id);
+    $("#title").val(eventObj.title);
+    $("#desc").val(eventObj.extendedProps.description);
+    $("#startDate").val(eventObj.startStr);
+
+    // ✅ FullCalendar end date is exclusive, subtract 1 day for display
+    var endVal = eventObj.endStr || eventObj.startStr;
+    if (eventObj.endStr) {
+        var d = new Date(eventObj.endStr);
+        d.setDate(d.getDate() - 1);
+        endVal = d.toISOString().split('T')[0];
+    }
+    $("#endDate").val(endVal);
+
+    var savedType = eventObj.extendedProps.type || "General";
+    $("#eventType").val(savedType);
+    $("#typePicker .type-tag").removeClass("active");
+    $(`#typePicker .type-tag[data-type='${savedType}']`).addClass("active");
+
+    $("#modalHeaderTitle").text("Edit Event");
+    $("#saveEvent").hide();
+    $("#updateEventBtn").show();
+    openModal();
+}
+
+function updateEvent() {
+    const titleVal = $("#title").val().trim();
+    if (!titleVal) {
+        Swal.fire({ icon: 'warning', title: 'Title Required', confirmButtonColor: '#7B61FF' });
+        return;
     }
 
-    function updateEvent() {
-        const titleVal = $("#title").val().trim();
-        if (!titleVal) {
-            Swal.fire({ icon: 'warning', title: 'Title Required', confirmButtonColor: '#7B61FF' });
-            return;
-        }
-
-        $.ajax({
-            url: 'LecturerCalendar.aspx/UpdateEvent',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                id: parseInt($("#editEventId").val(), 10),
-                title: titleVal,
-                desc: $("#desc").val(),
-                start: $("#startDate").val(),
-                end: $("#endDate").val(),
-                type: $("#eventType").val(),
-                visibility: "Private"
-            }),
-            success: function (res) {
-                if (res.d.status === "success") {
-                    closeModal();
-                    calendar.refetchEvents();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Event Updated!',
-                        confirmButtonColor: '#7B61FF',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Update Failed', text: res.d.message, confirmButtonColor: '#7B61FF' });
-                }
-            },
-            error: function () {
-                Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#7B61FF' });
+    $.ajax({
+        url: 'LecturerCalendar.aspx/UpdateEvent',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            id: parseInt($("#editEventId").val(), 10),
+            title: titleVal,
+            desc: $("#desc").val(),
+            start: $("#startDate").val(),
+            end: $("#endDate").val(),
+            type: $("#eventType").val(),
+            visibility: "Private"
+        }),
+        success: function (res) {
+            if (res.d.status === "success") {
+                closeModal();
+                calendar.refetchEvents();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Event Updated!',
+                    confirmButtonColor: '#7B61FF',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Update Failed', text: res.d.message, confirmButtonColor: '#7B61FF' });
             }
-        });
-    }
+        },
+        error: function () {
+            Swal.fire({ icon: 'error', title: 'Network Error', confirmButtonColor: '#7B61FF' });
+        }
+    });
+}
 
-    function deleteEvent(id) {
-        Swal.fire({
-            title: 'Delete Event?',
-            text: 'This event will be permanently removed from your calendar.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d93025',
-            cancelButtonColor: '#7B61FF',
-            confirmButtonText: '<i class="fa-solid fa-trash-can"></i> Delete',
-            cancelButtonText: 'Cancel'
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: 'LecturerCalendar.aspx/DeleteEvent',
-                    type: 'POST',
-                    contentType: 'application/json; charset=utf-8',
-                    data: JSON.stringify({ id: parseInt(id, 10) }),
-                    success: function (response) {
-                        if (response.d && response.d.status === "success") {
-                            calendar.refetchEvents();
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Event Deleted',
-                                text: 'The event has been removed from your calendar.',
-                                confirmButtonColor: '#7B61FF',
-                                timer: 2500,
-                                timerProgressBar: true,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Delete Failed',
-                                text: (response.d && response.d.message) || 'You may not have permission to delete this event.',
-                                confirmButtonColor: '#7B61FF'
-                            });
-                        }
-                    },
-                    error: function (xhr) {
+function deleteEvent(id) {
+    Swal.fire({
+        title: 'Delete Event?',
+        text: 'This event will be permanently removed from your calendar.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d93025',
+        cancelButtonColor: '#7B61FF',
+        confirmButtonText: '<i class="fa-solid fa-trash-can"></i> Delete',
+        cancelButtonText: 'Cancel'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'LecturerCalendar.aspx/DeleteEvent',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ id: parseInt(id, 10) }),
+                success: function (response) {
+                    if (response.d && response.d.status === "success") {
+                        calendar.refetchEvents();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Event Deleted',
+                            text: 'The event has been removed from your calendar.',
+                            confirmButtonColor: '#7B61FF',
+                            timer: 2500,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        });
+                    } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Network Error',
-                            text: 'An unexpected error occurred. Please try again.',
+                            title: 'Delete Failed',
+                            text: (response.d && response.d.message) || 'You may not have permission to delete this event.',
                             confirmButtonColor: '#7B61FF'
                         });
                     }
-                });
-            }
-        });
-    }
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'An unexpected error occurred. Please try again.',
+                        confirmButtonColor: '#7B61FF'
+                    });
+                }
+            });
+        }
+    });
+}
 </script>
 </asp:Content>

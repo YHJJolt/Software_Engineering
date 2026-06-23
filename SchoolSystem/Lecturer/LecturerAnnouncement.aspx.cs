@@ -33,7 +33,7 @@ namespace SchoolSystem
         }
 
         [WebMethod]
-        public static List<Announcement> GetAnnouncements(int courseId)
+        public static List<Announcement> GetAnnouncements(int courseId, string session)
         {
             List<Announcement> list = new List<Announcement>();
             string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
@@ -46,11 +46,12 @@ namespace SchoolSystem
                    FROM Announcement a
                    LEFT JOIN Lecturer l ON a.Lecturer_id = l.lecturer_id
                    WHERE a.Course_id = @CourseID
-                     AND a.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
+                     AND (@Session = '' OR a.academic_session = @Session)
                    ORDER BY a.created_at DESC";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@CourseID", courseId);
+                cmd.Parameters.AddWithValue("@Session", session ?? "");
                 conn.Open();
                 SqlDataReader dr = cmd.ExecuteReader();
 
@@ -73,10 +74,13 @@ namespace SchoolSystem
         }
 
         [WebMethod]
-        public static bool SaveAnnouncement(int id, string title, string content, string category, int courseId)
+        public static bool SaveAnnouncement(int id, string title, string content, string category, int courseId, string session)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(session))
+                    return false;
+
                 string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
@@ -92,15 +96,15 @@ namespace SchoolSystem
                         VALUES (@title, @content, @category,
                                 (SELECT lecturer_id FROM Lecturer WHERE lecturer_email = @Email),
                                 @CourseID,
-                                (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'),
+                                @Session,
                                 GETDATE())";
                     }
                     else
                     {
-                        sql = @"UPDATE Announcement 
-                        SET title=@title, content=@content, category=@category 
+                        sql = @"UPDATE Announcement
+                        SET title=@title, content=@content, category=@category
                         WHERE announcement_id=@id AND Course_id=@CourseID
-                          AND academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')";
+                          AND academic_session = @Session";
                     }
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -112,6 +116,7 @@ namespace SchoolSystem
                         cmd.Parameters.AddWithValue("@content", content);
                         cmd.Parameters.AddWithValue("@category", category);
                         cmd.Parameters.AddWithValue("@CourseID", courseId);
+                        cmd.Parameters.AddWithValue("@Session", session);
 
                         // ✅ Always add @Email for INSERT (session already validated above)
                         if (id == 0)
@@ -131,7 +136,7 @@ namespace SchoolSystem
         }
 
         [WebMethod]
-        public static bool DeleteAnnouncement(int id, int courseId)
+        public static bool DeleteAnnouncement(int id, int courseId, string session)
         {
             try
             {
@@ -139,10 +144,11 @@ namespace SchoolSystem
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
                     string sql = @"DELETE FROM Announcement WHERE announcement_id=@id AND Course_id=@CourseID
-                                    AND academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')";
+                                    AND academic_session = @Session";
                     SqlCommand cmd = new SqlCommand(sql, conn);
                     cmd.Parameters.AddWithValue("@id", id);
                     cmd.Parameters.AddWithValue("@CourseID", courseId);
+                    cmd.Parameters.AddWithValue("@Session", session ?? "");
                     conn.Open();
                     cmd.ExecuteNonQuery();
                 }

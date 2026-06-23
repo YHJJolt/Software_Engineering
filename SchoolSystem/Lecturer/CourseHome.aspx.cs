@@ -175,9 +175,11 @@ namespace SchoolSystem
                     JOIN [Lecturer] l ON a.Lecturer_id = l.lecturer_id
                     WHERE a.Course_id = @cid
                       AND l.lecturer_email = @email
+                      AND (@Session = '' OR a.academic_session = @Session)
                     ORDER BY a.created_at DESC", conn);
                 cmd.Parameters.AddWithValue("@cid", courseId);
                 cmd.Parameters.AddWithValue("@email", Session["UserEmail"].ToString());
+                cmd.Parameters.AddWithValue("@Session", academicSession);
                 DataTable dt = new DataTable();
                 new SqlDataAdapter(cmd).Fill(dt);
 
