@@ -100,10 +100,13 @@ namespace SchoolSystem
                 {
                     conn.Open();
 
-                    // 2. FIXED: Removed Program_id from the INSERT. 
-                    // Added SELECT SCOPE_IDENTITY() directly to the string so we don't lose the ID.
-                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Calendar_id, course_img) 
-                                   VALUES (@Code, @Name, @Credits, @Fee, 1, @Image);
+                    // Course.Calendar_id is a required FK, but the Calendar table is just the
+                    // admin's general events calendar, so any seeded row referenced by id can be
+                    // deleted later. Resolve a valid id at insert time instead of hardcoding one.
+                    int calendarId = GetOrCreateDefaultCalendarId(conn);
+
+                    string sql = @"INSERT INTO Course (course_code, course_name, credit_hours, course_fee, Calendar_id, course_img)
+                                   VALUES (@Code, @Name, @Credits, @Fee, @CalendarId, @Image);
                                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
                     int newCourseId;
@@ -112,8 +115,7 @@ namespace SchoolSystem
                     {
                         cmd.Parameters.AddWithValue("@Code", txtCode.Text.Trim());
                         cmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
-
-
+                        cmd.Parameters.AddWithValue("@CalendarId", calendarId);
                         cmd.Parameters.AddWithValue("@Credits", credits);
                         cmd.Parameters.AddWithValue("@Fee", fee);
 
@@ -147,7 +149,7 @@ namespace SchoolSystem
             }
             catch (SqlException ex)
             {
-                string errorMessage = "An error occurred while saving the course.";
+                string errorMessage = "An error occurred while saving the course: " + ex.Message.Replace("'", "\\'");
                 if (ex.Number == 2627)
                     errorMessage = "This Course Code already exists.";
 
@@ -170,6 +172,23 @@ namespace SchoolSystem
         protected void BtnCancel_Click(object sender, EventArgs e)
         {
             Response.Redirect("~/Admin/Courses.aspx");
+        }
+
+        private int GetOrCreateDefaultCalendarId(SqlConnection conn)
+        {
+            using (SqlCommand cmd = new SqlCommand("SELECT TOP 1 calendar_id FROM Calendar ORDER BY calendar_id ASC", conn))
+            {
+                object result = cmd.ExecuteScalar();
+                if (result != null) return Convert.ToInt32(result);
+            }
+
+            using (SqlCommand cmd = new SqlCommand(
+                @"INSERT INTO Calendar (event_title, event_desc, start_date, end_date, event_type, Admin_id)
+                  VALUES ('Course Catalog', 'Auto-generated calendar entry for course records', GETDATE(), GETDATE(), 'General', 1);
+                  SELECT CAST(SCOPE_IDENTITY() AS INT);", conn))
+            {
+                return (int)cmd.ExecuteScalar();
+            }
         }
 
         private bool CourseCodeExists(string code, int excludeId = 0)

@@ -61,11 +61,20 @@
                             <Columns>
                                 <asp:BoundField DataField="course_code" HeaderText="Course Code" ItemStyle-CssClass="searchable-text" />
                                 <asp:BoundField DataField="course_name" HeaderText="Course Name" ItemStyle-CssClass="searchable-text" />
+                                <asp:BoundField DataField="academic_session" HeaderText="Session" HeaderStyle-CssClass="center-align" ItemStyle-CssClass="center-align searchable-text" />
 
                                 <asp:TemplateField HeaderText="Status" HeaderStyle-CssClass="center-align" ItemStyle-CssClass="center-align">
                                     <ItemTemplate>
                                         <span class='sp-badge searchable-text <%# Eval("status").ToString() == "Approved" ? "sp-badge-success" : (Eval("status").ToString() == "Pending" ? "sp-badge-warning" : "sp-badge-danger") %>'>
                                             <%# Eval("status") %>
+                                        </span>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+
+                                <asp:TemplateField HeaderText="Grade" HeaderStyle-CssClass="center-align" ItemStyle-CssClass="center-align">
+                                    <ItemTemplate>
+                                        <span class='searchable-text'>
+                                            <%# (Eval("letter_grade") != DBNull.Value && Eval("letter_grade") != null) ? Eval("letter_grade").ToString() : "—" %>
                                         </span>
                                     </ItemTemplate>
                                 </asp:TemplateField>
@@ -141,18 +150,18 @@
                 <script type="text/javascript">
                     function filterStatusTable(query) {
                         query = query.toLowerCase();
-                        const rows = document.querySelectorAll('#<%= gvMyStatus.ClientID %> tr:not(:first-child)');
+    const rows = document.querySelectorAll('#<%= gvMyStatus.ClientID %> tr:not(:first-child)');
 
-                        rows.forEach(row => {
-                            const rowText = row.innerText.toLowerCase();
-                            if (rowText.includes(query)) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        });
-                    }
-                </script>
+    rows.forEach(row => {
+        const rowText = row.innerText.toLowerCase();
+        if (rowText.includes(query)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
 
             </ContentTemplate>
         </asp:UpdatePanel>

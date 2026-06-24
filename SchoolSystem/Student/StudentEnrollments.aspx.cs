@@ -71,12 +71,13 @@ namespace SchoolSystem
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT c.course_code, c.course_name, e.status 
+                    SELECT c.course_code, c.course_name, e.status, e.academic_session,
+                           cg.letter_grade
                     FROM Enrollment e
                     JOIN Course c ON e.course_id = c.course_id
+                    LEFT JOIN CourseGrade cg ON cg.Enrollment_id = e.enrollment_id
                     WHERE e.student_id = @sid
-                      AND e.academic_session = (SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session')
-                    ORDER BY c.course_code ASC";
+                    ORDER BY e.academic_session DESC, c.course_code ASC";
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
                     cmd.Parameters.AddWithValue("@sid", currentStudentId);
@@ -94,7 +95,8 @@ namespace SchoolSystem
             using (SqlConnection con = new SqlConnection(connStr))
             {
                 // Gets courses from the student's program that are Active in the current session
-                // and haven't been enrolled yet by this student
+                // and haven't been enrolled yet by this student this session, excluding any
+                // course already passed in a previous session (only failed courses re-appear for retake)
                 string sql = @"
                     SELECT c.course_id, c.course_code, c.course_name, ISNULL(c.course_fee, 0) as course_fee
                     FROM Course c
@@ -106,9 +108,17 @@ namespace SchoolSystem
                       AND ca.academic_session = ss.setting_value
                       AND ca.assign_status = 'Active'
                       AND c.course_id NOT IN (
-                          SELECT course_id FROM Enrollment 
-                          WHERE student_id = @sid 
+                          SELECT course_id FROM Enrollment
+                          WHERE student_id = @sid
                             AND academic_session = ss.setting_value
+                      )
+                      AND c.course_id NOT IN (
+                          SELECT e2.course_id
+                          FROM Enrollment e2
+                          JOIN CourseGrade cg2 ON cg2.Enrollment_id = e2.enrollment_id
+                          WHERE e2.student_id = @sid
+                            AND cg2.letter_grade IS NOT NULL
+                            AND cg2.letter_grade <> 'F'
                       )";
                 using (SqlCommand cmd = new SqlCommand(sql, con))
                 {
