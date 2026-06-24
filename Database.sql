@@ -204,7 +204,7 @@ CREATE TABLE [Course] (
   [credit_hours] INT NULL,
   [course_fee] NVARCHAR(45) NOT NULL, 
   [course_img] VARBINARY(MAX) NULL,
-  [Calendar_id] INT NULL,
+  [Calendar_id] INT NOT NULL,
   CONSTRAINT [fk_Course_Calendar] FOREIGN KEY ([Calendar_id]) REFERENCES [Calendar] ([calendar_id])
 );
 GO
@@ -681,7 +681,7 @@ GO
 
 -- 6. GENERAL SCHEDULING CALENDAR
 INSERT INTO [Calendar] (event_title, event_desc, start_date, end_date, event_type, Admin_id)
-VALUES ('Spring Semester 2026', 'Main Academic Calendar', '2026-01-10', '2026-06-15', 'General', 1);
+VALUES ('Spring Semester 2026', 'Main Academic Calendar', '2026-6-10', '2026-06-15', 'General', 1);
 GO
 
 -- 7. SYLLABUS ENTRIES (Decoupled base tracking layer)
@@ -761,9 +761,12 @@ SELECT * FROM [Program];
 SELECT * FROM [CourseProgram];
 SELECT * FROM [Lecturer];
 SELECT * FROM [Student];
-SELECT * FROM [Course];
+
 SELECT * FROM [Enrollment];
+
+SELECT * FROM [Course];
+SELECT * FROM [Announcement];
 SELECT * FROM [CourseGrade];
 SELECT * FROM [Grades];
 SELECT * FROM [CourseAssignment_Session];
-
+DELETE FROM [Course];

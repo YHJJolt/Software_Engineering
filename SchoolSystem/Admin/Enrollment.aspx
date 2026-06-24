@@ -25,10 +25,14 @@
                 <asp:ListItem Value="Rejected">Rejected</asp:ListItem>
                 <asp:ListItem Value="Dropped">Dropped</asp:ListItem>
             </asp:DropDownList>
+            <asp:DropDownList ID="ddlSessionFilter" runat="server" CssClass="filter-dropdown" AutoPostBack="true"
+                OnSelectedIndexChanged="DdlSessionFilter_SelectedIndexChanged">
+                <asp:ListItem Value="">All Sessions</asp:ListItem>
+            </asp:DropDownList>
             <asp:TextBox ID="txtSearch" runat="server" CssClass="search-box" placeholder="Search ..."
                 onkeyup="if(event.keyCode===13) document.getElementById('<%= btnSearch.ClientID %>').click();">
             </asp:TextBox>
-            <asp:Button ID="btnSearch" runat="server" Text="Search" 
+            <asp:Button ID="btnSearch" runat="server" Text="Search"
                 CssClass="btn btn-primary" OnClick="BtnSearchEnrollment_Click" />
         </div>
         
@@ -41,9 +45,13 @@
                 CssClass="btn btn-warning" OnClick="BtnRejectSelected_Click"
                 OnClientClick="return confirmEnrollment(this, 'Rejected');" UseSubmitBehavior="false" />
                 
-            <asp:Button ID="btnDeleteSelected" runat="server" Text="Delete in Bulk" 
+            <asp:Button ID="btnDeleteSelected" runat="server" Text="Delete in Bulk"
                 CssClass="btn btn-delete" OnClick="BtnDeleteSelected_Click"
                 OnClientClick="return confirmBulkDelete(this);" UseSubmitBehavior="false" />
+
+            <asp:Button ID="btnExportSelected" runat="server" Text="Export to Excel"
+                CssClass="btn btn-secondary" OnClick="BtnExportSelected_Click"
+                OnClientClick="return confirmExportSelected();" CausesValidation="false" />
         </div>
     </div>
 
@@ -79,8 +87,7 @@
                     <asp:BoundField DataField="email"             HeaderText="Email" />
                     <asp:BoundField DataField="program_name"      HeaderText="Program Name" />
     
-                    <%-- ADDED SEMESTER FIELD --%>
-                    <asp:BoundField DataField="enrolled_semester" HeaderText="Sem" ItemStyle-HorizontalAlign="Center" />
+                    <asp:BoundField DataField="academic_session" HeaderText="Session" ItemStyle-HorizontalAlign="Center" />
     
                     <asp:BoundField DataField="course_code"       HeaderText="Course Code" />
                     <asp:BoundField DataField="course_name"       HeaderText="Course Name" />
@@ -128,10 +135,12 @@
         </ContentTemplate>
         <Triggers>
             <asp:AsyncPostBackTrigger ControlID="ddlStatusFilter" EventName="SelectedIndexChanged" />
+            <asp:AsyncPostBackTrigger ControlID="ddlSessionFilter" EventName="SelectedIndexChanged" />
             <asp:AsyncPostBackTrigger ControlID="btnSearch"          EventName="Click" />
             <asp:AsyncPostBackTrigger ControlID="btnApproveSelected" EventName="Click" />
             <asp:AsyncPostBackTrigger ControlID="btnRejectSelected"  EventName="Click" />
             <asp:AsyncPostBackTrigger ControlID="btnDeleteSelected"  EventName="Click" />
+            <asp:PostBackTrigger ControlID="btnExportSelected" />
         </Triggers>
     </asp:UpdatePanel>
 
@@ -152,100 +161,109 @@
             }
         });
 
-        function toggleAll(src) {
-            document.querySelectorAll("input[id*='chkSelect']").forEach(cb => cb.checked = src.checked);
-        }
+function toggleAll(src) {
+    document.querySelectorAll("input[id*='chkSelect']").forEach(cb => cb.checked = src.checked);
+}
 
-        function confirmEnrollment(btn, action) {
-            var title = action === 'Approved' ? 'Approve Enrollment?' : 'Reject Enrollment?';
-            var color = action === 'Approved' ? '#28a745' : '#CC4343';
+function confirmEnrollment(btn, action) {
+    var title = action === 'Approved' ? 'Approve Enrollment?' : 'Reject Enrollment?';
+    var color = action === 'Approved' ? '#28a745' : '#CC4343';
 
-            Swal.fire({
-                title: title,
-                text: 'This action cannot be undone.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: color,
-                cancelButtonColor: '#aaa',
-                confirmButtonText: 'Yes, I\'m sure!'
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    if (typeof __doPostBack === 'function') {
-                        __doPostBack(btn.name || btn.id, '');
-                    } else {
-                        btn.removeAttribute('onclick');
-                        btn.click();
-                    }
-                }
-            });
-            return false;
+    Swal.fire({
+        title: title,
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: color,
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Yes, I\'m sure!'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            if (typeof __doPostBack === 'function') {
+                __doPostBack(btn.name || btn.id, '');
+            } else {
+                btn.removeAttribute('onclick');
+                btn.click();
+            }
         }
+    });
+    return false;
+}
 
-        function confirmDisenroll(btn) {
-            Swal.fire({
-                title: 'Disenroll Student?',
-                text: 'This will change the status to Dropped and remove them from the course.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#CC4343',
-                cancelButtonColor: '#aaa',
-                confirmButtonText: 'Yes, Disenroll'
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    if (typeof __doPostBack === 'function') {
-                        __doPostBack(btn.name || btn.id, '');
-                    } else {
-                        btn.removeAttribute('onclick');
-                        btn.click();
-                    }
-                }
-            });
-            return false;
+function confirmDisenroll(btn) {
+    Swal.fire({
+        title: 'Disenroll Student?',
+        text: 'This will change the status to Dropped and remove them from the course.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#CC4343',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Yes, Disenroll'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            if (typeof __doPostBack === 'function') {
+                __doPostBack(btn.name || btn.id, '');
+            } else {
+                btn.removeAttribute('onclick');
+                btn.click();
+            }
         }
+    });
+    return false;
+}
 
-        function confirmBulkDelete(btn) {
-            Swal.fire({
-                title: 'Bulk Delete?',
-                text: 'This will permanently remove all selected records.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#aaa',
-                confirmButtonText: 'Yes, Delete Them'
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    if (typeof __doPostBack === 'function') {
-                        __doPostBack(btn.name || btn.id, '');
-                    } else {
-                        btn.removeAttribute('onclick');
-                        btn.click();
-                    }
-                }
-            });
-            return false;
+function confirmBulkDelete(btn) {
+    Swal.fire({
+        title: 'Bulk Delete?',
+        text: 'This will permanently remove all selected records.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Yes, Delete Them'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            if (typeof __doPostBack === 'function') {
+                __doPostBack(btn.name || btn.id, '');
+            } else {
+                btn.removeAttribute('onclick');
+                btn.click();
+            }
         }
+    });
+    return false;
+}
 
-        function confirmDeleteEnrollment(btn) {
-            Swal.fire({
-                title: 'Permanently Delete?',
-                text: 'This will remove the enrollment record from the system.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#aaa',
-                confirmButtonText: 'Yes, Delete'
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    if (typeof __doPostBack === 'function') {
-                        __doPostBack(btn.name || btn.id, '');
-                    } else {
-                        btn.removeAttribute('onclick');
-                        btn.click();
-                    }
-                }
-            });
-            return false;
+function confirmExportSelected() {
+    var anyChecked = Array.from(document.querySelectorAll("input[id*='chkSelect']")).some(cb => cb.checked);
+    if (!anyChecked) {
+        Swal.fire('No rows selected', 'Please select at least one row to export.', 'warning');
+        return false;
+    }
+    return true;
+}
+
+function confirmDeleteEnrollment(btn) {
+    Swal.fire({
+        title: 'Permanently Delete?',
+        text: 'This will remove the enrollment record from the system.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Yes, Delete'
+    }).then(function (result) {
+        if (result.isConfirmed) {
+            if (typeof __doPostBack === 'function') {
+                __doPostBack(btn.name || btn.id, '');
+            } else {
+                btn.removeAttribute('onclick');
+                btn.click();
+            }
         }
-    </script>
+    });
+    return false;
+}
+</script>
     </div>
 </asp:Content>

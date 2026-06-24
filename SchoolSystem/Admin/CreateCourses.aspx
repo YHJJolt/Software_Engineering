@@ -25,13 +25,13 @@
                 <div class="form-group">
                     <label>Course Code</label>
                     <asp:TextBox ID="txtCode" runat="server" CssClass="form-control" placeholder="e.g. CS101" />
-                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtCode" ErrorMessage="Code is required" ForeColor="Red" Display="Dynamic" />
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtCode" ErrorMessage="Code is required" ForeColor="Red" Display="Dynamic" ValidationGroup="CreateCourse" />
                 </div>
 
                 <div class="form-group">
                     <label>Course Name</label>
                     <asp:TextBox ID="txtName" runat="server" CssClass="form-control" placeholder="e.g. C# Development" />
-                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtName" ErrorMessage="Name is required" ForeColor="Red" Display="Dynamic" />
+                    <asp:RequiredFieldValidator runat="server" ControlToValidate="txtName" ErrorMessage="Name is required" ForeColor="Red" Display="Dynamic" ValidationGroup="CreateCourse" />
                 </div>
 
                 <div class="form-group">
@@ -45,48 +45,39 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label>Program <span class="text-danger">*</span></label>
+                    <label>Program</label>
                     <asp:DropDownList ID="ddlProgram" runat="server" CssClass="form-control">
                         <asp:ListItem Text="-- Select Program --" Value="0"></asp:ListItem>
                     </asp:DropDownList>
-                    <asp:RequiredFieldValidator ID="rfvProgram" runat="server" 
-                        ControlToValidate="ddlProgram" 
-                        InitialValue="0" 
-                        ErrorMessage="Please select a program" 
-                        ForeColor="Red" 
-                        Display="Dynamic" 
-                        ValidationGroup="CreateCourse" />
+                    <asp:RequiredFieldValidator ID="rfvProgram" runat="server" ControlToValidate="ddlProgram" InitialValue="0" ErrorMessage="Please select a program" ForeColor="Red" Display="Dynamic" />
                 </div>
             </div>
 
             <div class="form-footer">
                 <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="BtnCancel_Click" CausesValidation="false" />
-                <asp:Button ID="btnSubmit" runat="server" Text="Add Course" 
-                    CssClass="btn btn-primary" 
-                    OnClick="BtnSubmit_Click" 
-                    ValidationGroup="CreateCourse" />
+                <asp:Button ID="btnSubmit" runat="server" Text="Add Course" CssClass="btn btn-primary" OnClick="BtnSubmit_Click" />
             </div>
 
         </div>
     </div>
 
     <script>
-        // @ts-nocheck
-        function previewImage(input) {
-            var preview = document.getElementById('imgPreview');
-            var fileNameLabel = document.getElementById('fileName');
+// @ts-nocheck
+function previewImage(input) {
+    var preview = document.getElementById('imgPreview');
+    var fileNameLabel = document.getElementById('fileName');
 
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-                fileNameLabel.textContent = input.files[0].name;
-            } else {
-                preview.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-                fileNameLabel.textContent = "No file chosen";
-            }
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
         }
-    </script>
+        reader.readAsDataURL(input.files[0]);
+        fileNameLabel.textContent = input.files[0].name;
+    } else {
+        preview.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+        fileNameLabel.textContent = "No file chosen";
+    }
+}
+</script>
 </asp:Content>
