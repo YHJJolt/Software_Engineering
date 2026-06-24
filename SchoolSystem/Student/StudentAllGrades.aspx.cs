@@ -22,8 +22,8 @@ namespace SchoolSystem
 
             if (!IsPostBack)
             {
-                int defaultSem = LoadSemesterDropdown();
-                LoadGrades(defaultSem);
+                string defaultSession = LoadSemesterDropdown();
+                LoadGrades(defaultSession);
             }
             else
             {
@@ -67,21 +67,21 @@ namespace SchoolSystem
             }
         }
 
-        // Returns 0 = All Semesters (default)
-        private int LoadSemesterDropdown()
+        // Returns "" = All Sessions (default)
+        private string LoadSemesterDropdown()
         {
             int studentId = GetStudentId();
 
             ddlSemester.Items.Clear();
-            ddlSemester.Items.Add(new ListItem("All Semesters", "0"));
+            ddlSemester.Items.Add(new ListItem("All Sessions", ""));
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 string sql = @"
-                    SELECT DISTINCT e.enrolled_semester
+                    SELECT DISTINCT e.academic_session
                     FROM Enrollment e
                     WHERE e.student_id = @StudentId
-                    ORDER BY e.enrolled_semester ASC";
+                    ORDER BY e.academic_session ASC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -90,21 +90,21 @@ namespace SchoolSystem
                     SqlDataReader rdr = cmd.ExecuteReader();
                     while (rdr.Read())
                     {
-                        int sem = Convert.ToInt32(rdr["enrolled_semester"]);
-                        ddlSemester.Items.Add(new ListItem("Semester " + sem, sem.ToString()));
+                        string session = rdr["academic_session"].ToString();
+                        ddlSemester.Items.Add(new ListItem(session, session));
                     }
                 }
             }
 
-            ddlSemester.SelectedValue = "0";
-            return 0;
+            ddlSemester.SelectedValue = "";
+            return "";
         }
 
-        private void LoadGrades(int semester)
+        private void LoadGrades(string session)
         {
             int studentId = GetStudentId();
             StudentName = GetStudentName();
-            SemesterLabel = semester == 0 ? "All Semesters" : "Semester " + semester;
+            SemesterLabel = string.IsNullOrEmpty(session) ? "All Sessions" : session;
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
@@ -115,7 +115,7 @@ namespace SchoolSystem
                         c.course_code,
                         c.course_name,
                         c.credit_hours,
-                        e.enrolled_semester,
+                        e.academic_session,
                         ISNULL(cg.letter_grade, 'N/A')                  AS letter_grade,
                         ISNULL(CAST(cg.grade_point AS DECIMAL(4,2)), 0)  AS grade_point,
                         ISNULL(
@@ -134,17 +134,17 @@ namespace SchoolSystem
                                                 AND sub.student_id    = e.student_id
                     WHERE e.student_id = @StudentId
                       AND e.status     = 'Approved'
-                      " + (semester != 0 ? "AND e.enrolled_semester = @Semester" : "") + @"
+                      " + (!string.IsNullOrEmpty(session) ? "AND e.academic_session = @Session" : "") + @"
                     GROUP BY
                         c.course_code, c.course_name, c.credit_hours,
-                        e.enrolled_semester, cg.letter_grade, cg.grade_point
-                    ORDER BY e.enrolled_semester ASC, c.course_name ASC";
+                        e.academic_session, cg.letter_grade, cg.grade_point
+                    ORDER BY e.academic_session ASC, c.course_name ASC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@StudentId", studentId);
-                    if (semester != 0)
-                        cmd.Parameters.AddWithValue("@Semester", semester);
+                    if (!string.IsNullOrEmpty(session))
+                        cmd.Parameters.AddWithValue("@Session", session);
 
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
@@ -170,25 +170,28 @@ namespace SchoolSystem
                     }
 
                     // GPA & CGPA — pull from Grades table
-                    LoadGpaStats(studentId, semester);
+                    LoadGpaStats(studentId, session);
                 }
             }
         }
 
         // Each query opens its own connection — the previous conn passed in was
         // already disposed by the time this runs, causing the InvalidOperationException.
-        private void LoadGpaStats(int studentId, int semester)
+        private void LoadGpaStats(int studentId, string session)
         {
-            // Sem GPA
-            string sqlGpa = semester != 0
-                ? "SELECT gpa FROM Grades WHERE Student_id = @StudentId AND semester = @Semester"
+            // Sem GPA — join through Enrollment to match by academic_session
+            string sqlGpa = !string.IsNullOrEmpty(session)
+                ? @"SELECT TOP 1 g.gpa FROM Grades g
+                    INNER JOIN Enrollment e ON e.student_id = g.Student_id AND e.enrolled_semester = g.semester
+                    WHERE g.Student_id = @StudentId AND e.academic_session = @Session
+                    ORDER BY g.semester DESC"
                 : "SELECT TOP 1 gpa FROM Grades WHERE Student_id = @StudentId ORDER BY semester DESC";
 
             using (SqlConnection conn = new SqlConnection(connStr))
             using (SqlCommand cmd = new SqlCommand(sqlGpa, conn))
             {
                 cmd.Parameters.AddWithValue("@StudentId", studentId);
-                if (semester != 0) cmd.Parameters.AddWithValue("@Semester", semester);
+                if (!string.IsNullOrEmpty(session)) cmd.Parameters.AddWithValue("@Session", session);
                 conn.Open();
                 object result = cmd.ExecuteScalar();
                 litSemGPA.Text = result != null && result != DBNull.Value
@@ -210,19 +213,20 @@ namespace SchoolSystem
 
         protected void ddlSemester_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int selectedSem = 0;
-            int.TryParse(ddlSemester.SelectedValue, out selectedSem);
-            LoadGrades(selectedSem);
+            string selectedSession = ddlSemester.SelectedValue;
+            LoadGrades(selectedSession);
         }
 
-        // Score bar color: green ≥ 70, amber 50-69, red < 50
+        // Score bar color — matches 5-tier scheme across LecturerGrades
         public string GetBarColor(string scorePct)
         {
             double pct = 0;
             double.TryParse(scorePct, out pct);
-            if (pct >= 70) return "#22c55e";
-            if (pct >= 50) return "#f59e0b";
-            return "#ef4444";
+            if (pct >= 90) return "#4a3fa0"; // Excellent — purple
+            if (pct >= 70) return "#1a5fa0"; // Good      — blue
+            if (pct >= 60) return "#c9a84c"; // Average   — amber
+            if (pct >= 50) return "#f59e0b"; // At Risk   — orange
+            return "#dc2626";                // Fail      — red
         }
 
         // CSS class for the letter grade pill
@@ -230,25 +234,29 @@ namespace SchoolSystem
         {
             switch (grade)
             {
-                case "A": return "gl-A";
+                case "A":  return "gl-A";
                 case "A-": return "gl-Am";
                 case "B+": return "gl-Bp";
-                case "B": return "gl-B";
+                case "B":  return "gl-B";
                 case "B-": return "gl-Bm";
                 case "C+": return "gl-Cp";
-                case "C": return "gl-C";
-                case "F": return "gl-F";
-                default: return "gl-NA";
+                case "C":  return "gl-C";
+                case "F":  return "gl-F";
+                default:   return "gl-NA";
             }
         }
 
-        // Pass if score >= 50 and not N/A; Fail if < 50; N/A if no submissions
+        // Status badge — 5 tiers matching LecturerGrades
         public string GetStatusClass(string scorePct, string grade)
         {
             if (grade == "N/A") return "status-na";
             double pct = 0;
             double.TryParse(scorePct, out pct);
-            return pct >= 50 ? "status-pass" : "status-fail";
+            if (pct >= 90) return "status-excellent";
+            if (pct >= 70) return "status-good";
+            if (pct >= 60) return "status-average";
+            if (pct >= 50) return "status-atrisk";
+            return "status-fail";
         }
 
         public string GetStatusText(string scorePct, string grade)
@@ -256,7 +264,11 @@ namespace SchoolSystem
             if (grade == "N/A") return "Pending";
             double pct = 0;
             double.TryParse(scorePct, out pct);
-            return pct >= 50 ? "Pass" : "Fail";
+            if (pct >= 90) return "Excellent";
+            if (pct >= 70) return "Good";
+            if (pct >= 60) return "Average";
+            if (pct >= 50) return "At Risk";
+            return "Fail";
         }
     }
 }

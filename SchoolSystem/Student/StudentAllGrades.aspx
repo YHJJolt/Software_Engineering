@@ -60,7 +60,7 @@
     <div class="table-card">
         <asp:Panel ID="pnlEmpty" runat="server" Visible="false" CssClass="empty-state">
             <i class="fas fa-graduation-cap"></i>
-            <p>No grade records found for this semester.</p>
+            <p>No grade records found for this session.</p>
         </asp:Panel>
 
         <asp:Panel ID="pnlTable" runat="server">
@@ -119,7 +119,7 @@
         </div>
         <div class="print-modal-preview">
             <strong>Student:</strong> <span id="modalStudentName">—</span><br/>
-            <strong>Semester:</strong> <span id="modalSemester">—</span><br/>
+            <strong>Session:</strong> <span id="modalSemester">—</span><br/>
             <strong>Semester GPA:</strong> <span id="modalGPA">—</span> &nbsp;|&nbsp;
             <strong>CGPA:</strong> <span id="modalCGPA">—</span><br/>
             <strong>Total Credit Hours:</strong> <span id="modalCredits">—</span>

@@ -2994,6 +2994,30 @@ body.sidebar-collapsed .sidebar-profile {
     border: 1px solid #e2e8f0;
 }
 
+.status-excellent {
+    background: #ede9fe;
+    color: #4a3fa0;
+    border: 1px solid #c4b5fd;
+}
+
+.status-good {
+    background: #dbeafe;
+    color: #1a5fa0;
+    border: 1px solid #93c5fd;
+}
+
+.status-average {
+    background: #fef9c3;
+    color: #92681a;
+    border: 1px solid #fde68a;
+}
+
+.status-atrisk {
+    background: #fff7ed;
+    color: #c2690a;
+    border: 1px solid #fed7aa;
+}
+
 .status-badge {
     display: inline-block;
     padding: 3px 12px;
