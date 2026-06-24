@@ -17,48 +17,62 @@ USE SchoolSystemDB;
 GO
 
 -- ============================================================
--- SCRIPT TO CLEAN/DELETE ALL SCHOOL SYSTEM STRUCTURES
--- DROPPED IN ORDER OF DEPENDENCY (CHILD TABLES FIRST)
+-- CLEANUP SCRIPT: Drop Constraints, Triggers, and Tables Safely
 -- ============================================================
 
--- 1. Drop third-level / deepest child tables
-IF OBJECT_ID('dbo.PaymentDetail', 'U') IS NOT NULL DROP TABLE [PaymentDetail];
-IF OBJECT_ID('dbo.ModuleFile', 'U') IS NOT NULL DROP TABLE [ModuleFile];
+-- 1. Drop Stored Procedures & Triggers
+IF OBJECT_ID('sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE sp_ProcessGraduations;
+IF OBJECT_ID('sp_AdvanceToNewSession', 'P') IS NOT NULL DROP PROCEDURE sp_AdvanceToNewSession;
+IF OBJECT_ID('trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER trg_GeneratePayment;
+IF OBJECT_ID('trg_Payment_SetInactive', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_SetInactive;
+IF OBJECT_ID('trg_Payment_SetActive', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_SetActive;
+IF OBJECT_ID('trg_Payment_DeleteReactivate', 'TR') IS NOT NULL DROP TRIGGER trg_Payment_DeleteReactivate;
+IF OBJECT_ID('trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER trg_CalculateGradesAndGPA;
+GO
+
+-- 2. BREAK FOREIGN KEY CONSTRAINTS 
+-- (Only dropping the one that might cause circular student/program locks, others are handled by drop order)
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_Student_Program' AND parent_object_id = OBJECT_ID('Student'))
+    ALTER TABLE [Student] DROP CONSTRAINT [fk_Student_Program];
+GO
+
+-- 3. Drop Deepest Child Tables & Junctions
 IF OBJECT_ID('dbo.AssignmentSubmission', 'U') IS NOT NULL DROP TABLE [AssignmentSubmission];
 IF OBJECT_ID('dbo.CourseGrade', 'U') IS NOT NULL DROP TABLE [CourseGrade];
-IF OBJECT_ID('dbo.StudentNotifRead', 'U') IS NOT NULL DROP TABLE [StudentNotifRead];
-IF OBJECT_ID('dbo.LecturerNotifRead', 'U') IS NOT NULL DROP TABLE [LecturerNotifRead];
-
--- 2. Drop second-level child tables
-IF OBJECT_ID('dbo.Payment', 'U') IS NOT NULL DROP TABLE [Payment];
-IF OBJECT_ID('dbo.Enrollment', 'U') IS NOT NULL DROP TABLE [Enrollment];
-IF OBJECT_ID('dbo.CourseModule', 'U') IS NOT NULL DROP TABLE [CourseModule];
+IF OBJECT_ID('dbo.AttendanceRecord', 'U') IS NOT NULL DROP TABLE [AttendanceRecord];
+IF OBJECT_ID('dbo.PaymentDetail', 'U') IS NOT NULL DROP TABLE [PaymentDetail];
+IF OBJECT_ID('dbo.ModuleFile', 'U') IS NOT NULL DROP TABLE [ModuleFile];
 IF OBJECT_ID('dbo.CourseAssignment', 'U') IS NOT NULL DROP TABLE [CourseAssignment];
 IF OBJECT_ID('dbo.LecturerCourseFavourite', 'U') IS NOT NULL DROP TABLE [LecturerCourseFavourite];
 IF OBJECT_ID('dbo.StudentCourseFavourite', 'U') IS NOT NULL DROP TABLE [StudentCourseFavourite];
+IF OBJECT_ID('dbo.CourseAssignment_Session', 'U') IS NOT NULL DROP TABLE [CourseAssignment_Session];
+IF OBJECT_ID('dbo.CourseProgram', 'U') IS NOT NULL DROP TABLE [CourseProgram];
+GO
+
+-- 4. Drop Mid-Level Dynamic Tables
+IF OBJECT_ID('dbo.Enrollment', 'U') IS NOT NULL DROP TABLE [Enrollment];
+IF OBJECT_ID('dbo.Payment', 'U') IS NOT NULL DROP TABLE [Payment];
 IF OBJECT_ID('dbo.Grades', 'U') IS NOT NULL DROP TABLE [Grades];
+IF OBJECT_ID('dbo.CourseModule', 'U') IS NOT NULL DROP TABLE [CourseModule];
 IF OBJECT_ID('dbo.LecturerCalendar', 'U') IS NOT NULL DROP TABLE [LecturerCalendar];
-IF OBJECT_ID('dbo.StudentCalendar', 'U') IS NOT NULL DROP TABLE [StudentCalendar]; -- Added to tracking clean up
+IF OBJECT_ID('dbo.StudentCalendar', 'U') IS NOT NULL DROP TABLE [StudentCalendar];
+IF OBJECT_ID('dbo.StudentNotifRead', 'U') IS NOT NULL DROP TABLE [StudentNotifRead];
+GO
 
--- 3. Drop first-level child tables
-IF OBJECT_ID('dbo.Announcement', 'U') IS NOT NULL DROP TABLE [Announcement];
+-- 5. Drop Major Entities
 IF OBJECT_ID('dbo.Course', 'U') IS NOT NULL DROP TABLE [Course];
-
--- 4. Drop foundational core entities that depend on Admin/Program
+IF OBJECT_ID('dbo.Announcement', 'U') IS NOT NULL DROP TABLE [Announcement];
 IF OBJECT_ID('dbo.Student', 'U') IS NOT NULL DROP TABLE [Student];
 IF OBJECT_ID('dbo.Program', 'U') IS NOT NULL DROP TABLE [Program];
-IF OBJECT_ID('dbo.Lecturer', 'U') IS NOT NULL DROP TABLE [Lecturer];
+GO
 
--- 5. Drop base master tables
+-- 6. Drop Core Base Tables & Calendars
 IF OBJECT_ID('dbo.Calendar', 'U') IS NOT NULL DROP TABLE [Calendar];
+IF OBJECT_ID('dbo.LecturerNotifRead', 'U') IS NOT NULL DROP TABLE [LecturerNotifRead];
+IF OBJECT_ID('dbo.AdminNotifRead', 'U') IS NOT NULL DROP TABLE [AdminNotifRead];
+IF OBJECT_ID('dbo.SystemSettings', 'U') IS NOT NULL DROP TABLE [SystemSettings];
+IF OBJECT_ID('dbo.Lecturer', 'U') IS NOT NULL DROP TABLE [Lecturer];
 IF OBJECT_ID('dbo.Admin (HoP)', 'U') IS NOT NULL DROP TABLE [Admin (HoP)];
-
--- 6. Clean up Stored Procedures and Triggers explicitly if they linger
-IF OBJECT_ID('dbo.sp_ProcessGraduations', 'P') IS NOT NULL DROP PROCEDURE [sp_ProcessGraduations];
-IF OBJECT_ID('dbo.trg_GeneratePayment', 'TR') IS NOT NULL DROP TRIGGER [trg_GeneratePayment];
-IF OBJECT_ID('dbo.trg_CalculateGradesAndGPA', 'TR') IS NOT NULL DROP TRIGGER [trg_CalculateGradesAndGPA];
-
-PRINT 'Database layout successfully cleared without constraint errors.';
 GO
 
 -- ===================================================================================
@@ -656,7 +670,9 @@ INSERT INTO [Lecturer] (lecturer_name, lecturer_pw, lecturer_email, lecturer_dep
 VALUES
 ('Alan Turing',    'lect123', 'alanturing0001@lect.com',  'School of Computing', 'Active', 1),
 ('Ada Lovelace',   'lect123', 'adalovelace0002@lect.com', 'School of Computing', 'Active', 1),
-('Warren Buffett', 'lect123', 'warrenbuffett0003@lect.com', 'School of Business',  'Active', 1);
+('Warren Buffett', 'lect123', 'warrenbuffett0003@lect.com', 'School of Business',  'Active', 1),
+('Grace Hopper',   'lect123', 'gracehopper0004@lect.com', 'School of Computing', 'Active', 1),
+('John Keynes',    'lect123', 'johnkeynes0005@lect.com',  'School of Business',  'Inactive', 1);  -- Inactive: hidden from Course Allocation dropdown
 
 UPDATE [Lecturer] SET lecturer_code = 'L' + RIGHT('0000' + CAST(lecturer_id AS NVARCHAR(4)), 4);
 GO
@@ -672,57 +688,87 @@ GO
 -- 5. STUDENT IDENTITIES
 INSERT INTO [Student] (student_name, student_pw, student_email, student_sem, student_isactive, Admin_admin_id, Program_id)
 VALUES
-('Charlie Brown', 'stud123', 'charliebrown0001@stud.com', 3, 'Active', 1, 1),
-('David Miller',  'stud123', 'davidmiller0002@stud.com',   3, 'Active', 1, 1),
-('Eve Adams',     'stud123', 'eveadams0003@stud.com',     1, 'Active', 1, 2);
+('Charlie Brown', 'stud123', 'charliebrown0001@stud.com', 5, 'Active', 1, 1),   -- BSE, sem 5: one Advance Session => graduates
+('David Miller',  'stud123', 'davidmiller0002@stud.com',  3, 'Active', 1, 1),   -- BSE, sem 3
+('Eve Adams',     'stud123', 'eveadams0003@stud.com',     3, 'Active', 1, 1),   -- BSE, sem 3 (same program + sem as David)
+('Frank Castle',  'stud123', 'frankcastle0004@stud.com',  2, 'Active', 1, 1),   -- BSE, sem 2: gets locked out via overdue fee
+('Hannah Lee',    'stud123', 'hannahlee0005@stud.com',    1, 'Active', 1, 2),   -- BUS, sem 1: pending-enrolment demo
+('Ivy Chen',      'stud123', 'ivychen0006@stud.com',      4, 'Active', 1, 2);   -- BUS, sem 4: BUS grades / performance
 
 UPDATE [Student] SET student_code = 'S' + RIGHT('0000' + CAST(student_id AS NVARCHAR(4)), 4);
 GO
 
 -- 6. GENERAL SCHEDULING CALENDAR
 INSERT INTO [Calendar] (event_title, event_desc, start_date, end_date, event_type, Admin_id)
-VALUES ('Spring Semester 2026', 'Main Academic Calendar', '2026-6-10', '2026-06-15', 'General', 1);
+VALUES ('Spring Semester 2026', 'Main Academic Calendar', '2026-06-10', '2026-06-15', 'General', 1),
+       ('Midterm Week',            'Midterm exams for all courses.',     '2026-07-13', '2026-07-17', 'Exam',      1),
+       ('Faculty Town Hall',       'Open briefing for all students.',    '2026-07-13', '2026-07-13', 'General',   1),
+       ('Mid-Semester Break',      'Campus break - no classes.',         '2026-07-20', '2026-07-26', 'Holiday',   1),
+       ('APR2026 Enrolment Opens', 'Registration for the next session.', '2026-07-06', '2026-07-13', 'Enrolment', 1);
 GO
 
 -- 7. SYLLABUS ENTRIES (Decoupled base tracking layer)
 INSERT INTO [Course] (course_code, course_name, Calendar_id, credit_hours, course_fee)
-VALUES 
-    ('CS101',  'C# Development',    1, 3, '1500'),
-    ('DB202',  'Database Systems',  1, 4, '1200'),
-    ('WEB105', 'Web Development',   1, 3, '2300'),
-    ('DS204',  'Data Structures',   1, 4, '2500'),
-    ('BUS301', 'Business Ethics',   1, 3, '4300');
+VALUES
+    ('CS101',  'C# Development',       1, 3, '1500'),
+    ('DB202',  'Database Systems',     1, 4, '1200'),
+    ('WEB105', 'Web Development',      1, 3, '2300'),
+    ('DS204',  'Data Structures',      1, 4, '2500'),
+    ('BUS301', 'Business Ethics',      1, 3, '4300'),
+    ('BUS210', 'Marketing Principles', 1, 3, '2000'),
+    ('BUS305', 'Financial Accounting', 1, 4, '2200');
 GO
 
 -- 7B. MULTI-PROGRAM MAPPING SYSTEM ASSIGNMENTS [cite: 15]
 INSERT INTO [CourseProgram] (course_id, program_id)
-VALUES 
+VALUES
     (1, 1), -- CS101 tied to BSE
     (2, 1), -- DB202 tied to BSE
     (3, 1), -- WEB105 tied to BSE
     (4, 1), -- DS204 tied to BSE
-    (5, 2); -- BUS301 tied to BUS
+    (5, 2), -- BUS301 tied to BUS
+    (6, 2), -- BUS210 tied to BUS
+    (7, 2); -- BUS305 tied to BUS
 GO
 
 -- 8. SESSION RECOGNIZED COURSE ENROLLMENT TRACKING [cite: 3]
 INSERT INTO [Enrollment] (student_id, course_id, enrolled_semester, academic_session, enrollment_date, [status])
-VALUES 
-	(1, 2, 3, 'JAN2026', GETDATE(), 'Approved'), 
-	(1, 3, 3, 'JAN2026', GETDATE(), 'Approved'), 
-	(1, 4, 3, 'JAN2026', GETDATE(), 'Approved'), 
-	(2, 2, 3, 'JAN2026', GETDATE(), 'Approved'), 
-	(2, 4, 3, 'JAN2026', GETDATE(), 'Approved'), 
-	(3, 5, 1, 'JAN2026', GETDATE(), 'Approved');
+VALUES
+    (1, 2, 5, 'JAN2026', GETDATE(), 'Approved'),   -- Charlie  DB202
+    (1, 3, 5, 'JAN2026', GETDATE(), 'Approved'),   -- Charlie  WEB105
+    (1, 4, 5, 'JAN2026', GETDATE(), 'Approved'),   -- Charlie  DS204
+    (2, 2, 3, 'JAN2026', GETDATE(), 'Approved'),   -- David    DB202
+    (2, 4, 3, 'JAN2026', GETDATE(), 'Approved'),   -- David    DS204
+    (3, 1, 3, 'JAN2026', GETDATE(), 'Approved'),   -- Eve      CS101
+    (3, 3, 3, 'JAN2026', GETDATE(), 'Approved'),   -- Eve      WEB105
+    (4, 2, 2, 'JAN2026', GETDATE(), 'Approved'),   -- Frank    DB202   (auto-invoice via trigger)
+    (4, 3, 2, 'JAN2026', GETDATE(), 'Approved'),   -- Frank    WEB105  (auto-invoice via trigger)
+    (4, 4, 2, 'JAN2026', GETDATE(), 'Pending'),    -- Frank    DS204   (pending request)
+    (5, 5, 1, 'JAN2026', GETDATE(), 'Pending'),    -- Hannah   BUS301  (pending request)
+    (6, 5, 4, 'JAN2026', GETDATE(), 'Approved'),   -- Ivy      BUS301
+    (6, 6, 4, 'JAN2026', GETDATE(), 'Approved'),   -- Ivy      BUS210
+    (6, 7, 4, 'JAN2026', GETDATE(), 'Approved');   -- Ivy      BUS305
 GO
 
 -- 9. NOTICES & BROADCASTING
 INSERT INTO [Announcement] (title, content, category, academic_session, Admin_id)
-VALUES ('Welcome to the New System', 'The portal is now live.', 'General', 'JAN2026', 1);
+VALUES ('Welcome to the New System', 'The portal is now live.', 'General', 'JAN2026', 1),
+       ('Fee Payment Reminder', 'Outstanding fees are due by the end of the month.', 'Finance', 'JAN2026', 1),
+       ('Exam Timetable Released', 'Check the calendar for your exam dates.', 'Academic', 'JAN2026', 1),
+       ('Coding Club Recruitment', 'Sign-ups open this week in the student lounge.', 'Co-curriculum', 'JAN2026', 1);
+
+-- Course-specific announcement authored by a lecturer (Ada -> DB202)
+INSERT INTO [Announcement] (title, content, category, academic_session, Lecturer_id, Course_id)
+VALUES ('DB202: Lab 1 Posted', 'Lab Exercise 1 has been posted to the module page.', 'Academic', 'JAN2026', 2, 2);
 GO
 
 -- 10. CONTENT MANIFEST SCHEDULING
 INSERT INTO [CourseModule] (course_id, module_name, module_description, academic_session)
-VALUES (2, 'Week 1 - Intro to Databases', 'Fundamentals of relational databases.', 'JAN2026');
+VALUES (2, 'Week 1 - Intro to Databases', 'Fundamentals of relational databases.', 'JAN2026'),
+       (2, 'Week 2 - Normalization',      'From 1NF to BCNF.',                'JAN2026'),
+       (3, 'Week 1 - HTML & CSS',         'Frontend foundations.',            'JAN2026'),
+       (1, 'Week 1 - C# Basics',          'Variables, types, control flow.',  'JAN2026'),
+       (6, 'Week 1 - Marketing Intro',    'The 4 Ps of marketing.',           'JAN2026');
 
 INSERT INTO [ModuleFile] (module_id, file_title, file_description, file_name, file_path)
 VALUES (1, 'Chapter 1 Slides', 'Read pages 15-30.', 'Chapter1.pdf', '~/Uploads/Chapter1.pdf');
@@ -734,23 +780,130 @@ VALUES
 (2, 'Week 1 Quiz: Intro to DB', 'SQL fundamentals.', 'Quiz', 'JAN2026', '2026-05-10 12:00:00', 20),
 (2, 'Midterm Examination', 'Covers chapters 1 to 5.', 'Exam', 'JAN2026', '2026-07-01 10:00:00', 50),
 (3, 'Frontend Web Project', 'Design a responsive site.', 'Project', 'JAN2026', '2026-06-15 10:00:00', 100),
-(5, 'Corporate Ethics Essay', '1000 word essay.', 'Essay', 'JAN2026', '2026-06-20 10:00:00', 100);
+(5, 'Corporate Ethics Essay', '1000 word essay.', 'Essay', 'JAN2026', '2026-06-20 10:00:00', 100),
+(2, 'Lab Exercise 1', 'Normalization practice (1NF-BCNF).', 'Coursework', 'JAN2026', DATEADD(DAY,-5,GETDATE()), 50),  -- past due -> late-submission demo
+(3, 'Final Web Portfolio', 'Build a responsive portfolio.', 'Project', 'JAN2026', DATEADD(DAY,10,GETDATE()), 100),    -- future due
+(6, 'Marketing Plan', 'Draft a go-to-market plan.', 'Project', 'JAN2026', '2026-06-18 10:00:00', 100),
+(1, 'C# Basics Quiz', 'Variables and loops.', 'Quiz', 'JAN2026', '2026-05-20 12:00:00', 30);
 GO
 
+-- ===================================================================================
 -- 12. EVALUATED GRADEBOOK ARTIFACTS (Triggers automatic computation workflow)
-INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published)
-VALUES 
-(1, 1, '~/Uploads/Charlie_Quiz1.docx', GETDATE(), 18, 1), 
-(3, 1, '~/Uploads/Charlie_Web.zip', GETDATE(), 72, 1),    
-(1, 2, '~/Uploads/David_Quiz1.docx', GETDATE(), 15, 1),   
-(4, 3, '~/Uploads/Eve_Essay.docx', GETDATE(), 90, 1);     
+-- Marks are tuned so trg_CalculateGradesAndGPA produces a clear performance spread:
+--   Charlie -> Good      (B+ / ~3.30)
+--   David   -> Average   (C+ / ~2.30)
+--   Eve     -> Fail      (F  /  0.00)
+--   Frank   -> Excellent (A  /  4.00)
+--   Ivy     -> Average   (C  /  2.00)
+-- Assignment id -> course / max marks reference:
+--   a1 DB202/20  a2 DB202/50  a3 WEB105/100  a4 BUS301/100
+--   a5 DB202/50 (past due)    a6 WEB105/100 (future)  a7 BUS210/100  a8 CS101/30
+-- ===================================================================================
+
+-- CHARLIE (student 1) -> Good (~72% across DB202 + WEB105)
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published) VALUES
+(1, 1, '~/Uploads/Charlie_Quiz1.docx', GETDATE(), 14, 1),   -- DB202 quiz   14/20
+(2, 1, '~/Uploads/Charlie_Mid.docx',   GETDATE(), 36, 1),   -- DB202 midterm 36/50
+(5, 1, '~/Uploads/Charlie_Lab1.pdf',   GETDATE(), 36, 1),   -- DB202 lab    36/50  (now graded)
+(3, 1, '~/Uploads/Charlie_Web.zip',    GETDATE(), 72, 1),   -- WEB105 proj  72/100
+(6, 1, '~/Uploads/Charlie_Folio.zip',  GETDATE(), 72, 1);   -- WEB105 folio 72/100
+
+-- DAVID (student 2) -> Average (~57% in DB202)
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published) VALUES
+(1, 2, '~/Uploads/David_Quiz1.docx', GETDATE(), 11, 1),     -- DB202 quiz    11/20
+(2, 2, '~/Uploads/David_Mid.docx',   GETDATE(), 29, 1),     -- DB202 midterm 29/50
+(5, 2, '~/Uploads/David_Lab1.pdf',   GETDATE(), 28, 1);     -- DB202 lab     28/50  (now graded)
+
+-- EVE (student 3) -> Fail (~40% in CS101 + WEB105)
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published) VALUES
+(8, 3, '~/Uploads/Eve_CS101.docx', GETDATE(), 12, 1),       -- CS101 quiz   12/30
+(3, 3, '~/Uploads/Eve_Web.zip',    GETDATE(), 40, 1),       -- WEB105 proj  40/100
+(6, 3, '~/Uploads/Eve_Folio.zip',  GETDATE(), 40, 1);       -- WEB105 folio 40/100
+
+-- FRANK (student 4) -> Excellent (~85% in DB202 + WEB105)
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published) VALUES
+(1, 4, '~/Uploads/Frank_Quiz1.docx', GETDATE(), 17, 1),     -- DB202 quiz    17/20
+(2, 4, '~/Uploads/Frank_Mid.docx',   GETDATE(), 43, 1),     -- DB202 midterm 43/50
+(5, 4, '~/Uploads/Frank_Lab1.pdf',   GETDATE(), 43, 1),     -- DB202 lab     43/50
+(3, 4, '~/Uploads/Frank_Web.zip',    GETDATE(), 85, 1),     -- WEB105 proj   85/100
+(6, 4, '~/Uploads/Frank_Folio.zip',  GETDATE(), 86, 1);     -- WEB105 folio  86/100
+
+-- IVY (student 6) -> Average (~51% in BUS301 + BUS210)
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, marks_awarded, is_published) VALUES
+(4, 6, '~/Uploads/Ivy_Essay.docx',     GETDATE(), 52, 1),   -- BUS301 essay     52/100
+(7, 6, '~/Uploads/Ivy_Marketing.docx', GETDATE(), 50, 1);   -- BUS210 marketing 50/100
+GO
+
+-- ===================================================================================
+-- 12B. PAST-DUE LATE SUBMISSION DEMO (ungraded, still visible to lecturer/student)
+-- Frank has a late, ungraded Lab1 to populate the lecturer's "to grade" queue
+-- without affecting the graded students above.
+-- ===================================================================================
+INSERT INTO [AssignmentSubmission] (assignment_id, student_id, submission_file, submitted_at, is_published)
+VALUES
+(5, 4, '~/Uploads/Frank_Lab1_late.pdf', GETDATE(), 0);      -- Frank Lab1 (late, ungraded)
 GO
 
 -- 13. SEMESTER DISPATCH SCHEDULER ALLOCATIONS
 INSERT INTO [CourseAssignment_Session] (course_id, lecturer_id, academic_session, assign_status)
 VALUES
 (1, 1, 'JAN2026', 'Active'),
-(2, 2, 'JAN2026', 'Active');
+(2, 2, 'JAN2026', 'Active'),
+(3, 4, 'JAN2026', 'Active'),   -- WEB105 -> Grace
+(4, 1, 'JAN2026', 'Active'),   -- DS204  -> Alan
+(5, 3, 'JAN2026', 'Active'),   -- BUS301 -> Warren
+(6, 3, 'JAN2026', 'Active'),   -- BUS210 -> Warren
+(7, 3, 'JAN2026', 'Active');   -- BUS305 -> Warren
+GO
+
+-- ===================================================================================
+-- 14. HISTORICAL GRADE RECORDS (PAST SEMESTERS)
+-- trg_CalculateGradesAndGPA only writes the CURRENT enrolled semester, so prior-sem
+-- GPA rows are seeded directly here. Counts vary per student. The UQ_Student_Semester
+-- constraint keeps one row per (student, semester); none of these collide with the
+-- current-semester rows the trigger created in Section 12.
+--   Charlie (now sem5): 4 past sems   David (now sem3): 2 past sems
+--   Eve     (now sem3): 2 past sems   Frank (now sem2): 1 past sem
+--   Ivy     (now sem4): 3 past sems
+-- Each student's history trends toward their current performance band.
+-- ===================================================================================
+
+-- Charlie -> Good: steady B+ history
+INSERT INTO [Grades] (Student_id, semester, gpa) VALUES
+(1, 1, 3.10), (1, 2, 3.25), (1, 3, 3.40), (1, 4, 3.20);
+
+-- David -> Average: C+/B- history
+INSERT INTO [Grades] (Student_id, semester, gpa) VALUES
+(2, 1, 2.50), (2, 2, 2.40);
+
+-- Eve -> Fail: weak, declining history
+INSERT INTO [Grades] (Student_id, semester, gpa) VALUES
+(3, 1, 1.80), (3, 2, 1.50);
+
+-- Frank -> Excellent: strong prior sem
+INSERT INTO [Grades] (Student_id, semester, gpa) VALUES
+(4, 1, 3.85);
+
+-- Ivy -> Average: flat C history
+INSERT INTO [Grades] (Student_id, semester, gpa) VALUES
+(6, 1, 2.10), (6, 2, 2.30), (6, 3, 2.00);
+GO
+
+-- Recompute CGPA across ALL semesters (mirrors the trigger's averaging logic so the
+-- cumulative figure accounts for both the seeded history and the current-sem rows).
+UPDATE g
+SET cgpa = c.CumulativeGPA
+FROM [Grades] g
+INNER JOIN (SELECT Student_id, AVG(gpa) AS CumulativeGPA FROM [Grades] GROUP BY Student_id) c
+  ON g.Student_id = c.Student_id;
+GO
+
+-- ===================================================================================
+-- 15. VERIFICATION: performance spread + semester history
+-- ===================================================================================
+SELECT s.student_name, g.semester, g.gpa, g.cgpa
+FROM [Grades] g INNER JOIN [Student] s ON g.Student_id = s.student_id
+ORDER BY s.student_name, g.semester;
 GO
 
 -- ===================================================================================
@@ -769,4 +922,3 @@ SELECT * FROM [Announcement];
 SELECT * FROM [CourseGrade];
 SELECT * FROM [Grades];
 SELECT * FROM [CourseAssignment_Session];
-DELETE FROM [Course];

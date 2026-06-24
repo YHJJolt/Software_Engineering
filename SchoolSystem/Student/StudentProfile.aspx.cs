@@ -43,6 +43,64 @@ namespace SchoolSystem
             }
         }
 
+        // Validates that the uploaded file is genuinely an image by checking BOTH
+        // the file extension and the actual file-signature ("magic") bytes.
+        // A non-image (or a non-image renamed with an image extension) returns false,
+        // so it can never be written into the image column.
+        private bool IsValidImage(System.Web.HttpPostedFile file, out string error)
+        {
+            error = null;
+
+            // 1. Size guard (reject empty and oversized files; 5 MB cap here)
+            if (file.ContentLength <= 0)
+            {
+                error = "The selected file is empty.";
+                return false;
+            }
+            if (file.ContentLength > 5 * 1024 * 1024)
+            {
+                error = "Image must be 5 MB or smaller.";
+                return false;
+            }
+
+            // 2. Extension allow-list
+            string ext = System.IO.Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? "";
+            string[] allowedExt = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+            if (System.Array.IndexOf(allowedExt, ext) < 0)
+            {
+                error = "Only image files (JPG, PNG, GIF, BMP, WEBP) are allowed.";
+                return false;
+            }
+
+            // 3. Magic-byte check on the real content, so a renamed file is still caught
+            byte[] header = new byte[12];
+            int read = file.InputStream.Read(header, 0, header.Length);
+            file.InputStream.Position = 0; // rewind so the later save reads the whole file
+            if (read < 4 || !HasImageSignature(header))
+            {
+                error = "That file is not a valid image.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool HasImageSignature(byte[] h)
+        {
+            // JPEG: FF D8 FF
+            if (h[0] == 0xFF && h[1] == 0xD8 && h[2] == 0xFF) return true;
+            // PNG: 89 50 4E 47 0D 0A 1A 0A
+            if (h[0] == 0x89 && h[1] == 0x50 && h[2] == 0x4E && h[3] == 0x47) return true;
+            // GIF: "GIF8"
+            if (h[0] == 0x47 && h[1] == 0x49 && h[2] == 0x46 && h[3] == 0x38) return true;
+            // BMP: "BM"
+            if (h[0] == 0x42 && h[1] == 0x4D) return true;
+            // WEBP: "RIFF"...."WEBP"
+            if (h[0] == 0x52 && h[1] == 0x49 && h[2] == 0x46 && h[3] == 0x46 &&
+                h.Length >= 12 && h[8] == 0x57 && h[9] == 0x45 && h[10] == 0x42 && h[11] == 0x50) return true;
+            return false;
+        }
+
         private void LoadUserData()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -160,6 +218,16 @@ namespace SchoolSystem
 
         private void UploadImage()
         {
+            // Reject anything that is not a genuine image. On failure we show an
+            // alert and return WITHOUT touching the database at all — no other
+            // column (especially student_pw) is ever affected by a bad upload.
+            string error;
+            if (!IsValidImage(fileUploadImg.PostedFile, out error))
+            {
+                ShowAlert(error);
+                return;
+            }
+
             byte[] imgBytes = fileUploadImg.FileBytes;
             using (SqlConnection conn = new SqlConnection(connStr))
             {

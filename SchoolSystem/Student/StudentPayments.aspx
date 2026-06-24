@@ -96,7 +96,6 @@
                                     <asp:ListItem Value="" Text="-- Select Method --"></asp:ListItem>
                                     <asp:ListItem Value="Credit Card" Text="Credit / Debit Card"></asp:ListItem>
                                     <asp:ListItem Value="Bank Transfer" Text="Online Banking (FPX)"></asp:ListItem>
-                                    <asp:ListItem Value="Cash" Text="Cash at Counter"></asp:ListItem>
                                 </asp:DropDownList>
                             </div>
 

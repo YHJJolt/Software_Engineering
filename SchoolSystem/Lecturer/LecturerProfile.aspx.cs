@@ -43,6 +43,54 @@ namespace SchoolSystem
             }
         }
 
+        // Validates that the uploaded file is genuinely an image by checking BOTH
+        // the file extension and the actual file-signature ("magic") bytes.
+        private bool IsValidImage(System.Web.HttpPostedFile file, out string error)
+        {
+            error = null;
+
+            if (file.ContentLength <= 0)
+            {
+                error = "The selected file is empty.";
+                return false;
+            }
+            if (file.ContentLength > 5 * 1024 * 1024)
+            {
+                error = "Image must be 5 MB or smaller.";
+                return false;
+            }
+
+            string ext = System.IO.Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? "";
+            string[] allowedExt = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+            if (System.Array.IndexOf(allowedExt, ext) < 0)
+            {
+                error = "Only image files (JPG, PNG, GIF, BMP, WEBP) are allowed.";
+                return false;
+            }
+
+            byte[] header = new byte[12];
+            int read = file.InputStream.Read(header, 0, header.Length);
+            file.InputStream.Position = 0;
+            if (read < 4 || !HasImageSignature(header))
+            {
+                error = "That file is not a valid image.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool HasImageSignature(byte[] h)
+        {
+            if (h[0] == 0xFF && h[1] == 0xD8 && h[2] == 0xFF) return true;                       // JPEG
+            if (h[0] == 0x89 && h[1] == 0x50 && h[2] == 0x4E && h[3] == 0x47) return true;       // PNG
+            if (h[0] == 0x47 && h[1] == 0x49 && h[2] == 0x46 && h[3] == 0x38) return true;       // GIF
+            if (h[0] == 0x42 && h[1] == 0x4D) return true;                                        // BMP
+            if (h[0] == 0x52 && h[1] == 0x49 && h[2] == 0x46 && h[3] == 0x46 &&
+                h.Length >= 12 && h[8] == 0x57 && h[9] == 0x45 && h[10] == 0x42 && h[11] == 0x50) return true; // WEBP
+            return false;
+        }
+
         private void LoadUserData()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
@@ -161,6 +209,13 @@ namespace SchoolSystem
 
         private void UploadImage()
         {
+            string error;
+            if (!IsValidImage(fileUploadImg.PostedFile, out error))
+            {
+                ShowAlert(error);
+                return;
+            }
+
             byte[] imgBytes = fileUploadImg.FileBytes;
             using (SqlConnection conn = new SqlConnection(connStr))
             {
