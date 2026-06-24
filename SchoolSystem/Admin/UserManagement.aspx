@@ -2,12 +2,10 @@
     AutoEventWireup="true" CodeBehind="UserManagement.aspx.cs" Inherits="SchoolSystem.UserManagement" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="~/Admin/Admin.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </asp:Content>
 
 <asp:Content ID="ContentTitle" ContentPlaceHolderID="TopbarTitle" runat="server">
@@ -17,7 +15,7 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    
+
     <div class="user-mgmt-page">
     <asp:HiddenField ID="hfReopenModal"  runat="server" />
     <asp:HiddenField ID="hfActiveTab"    runat="server" Value="students" />
@@ -36,9 +34,21 @@
     <asp:HiddenField ID="hfToastMsg"     runat="server" />
     <asp:HiddenField ID="hfToastType"    runat="server" />
 
+    <%-- Hidden fields to store pending action info for SweetAlert --%>
+    <asp:HiddenField ID="hfPendingAction"   runat="server" />
+    <asp:HiddenField ID="hfPendingId"       runat="server" />
+    <asp:HiddenField ID="hfPendingName"     runat="server" />
+    <asp:HiddenField ID="hfPendingCode"     runat="server" />
+    <asp:HiddenField ID="hfPendingStatus"   runat="server" />
+    <asp:HiddenField ID="hfPendingType"     runat="server" />
+
+    <%-- Hidden buttons for server-side postback --%>
+    <asp:Button ID="btnDoDelete"  runat="server" style="display:none;" OnClick="btnDoDelete_Click"  />
+    <asp:Button ID="btnDoToggle"  runat="server" style="display:none;" OnClick="btnDoToggle_Click"  />
+    <asp:Button ID="btnDoResetPw" runat="server" style="display:none;" OnClick="btnDoResetPw_Click" />
+
     <asp:Literal ID="litDropdownData" runat="server" />
     <div id="umToast" class="um-toast"></div>
-
 
     <div class="row mb-4 g-3">
         <div class="col-md-4 col-6">
@@ -77,7 +87,7 @@
 
     <div class="tab-content">
 
-        <%-- ══ STUDENTS TAB ══ --%>
+        <%-- STUDENTS TAB --%>
         <div class="tab-pane fade<%=hfActiveTab.Value=="students"?" show active":"" %>" id="tabStudents">
             <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
                 <div class="search-row">
@@ -88,11 +98,8 @@
                     </select>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
-                    <%-- Sort funnel button + panel --%>
                     <div class="position-relative">
-                        <button type="button" class="btn btn-outline-secondary" id="btnStudSort" onclick="toggleSortPanel('studSortPanel')" title="Sort">
-                            <i class="fas fa-filter"></i>
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="toggleSortPanel('studSortPanel')" title="Sort"><i class="fas fa-filter"></i></button>
                         <div id="studSortPanel" class="sort-panel" style="display:none;">
                             <div class="sort-group-lbl">Code</div>
                             <button class="sort-opt" onclick="pickSort('studSortPanel','ddlStudSort','code-asc',this)"><i class="fas fa-arrow-up me-1"></i>Ascending</button>
@@ -103,13 +110,10 @@
                         </div>
                         <input type="hidden" id="ddlStudSort" value="code-asc" />
                     </div>
-                    
-                    <%-- ADDED ADVANCE SEMESTER BUTTON --%>
-                    <asp:LinkButton ID="btnAdvanceSession" runat="server" CssClass="btn btn-warning fw-bold text-dark" OnClick="btnAdvanceSession_Click"
-                        OnClientClick="return confirmAdvanceSession();">
+                    <asp:LinkButton ID="btnAdvanceSession" runat="server" CssClass="btn btn-warning fw-bold text-dark"
+                        OnClick="btnAdvanceSession_Click" OnClientClick="return confirmAdvanceSession();">
                         <i class="fas fa-forward me-1"></i> Advance Session
                     </asp:LinkButton>
-
                     <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddStudent"><i class="fas fa-plus"></i> Add Student</button>
                 </div>
             </div>
@@ -122,10 +126,7 @@
                         <asp:BoundField DataField="student_email"   HeaderText="Email" />
                         <asp:BoundField DataField="student_contact" HeaderText="Contact" NullDisplayText="N/A" />
                         <asp:BoundField DataField="program_name"    HeaderText="Program" />
-                        
-                        <%-- ADDED SEMESTER FIELD --%>
                         <asp:BoundField DataField="student_sem"     HeaderText="Sem" />
-
                         <asp:TemplateField HeaderText="Status">
                             <ItemTemplate>
                                 <span class='badge <%# Eval("student_isactive").ToString()=="Active" ? "bg-success" : (Eval("student_isactive").ToString()=="Graduated" ? "bg-primary" : "bg-danger") %>'>
@@ -135,15 +136,19 @@
                         </asp:TemplateField>
                         <asp:TemplateField HeaderText="Actions">
                             <ItemTemplate>
-                                <asp:LinkButton runat="server" CssClass="act-icon c-blue" CommandName="ViewS" CommandArgument='<%# Eval("student_id") %>' ToolTip="View"><i class="fas fa-eye"></i></asp:LinkButton>
-                                <asp:LinkButton runat="server" CssClass="act-icon c-org" CommandName="Toggle" CommandArgument='<%# Eval("student_id") %>'
+                                <asp:LinkButton runat="server" CssClass="act-icon c-blue" CommandName="ViewS"
+                                    CommandArgument='<%# Eval("student_id") %>' ToolTip="View"><i class="fas fa-eye"></i></asp:LinkButton>
+                                <asp:LinkButton runat="server" CssClass="act-icon c-org" CommandName="ReqToggle"
+                                    CommandArgument='<%# Eval("student_id") + "|" + Eval("student_name") + "|" + Eval("student_code") + "|" + Eval("student_isactive") + "|student" %>'
                                     Visible='<%# Eval("student_isactive").ToString() != "Graduated" %>'
-                                    ToolTip='<%# Eval("student_isactive").ToString()=="Active"?"Deactivate":"Activate" %>'
-                                    OnClientClick='<%# "return confirmToggle(\""+Eval("student_name")+"\",\""+Eval("student_code")+"\",\""+Eval("student_isactive")+"\",\"student\");" %>'>
+                                    ToolTip='<%# Eval("student_isactive").ToString()=="Active"?"Deactivate":"Activate" %>'>
                                     <i class='<%# Eval("student_isactive").ToString()=="Active"?"fas fa-toggle-on":"fas fa-toggle-off" %>'></i></asp:LinkButton>
-                                <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="DeleteS" CommandArgument='<%# Eval("student_id") %>'
-                                    ToolTip="Delete" OnClientClick='<%# "return confirmDelete(\""+Eval("student_name")+"\",\""+Eval("student_code")+"\",\"student\");" %>'>
-                                    <i class="fas fa-trash"></i></asp:LinkButton>
+                                <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="ReqDelete"
+                                    CommandArgument='<%# Eval("student_id") + "|" + Eval("student_name") + "|" + Eval("student_code") + "|student" %>'
+                                    ToolTip="Delete"><i class="fas fa-trash"></i></asp:LinkButton>
+                                <asp:LinkButton runat="server" CssClass="act-icon c-purple" CommandName="ReqResetPw"
+                                    CommandArgument='<%# Eval("student_id") + "|" + Eval("student_name") + "|" + Eval("student_code") + "|student" %>'
+                                    ToolTip="Reset Password"><i class="fas fa-key"></i></asp:LinkButton>
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
@@ -151,21 +156,16 @@
             </div>
         </div>
 
-        <%-- ══ LECTURERS TAB ══ --%>
+        <%-- LECTURERS TAB --%>
         <div class="tab-pane fade<%=hfActiveTab.Value=="lecturers"?" show active":"" %>" id="tabLecturers">
             <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
                 <div class="search-row">
                     <input type="text" id="txtSrchLect" class="form-control" placeholder="Search Code, Name, Email…" style="width:240px;font-size:13px;" oninput="filterLecturers()" />
                     <select id="ddlDeptFilter" class="form-select w-auto" style="font-size:13px;" onchange="filterLecturers()"><option value="">All Departments</option></select>
-                    <select id="ddlLectStatus" class="form-select w-auto" style="font-size:13px;" onchange="filterLecturers()">
-                        <option value="">All Status</option><option value="Active">Active</option><option value="Inactive">Inactive</option>
-                    </select>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
-                        <button type="button" class="btn btn-outline-secondary" id="btnLectSort" onclick="toggleSortPanel('lectSortPanel')" title="Sort">
-                            <i class="fas fa-filter"></i>
-                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="toggleSortPanel('lectSortPanel')" title="Sort"><i class="fas fa-filter"></i></button>
                         <div id="lectSortPanel" class="sort-panel" style="display:none;">
                             <div class="sort-group-lbl">Code</div>
                             <button class="sort-opt" onclick="pickSort('lectSortPanel','ddlLectSort','code-asc',this)"><i class="fas fa-arrow-up me-1"></i>Ascending</button>
@@ -183,22 +183,21 @@
                 <asp:GridView ID="gvLecturers" runat="server" CssClass="table table-hover align-middle"
                     AutoGenerateColumns="false" OnRowCommand="gvLecturers_RowCommand">
                     <Columns>
-                        <asp:BoundField DataField="lecturer_code"        HeaderText="Code" />
-                        <asp:BoundField DataField="lecturer_name"        HeaderText="Name" />
-                        <asp:BoundField DataField="lecturer_email"       HeaderText="Email" />
-                        <asp:BoundField DataField="lecturer_contact"     HeaderText="Contact" NullDisplayText="N/A" />
-                        <asp:BoundField DataField="lecturer_department"  HeaderText="Department" />
-                        <asp:TemplateField HeaderText="Status">
-                            <ItemTemplate>
-                                <span class='badge <%# Eval("teacher_isactive").ToString()=="Active"?"bg-success":"bg-danger" %>'><%# Eval("teacher_isactive") %></span>
-                            </ItemTemplate>
-                        </asp:TemplateField>
+                        <asp:BoundField DataField="lecturer_code"       HeaderText="Code" />
+                        <asp:BoundField DataField="lecturer_name"       HeaderText="Name" />
+                        <asp:BoundField DataField="lecturer_email"      HeaderText="Email" />
+                        <asp:BoundField DataField="lecturer_contact"    HeaderText="Contact" NullDisplayText="N/A" />
+                        <asp:BoundField DataField="lecturer_department" HeaderText="Department" />
                         <asp:TemplateField HeaderText="Actions">
                             <ItemTemplate>
-                                <asp:LinkButton runat="server" CssClass="act-icon c-blue" CommandName="ViewL" CommandArgument='<%# Eval("lecturer_id") %>' ToolTip="View"><i class="fas fa-eye"></i></asp:LinkButton>
-                                <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="DeleteL" CommandArgument='<%# Eval("lecturer_id") %>'
-                                    ToolTip="Delete" OnClientClick='<%# "return confirmDelete(\""+Eval("lecturer_name")+"\",\""+Eval("lecturer_code")+"\",\"lecturer\");" %>'>
-                                    <i class="fas fa-trash"></i></asp:LinkButton>
+                                <asp:LinkButton runat="server" CssClass="act-icon c-blue" CommandName="ViewL"
+                                    CommandArgument='<%# Eval("lecturer_id") %>' ToolTip="View"><i class="fas fa-eye"></i></asp:LinkButton>
+                                <asp:LinkButton runat="server" CssClass="act-icon c-red" CommandName="ReqDelete"
+                                    CommandArgument='<%# Eval("lecturer_id") + "|" + Eval("lecturer_name") + "|" + Eval("lecturer_code") + "|lecturer" %>'
+                                    ToolTip="Delete"><i class="fas fa-trash"></i></asp:LinkButton>
+                                <asp:LinkButton runat="server" CssClass="act-icon c-purple" CommandName="ReqResetPw"
+                                       CommandArgument='<%# Eval("lecturer_id") + "|" + Eval("lecturer_name") + "|" + Eval("lecturer_code") + "|lecturer" %>'
+                                       ToolTip="Reset Password"><i class="fas fa-key"></i></asp:LinkButton>
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
@@ -208,7 +207,7 @@
 
     </div>
 
-    <%-- ══ MODAL: ADD STUDENT ══ --%>
+    <%-- MODAL: ADD STUDENT --%>
     <div class="modal fade" id="modalAddStudent" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -261,7 +260,7 @@
         </div>
     </div>
 
-    <%-- ══ MODAL: ADD LECTURER ══ --%>
+    <%-- MODAL: ADD LECTURER --%>
     <div class="modal fade" id="modalAddLecturer" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -300,7 +299,7 @@
                                 <asp:ListItem Value="School of Computing">School of Computing</asp:ListItem>
                                 <asp:ListItem Value="School of Business">School of Business</asp:ListItem>
                                 <asp:ListItem Value="School of Design">School of Design</asp:ListItem>
-                                <asp:ListItem Value="School of Design">School of Art</asp:ListItem>
+                                <asp:ListItem Value="School of Art">School of Art</asp:ListItem>
                             </asp:DropDownList>
                             <div id="errLectDept" class="text-danger mt-1" style="font-size:12px;display:none;">Please select a department</div>
                         </div>
@@ -315,7 +314,7 @@
         </div>
     </div>
 
-    <%-- ══ VIEW DETAIL OVERLAY ══ --%>
+    <%-- VIEW DETAIL OVERLAY --%>
     <div id="viewOverlay" class="view-overlay" onclick="closeViewOverlay(event)">
         <div class="view-card" onclick="event.stopPropagation()">
             <div class="view-card-header">
@@ -328,28 +327,86 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // @ts-nocheck
-        // SweetAlert confirmation for advancing the academic session (replaces the native browser confirm)
+
+        // ── Advance Session ──────────────────────────────────────────────
         function confirmAdvanceSession() {
             Swal.fire({
                 title: 'Advance Academic Session?',
                 html: 'All active students will move to the next semester and the global session will roll forward (e.g. JAN &rarr; APR &rarr; AUG).<br><br>Students who reach their program limit will be automatically graduated.<br><br><b>This action cannot be undone.</b>',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, advance session',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#C5A059',
-                cancelButtonColor: '#6c757d'
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    __doPostBack('<%= btnAdvanceSession.UniqueID %>', '');
-                }
-            });
-            return false; // cancel the immediate postback; it only fires after confirmation
+                icon: 'warning', showCancelButton: true,
+                confirmButtonText: 'Yes, advance session', cancelButtonText: 'Cancel',
+                confirmButtonColor: '#C5A059', cancelButtonColor: '#6c757d'
+            }).then(function (r) { if (r.isConfirmed) __doPostBack('<%=btnAdvanceSession.UniqueID%>', ''); });
+            return false;
         }
 
-        function showToast(msg, type) { var t = document.getElementById('umToast'); t.textContent = msg; t.className = 'um-toast ' + (type || 'success'); t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 3200); }
+        // ── Delete / Toggle via hidden buttons ───────────────────────────
+        function showDeleteSwal() {
+            document.getElementById('<%=hfPendingAction.ClientID%>').value = '';
+            var name = document.getElementById('<%=hfPendingName.ClientID%>').value;
+            var code = document.getElementById('<%=hfPendingCode.ClientID%>').value;
+            var type = document.getElementById('<%=hfPendingType.ClientID%>').value;
+            Swal.fire({
+                title: 'Delete ' + type + '?',
+                html: '<b>Name:</b> ' + name + '<br><b>Code:</b> ' + code + '<br><br>This action <b>cannot be undone</b>.',
+                icon: 'warning', showCancelButton: true,
+                confirmButtonText: 'Yes, delete', cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc2626', cancelButtonColor: '#6c757d'
+            }).then(function (r) {
+                if (r.isConfirmed) document.getElementById('<%=btnDoDelete.ClientID%>').click();
+            });
+        }
 
+        function showToggleSwal() {
+            document.getElementById('<%=hfPendingAction.ClientID%>').value = '';
+            var name = document.getElementById('<%=hfPendingName.ClientID%>').value;
+            var code = document.getElementById('<%=hfPendingCode.ClientID%>').value;
+            var status = document.getElementById('<%=hfPendingStatus.ClientID%>').value;
+            var type = document.getElementById('<%=hfPendingType.ClientID%>').value;
+            var deact = status === 'Active';
+            var action = deact ? 'Deactivate' : 'Activate';
+            var note = type === 'student'
+                ? (deact ? 'This student will not be able to progress to the next semester until reactivated.'
+                    : 'This student will be able to progress to the next semester again.')
+                : (deact ? 'This lecturer will be hidden from course assignments.'
+                    : 'This lecturer will be available for course assignments again.');
+            Swal.fire({
+                title: action + ' ' + type + '?',
+                html: '<b>Name:</b> ' + name + '<br><b>Code:</b> ' + code + '<br><br>' + note,
+                icon: deact ? 'warning' : 'question', showCancelButton: true,
+                confirmButtonText: 'Yes, ' + action.toLowerCase(), cancelButtonText: 'Cancel',
+                confirmButtonColor: deact ? '#d97706' : '#16a34a', cancelButtonColor: '#6c757d'
+            }).then(function (r) {
+                if (r.isConfirmed) document.getElementById('<%=btnDoToggle.ClientID%>').click();
+            });
+        }
+
+        function showResetPwSwal() {
+            document.getElementById('<%=hfPendingAction.ClientID%>').value = '';
+            var name = document.getElementById('<%=hfPendingName.ClientID%>').value;
+            var code = document.getElementById('<%=hfPendingCode.ClientID%>').value;
+            var type = document.getElementById('<%=hfPendingType.ClientID%>').value;
+            var defpw = type === 'student' ? 'stud123' : 'lect123';
+            Swal.fire({
+                title: 'Reset password?',
+                html: '<b>Name:</b> ' + name + '<br><b>Code:</b> ' + code + '<br><br>This will reset the password back to <b>' + defpw + '</b>.',
+                icon: 'question', showCancelButton: true,
+                confirmButtonText: 'Yes, reset', cancelButtonText: 'Cancel',
+                confirmButtonColor: '#7c3aed', cancelButtonColor: '#6c757d'
+            }).then(function (r) {
+                if (r.isConfirmed) document.getElementById('<%=btnDoResetPw.ClientID%>').click();
+            });
+        }
+
+        // ── Toast ────────────────────────────────────────────────────────
+        function showToast(msg, type) {
+            var t = document.getElementById('umToast');
+            t.textContent = msg; t.className = 'um-toast ' + (type || 'success');
+            t.classList.add('show');
+            setTimeout(function () { t.classList.remove('show'); }, 3200);
+        }
+
+        // ── Dropdowns ────────────────────────────────────────────────────
         function initProgDropdown() {
             var sel = document.getElementById('<%=ddlProgramAdd.ClientID%>');
             if (!sel) return;
@@ -368,7 +425,20 @@
             if (err && sel.value) err.style.display = 'none';
             sel.classList.toggle('is-invalid', !sel.value);
         }
+        function populateDropdowns() {
+            if (typeof _progData !== 'undefined' && _progData) {
+                var sel = document.getElementById('ddlProgFilter');
+                while (sel.options.length > 1) sel.remove(1);
+                _progData.split('||').forEach(function (item) { var p = item.split('|'); if (p.length === 2) sel.add(new Option(p[1], p[1])); });
+            }
+            if (typeof _deptData !== 'undefined' && _deptData) {
+                var sel2 = document.getElementById('ddlDeptFilter');
+                while (sel2.options.length > 1) sel2.remove(1);
+                _deptData.split('||').forEach(function (v) { if (v) sel2.add(new Option(v, v)); });
+            }
+        }
 
+        // ── Phone / name helpers ─────────────────────────────────────────
         function phoneMask(el) {
             var raw = el.value.replace(/\D/g, '');
             if (raw.length > 0 && raw[0] !== '0') raw = '0' + raw;
@@ -376,10 +446,8 @@
             if (raw.length > 11) raw = raw.substring(0, 11);
             el.value = raw.length > 3 ? raw.substring(0, 3) + '-' + raw.substring(3) : raw;
         }
-
         function toTitleCaseStr(s) { return s.replace(/\b\w/g, function (c) { return c.toUpperCase(); }); }
         function toTitleCase(el) { var pos = el.selectionStart; el.value = toTitleCaseStr(el.value); try { el.setSelectionRange(pos, pos); } catch (e) { } }
-
         function buildEmail(name, id, domain) {
             var clean = name.trim().toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
             if (!clean) clean = 'user';
@@ -400,27 +468,16 @@
             e.value = n.value ? buildEmail(n.value, id, 'lect.com') : '';
         }
 
-        function togglePw(id, btn) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            var show = (el.type === 'text');
-            el.type = show ? 'password' : 'text';
-            btn.querySelector('i').className = show ? 'fas fa-eye' : 'fas fa-eye-slash';
-        }
-
+        // ── Validation ───────────────────────────────────────────────────
         function chk(fieldId, errId, testFn) {
-            var el = document.getElementById(fieldId);
-            var err = document.getElementById(errId);
-            var val = el ? el.value.trim() : '';
+            var el = document.getElementById(fieldId), err = document.getElementById(errId), val = el ? el.value.trim() : '';
             var fail = !testFn(val);
             if (err) err.style.display = fail ? 'block' : 'none';
             if (el) el.classList.toggle('is-invalid', fail);
             return !fail;
         }
         function validateOptionalPhone(fieldId, errId) {
-            var el = document.getElementById(fieldId);
-            var err = document.getElementById(errId);
-            var val = el ? el.value.trim() : '';
+            var el = document.getElementById(fieldId), err = document.getElementById(errId), val = el ? el.value.trim() : '';
             if (!val) { if (err) err.style.display = 'none'; if (el) el.classList.remove('is-invalid'); return true; }
             var fail = !/^01\d-\d{7,8}$/.test(val);
             if (err) err.style.display = fail ? 'block' : 'none';
@@ -430,15 +487,15 @@
         function validateStudForm() {
             var ok = true;
             ok = chk('<%=txtStudName.ClientID%>', 'errStudName', function (v) { return v.length > 0; }) && ok;
-    ok = validateOptionalPhone('<%=txtStudContact.ClientID%>', 'errStudContact') && ok;
-    var semEl = document.getElementById('<%=txtStudSem.ClientID%>');
-    var semVal = semEl ? parseInt(semEl.value) : 0;
-    var semFail = isNaN(semVal) || semVal < 1 || semVal > 12;
-    var semErr = document.getElementById('errStudSem');
-    if (semErr) semErr.style.display = semFail ? 'block' : 'none';
-    if (semEl) semEl.classList.toggle('is-invalid', semFail);
-    if (semFail) ok = false;
-    var progEl = document.getElementById('<%=ddlProgramAdd.ClientID%>');
+            ok = validateOptionalPhone('<%=txtStudContact.ClientID%>', 'errStudContact') && ok;
+            var semEl = document.getElementById('<%=txtStudSem.ClientID%>');
+            var semVal = semEl ? parseInt(semEl.value) : 0;
+            var semFail = isNaN(semVal) || semVal < 1 || semVal > 12;
+            var semErr = document.getElementById('errStudSem');
+            if (semErr) semErr.style.display = semFail ? 'block' : 'none';
+            if (semEl) semEl.classList.toggle('is-invalid', semFail);
+            if (semFail) ok = false;
+            var progEl = document.getElementById('<%=ddlProgramAdd.ClientID%>');
             var progFail = !progEl || !progEl.value;
             var progErr = document.getElementById('errStudProg');
             if (progErr) progErr.style.display = progFail ? 'block' : 'none';
@@ -459,290 +516,246 @@
             return ok;
         }
 
+        // ── Clear forms ──────────────────────────────────────────────────
         function clearStudForm() {
-            ['<%=txtStudName.ClientID%>','<%=txtStudContact.ClientID%>']
-                .forEach(function (id) { var e = document.getElementById(id); if (e) { e.value = ''; e.classList.remove('is-invalid'); } });
+            ['<%=txtStudName.ClientID%>','<%=txtStudContact.ClientID%>'].forEach(function (id) { var e = document.getElementById(id); if (e) { e.value = ''; e.classList.remove('is-invalid'); } });
             var s = document.getElementById('<%=txtStudSem.ClientID%>');if(s){s.value='1';s.classList.remove('is-invalid');}
-            document.getElementById('<%=txtStudEmail.ClientID%>').value='';
-            var p=document.getElementById('<%=ddlProgramAdd.ClientID%>');
-            if(p){p.value='';p.style.color='#6c757d';p.classList.remove('is-invalid');}
-            ['errStudName','errStudContact','errStudSem','errStudProg']
-                .forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
-            var err=document.getElementById('<%=lblStudErr.ClientID%>');if(err)err.textContent='';
-        }
-        function clearLectForm(){
-            ['<%=txtLectName.ClientID%>','<%=txtLectContact.ClientID%>']
-                .forEach(function(id){var e=document.getElementById(id);if(e){e.value='';e.classList.remove('is-invalid');}});
-            document.getElementById('<%=txtLectEmail.ClientID%>').value='';
-            var d=document.getElementById('<%=ddlLectDept.ClientID%>');
-            if(d){d.value='';d.style.color='#6c757d';d.classList.remove('is-invalid');}
-            ['errLectName','errLectContact','errLectDept']
-                .forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
-            var err=document.getElementById('<%=lblLectErr.ClientID%>');if(err)err.textContent='';
-        }
+        document.getElementById('<%=txtStudEmail.ClientID%>').value='';
+        var p=document.getElementById('<%=ddlProgramAdd.ClientID%>');
+        if(p){p.value='';p.style.color='#6c757d';p.classList.remove('is-invalid');}
+        ['errStudName','errStudContact','errStudSem','errStudProg'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+        var err=document.getElementById('<%=lblStudErr.ClientID%>');if(err)err.textContent='';
+    }
+    function clearLectForm(){
+        ['<%=txtLectName.ClientID%>','<%=txtLectContact.ClientID%>'].forEach(function(id){var e=document.getElementById(id);if(e){e.value='';e.classList.remove('is-invalid');}});
+        document.getElementById('<%=txtLectEmail.ClientID%>').value='';
+        var d=document.getElementById('<%=ddlLectDept.ClientID%>');
+        if(d){d.value='';d.style.color='#6c757d';d.classList.remove('is-invalid');}
+        ['errLectName','errLectContact','errLectDept'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+        var err=document.getElementById('<%=lblLectErr.ClientID%>');if(err)err.textContent='';
+    }
 
-        function confirmDelete(name,code,type){return confirm('Permanently delete '+type+'?\n\nName : '+name+'\nCode : '+code+'\n\nThis cannot be undone');}
-        function confirmToggle(name,code,status,type){
-            var deactivating=status==='Active';
-            var a=deactivating?'DEACTIVATE':'ACTIVATE';
-            var n;
-            if(type==='student'){
-                n=deactivating
-                    ?'This student will not be able to progress to the next semester until reactivated.'
-                    :'This student will be able to progress to the next semester again.';
-            } else {
-                n=deactivating
-                    ?'This lecturer will be hidden from course assignments and will not appear as an active staff member.'
-                    :'This lecturer will be available for course assignments again.';
-            }
-            var userLabel=type==='student'?'student':'lecturer';
-            return confirm(a+' '+userLabel+'?\n\nName : '+name+'\nCode : '+code+'\n\n'+n);
-        }
+    // ── Stats swap ───────────────────────────────────────────────────
+    function swapStats(tab){
+        var s=(tab==='students');
+        document.getElementById('lblBox2').textContent=s?'Total Students':'Total Lecturers';
+        document.getElementById('lblBox3').textContent=s?'Active Students':'Active Lecturers';
+        document.getElementById('lblBox4').textContent=s?'Inactive / Graduated':'Inactive Lecturers';
+        document.getElementById('<%=lblTotalStudents.ClientID%>').style.display=s?'':'none';
+        document.getElementById('<%=lblActiveStudents.ClientID%>').style.display=s?'':'none';
+        document.getElementById('<%=lblInactiveStudents.ClientID%>').style.display=s?'':'none';
+        document.getElementById('<%=lblTotalLecturers.ClientID%>').style.display=s?'none':'';
+        document.getElementById('<%=lblActiveLecturers.ClientID%>').style.display=s?'none':'';
+        document.getElementById('<%=lblInactiveLecturers.ClientID%>').style.display=s?'none':'';
+    }
 
-        function swapStats(tab){
-            var s=(tab==='students');
-            document.getElementById('lblBox2').textContent=s?'Total Students':'Total Lecturers';
-            document.getElementById('lblBox3').textContent=s?'Active Students':'Active Lecturers';
-            document.getElementById('lblBox4').textContent=s?'Inactive / Graduated':'Inactive Lecturers';
-            document.getElementById('<%=lblTotalStudents.ClientID%>').style.display=s?'':'none';
-            document.getElementById('<%=lblActiveStudents.ClientID%>').style.display=s?'':'none';
-            document.getElementById('<%=lblInactiveStudents.ClientID%>').style.display=s?'':'none';
-            document.getElementById('<%=lblTotalLecturers.ClientID%>').style.display=s?'none':'';
-            document.getElementById('<%=lblActiveLecturers.ClientID%>').style.display=s?'none':'';
-            document.getElementById('<%=lblInactiveLecturers.ClientID%>').style.display=s?'none':'';
-        }
-
-        function populateDropdowns(){
-            if(typeof _progData!=='undefined'&&_progData){
-                var sel=document.getElementById('ddlProgFilter');
-                while(sel.options.length>1)sel.remove(1);
-                _progData.split('||').forEach(function(item){var p=item.split('|');if(p.length===2)sel.add(new Option(p[1],p[1]));});
-            }
-            if(typeof _deptData!=='undefined'&&_deptData){
-                var sel2=document.getElementById('ddlDeptFilter');
-                while(sel2.options.length>1)sel2.remove(1);
-                _deptData.split('||').forEach(function(v){if(v)sel2.add(new Option(v,v));});
-            }
-        }
-
-        function updateNoResults(tableId) {
-            var table = document.getElementById(tableId);
-            if (!table) return;
-            var tbody = table.querySelector('tbody');
-            if (!tbody) return;
-
-            var old = tbody.querySelector('.no-results-row');
-            var allRows = Array.from(tbody.querySelectorAll('tr:not(.no-results-row)')).filter(function (r) {
-                return r.querySelector('td') && !r.querySelector('th');
-            });
-            var visRows = allRows.filter(function (r) {
-                return r.style.display !== 'none';
-            });
-            if (visRows.length === 0) {
-                table.classList.add('hide-thead');
-                if (!old) {
-                    var tr = document.createElement('tr');
-                    tr.className = 'no-results-row';
-                    var td = document.createElement('td');
-                    td.colSpan = 99;
-                    td.innerHTML = '<i class="fas fa-search me-2"></i>No results found';
-                    tr.appendChild(td);
-                    tbody.appendChild(tr);
-                }
-            } else {
-                table.classList.remove('hide-thead');
-                if (old) old.remove();
-            }
-        }
-
-        function saveFilters(){
-            sessionStorage.setItem('sf_stud_search',document.getElementById('txtSrchStud').value);
-            sessionStorage.setItem('sf_stud_prog',  document.getElementById('ddlProgFilter').value);
-            sessionStorage.setItem('sf_stud_status',document.getElementById('ddlStudStatus').value);
-            sessionStorage.setItem('sf_stud_sort',  document.getElementById('ddlStudSort').value);
-            sessionStorage.setItem('sf_lect_search',document.getElementById('txtSrchLect').value);
-            sessionStorage.setItem('sf_lect_dept',  document.getElementById('ddlDeptFilter').value);
-            sessionStorage.setItem('sf_lect_status',document.getElementById('ddlLectStatus').value);
-            sessionStorage.setItem('sf_lect_sort',  document.getElementById('ddlLectSort').value);
-        }
-        function restoreFilters(){
-            var ss=sessionStorage.getItem('sf_stud_search'),sp=sessionStorage.getItem('sf_stud_prog'),st=sessionStorage.getItem('sf_stud_status'),sso=sessionStorage.getItem('sf_stud_sort');
-            var ls=sessionStorage.getItem('sf_lect_search'),ld=sessionStorage.getItem('sf_lect_dept'), lt=sessionStorage.getItem('sf_lect_status'),lso=sessionStorage.getItem('sf_lect_sort');
-            if(ss)document.getElementById('txtSrchStud').value=ss;
-            if(sp)document.getElementById('ddlProgFilter').value=sp;
-            if(st)document.getElementById('ddlStudStatus').value=st;
-            if(sso)document.getElementById('ddlStudSort').value=sso;
-            if(ls)document.getElementById('txtSrchLect').value=ls;
-            if(ld)document.getElementById('ddlDeptFilter').value=ld;
-            if(lt)document.getElementById('ddlLectStatus').value=lt;
-            if(lso)document.getElementById('ddlLectSort').value=lso;
-            if(ss||sp||st)filterStudents();
-            if(ls||ld||lt)filterLecturers();
-        }
-
-        function filterStudents() {
-            var search = document.getElementById('txtSrchStud').value.toLowerCase();
-            var prog = document.getElementById('ddlProgFilter').value.toLowerCase();
-            var status = document.getElementById('ddlStudStatus').value.toLowerCase();
-            var gvId = '<%=gvStudents.ClientID%>';
-            var table = document.getElementById(gvId); if (!table) return;
-            document.querySelectorAll('#' + gvId + ' tbody tr').forEach(function (row) {
-                if (row.classList.contains('no-results-row')) return;
-                if (row.querySelector('th')) return;
-                var c = row.cells; if (!c || c.length < 6) return;
-                var ms = !search || [0, 1, 2].some(function (i) { return c[i].textContent.trim().toLowerCase().includes(search); });
-                var mp = !prog || c[4].textContent.trim().toLowerCase().includes(prog);
-                var mt = !status || c[6].textContent.trim().toLowerCase() === status; // Index 6 is status now that Sem was added at 5
-              
-                row.style.display = (ms && mp && mt) ? '' : 'none';
-            });
-            updateNoResults(gvId); saveFilters();
-        }
-        function filterLecturers() {
-            var search = document.getElementById('txtSrchLect').value.toLowerCase();
-            var dept = document.getElementById('ddlDeptFilter').value.toLowerCase();
-            var status = document.getElementById('ddlLectStatus').value.toLowerCase();
-            var gvId = '<%=gvLecturers.ClientID%>';
-            var table = document.getElementById(gvId); if (!table) return;
-            document.querySelectorAll('#' + gvId + ' tbody tr').forEach(function (row) {
-                if (row.classList.contains('no-results-row')) return;
-                if (row.querySelector('th')) return;
-                var c = row.cells; if (!c || c.length < 6) return;
-                var ms = !search || [0, 1, 2].some(function (i) { return c[i].textContent.trim().toLowerCase().includes(search); });
-                var mp = !dept || c[4].textContent.trim().toLowerCase().includes(dept);
-                var mt = !status || c[5].textContent.trim().toLowerCase() === status;
-              
-                row.style.display = (ms && mp && mt) ? '' : 'none';
-            });
-            updateNoResults(gvId); saveFilters();
-        }
-
-        // ── Sort panel ───────────────────────────────────────────────────
-        function toggleSortPanel(panelId){
-            var p=document.getElementById(panelId);
-            var all=['studSortPanel','lectSortPanel'];
-            all.forEach(function(id){ if(id!==panelId){ var el=document.getElementById(id); if(el)el.style.display='none'; }});
-            p.style.display=(p.style.display==='none'?'block':'none');
-        }
-        document.addEventListener('click',function(e){
-            if(!e.target.closest('.position-relative')){ 
-                ['studSortPanel','lectSortPanel'].forEach(function(id){ var el=document.getElementById(id); if(el)el.style.display='none'; });
-            }
+    // ── Filter / Sort ────────────────────────────────────────────────
+    function updateNoResults(tableId){
+        var table=document.getElementById(tableId);if(!table)return;
+        var tbody=table.querySelector('tbody');if(!tbody)return;
+        var old=tbody.querySelector('.no-results-row');
+        var vis=Array.from(tbody.querySelectorAll('tr:not(.no-results-row)')).filter(function(r){return r.querySelector('td')&&!r.querySelector('th')&&r.style.display!=='none';});
+        if(vis.length===0){
+            table.classList.add('hide-thead');
+            if(!old){var tr=document.createElement('tr');tr.className='no-results-row';var td=document.createElement('td');td.colSpan=99;td.innerHTML='<i class="fas fa-search me-2"></i>No results found';tr.appendChild(td);tbody.appendChild(tr);}
+        }else{table.classList.remove('hide-thead');if(old)old.remove();}
+    }
+    function saveFilters(){
+        sessionStorage.setItem('sf_stud_search',document.getElementById('txtSrchStud').value);
+        sessionStorage.setItem('sf_stud_prog',  document.getElementById('ddlProgFilter').value);
+        sessionStorage.setItem('sf_stud_status',document.getElementById('ddlStudStatus').value);
+        sessionStorage.setItem('sf_stud_sort',  document.getElementById('ddlStudSort').value);
+        sessionStorage.setItem('sf_lect_search',document.getElementById('txtSrchLect').value);
+        sessionStorage.setItem('sf_lect_dept',  document.getElementById('ddlDeptFilter').value);
+        sessionStorage.setItem('sf_lect_sort',  document.getElementById('ddlLectSort').value);
+    }
+    function restoreFilters(){
+        var ss=sessionStorage.getItem('sf_stud_search'),sp=sessionStorage.getItem('sf_stud_prog'),st=sessionStorage.getItem('sf_stud_status'),sso=sessionStorage.getItem('sf_stud_sort');
+        var ls=sessionStorage.getItem('sf_lect_search'),ld=sessionStorage.getItem('sf_lect_dept'),lso=sessionStorage.getItem('sf_lect_sort');
+        if(ss)document.getElementById('txtSrchStud').value=ss;
+        if(sp)document.getElementById('ddlProgFilter').value=sp;
+        if(st)document.getElementById('ddlStudStatus').value=st;
+        if(sso)document.getElementById('ddlStudSort').value=sso;
+        if(ls)document.getElementById('txtSrchLect').value=ls;
+        if(ld)document.getElementById('ddlDeptFilter').value=ld;
+        if(lso)document.getElementById('ddlLectSort').value=lso;
+        if(ss||sp||st)filterStudents();
+        if (ls || ld) filterLecturers();
+    }
+    function filterStudents(){
+        var search=document.getElementById('txtSrchStud').value.toLowerCase();
+        var prog=document.getElementById('ddlProgFilter').value.toLowerCase();
+        var status=document.getElementById('ddlStudStatus').value.toLowerCase();
+        var gvId='<%=gvStudents.ClientID%>';
+        var table=document.getElementById(gvId);if(!table)return;
+        document.querySelectorAll('#'+gvId+' tbody tr').forEach(function(row){
+            if(row.classList.contains('no-results-row'))return;
+            if(row.querySelector('th'))return;
+            var c=row.cells;if(!c||c.length<6)return;
+            var ms=!search||[0,1,2].some(function(i){return c[i].textContent.trim().toLowerCase().includes(search);});
+            var mp=!prog||c[4].textContent.trim().toLowerCase().includes(prog);
+            var mt=!status||c[6].textContent.trim().toLowerCase()===status;
+            row.style.display=(ms&&mp&&mt)?'':'none';
         });
-        function pickSort(panelId,hidId,val,btn){
-            document.querySelectorAll('#'+panelId+' .sort-opt').forEach(function(b){b.classList.remove('active');});
-            btn.classList.add('active');
-            document.getElementById(hidId).value=val;
-            document.getElementById(panelId).style.display='none';
-            if(hidId==='ddlStudSort') sortStudents();
-            else sortLecturers();
-            saveFilters();
+        updateNoResults(gvId);saveFilters();
+    }
+    function filterLecturers(){
+        var search=document.getElementById('txtSrchLect').value.toLowerCase();
+        var dept=document.getElementById('ddlDeptFilter').value.toLowerCase();
+        var gvId='<%=gvLecturers.ClientID%>';
+        var table=document.getElementById(gvId);if(!table)return;
+        document.querySelectorAll('#'+gvId+' tbody tr').forEach(function(row){
+            if(row.classList.contains('no-results-row'))return;
+            if(row.querySelector('th'))return;
+            var c=row.cells;if(!c||c.length<6)return;
+            var ms=!search||[0,1,2].some(function(i){return c[i].textContent.trim().toLowerCase().includes(search);});
+            var mp=!dept||c[4].textContent.trim().toLowerCase().includes(dept);
+            row.style.display = (ms && mp) ? '' : 'none';
+        });
+        updateNoResults(gvId);saveFilters();
+    }
+    function toggleSortPanel(panelId){
+        var p=document.getElementById(panelId);
+        ['studSortPanel','lectSortPanel'].forEach(function(id){if(id!==panelId){var el=document.getElementById(id);if(el)el.style.display='none';}});
+        p.style.display=(p.style.display==='none'?'block':'none');
+    }
+    document.addEventListener('click',function(e){
+        if(!e.target.closest('.position-relative'))
+            ['studSortPanel','lectSortPanel'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+    });
+    function pickSort(panelId,hidId,val,btn){
+        document.querySelectorAll('#'+panelId+' .sort-opt').forEach(function(b){b.classList.remove('active');});
+        btn.classList.add('active');
+        document.getElementById(hidId).value=val;
+        document.getElementById(panelId).style.display='none';
+        if(hidId==='ddlStudSort')sortStudents();else sortLecturers();
+        saveFilters();
+    }
+    function sortTable(gvId,colIdx,dir){
+        var table=document.getElementById(gvId);if(!table)return;
+        var tbody=table.querySelector('tbody');if(!tbody)return;
+        var rows=Array.from(tbody.querySelectorAll('tr:not(.no-results-row)')).filter(function(r){return r.querySelector('td')&&!r.querySelector('th');});
+        rows.sort(function(a,b){
+            var av=a.cells[colIdx]?a.cells[colIdx].textContent.trim().toLowerCase():'';
+            var bv=b.cells[colIdx]?b.cells[colIdx].textContent.trim().toLowerCase():'';
+            return dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
+        });
+        var noRes=tbody.querySelector('.no-results-row');
+        rows.forEach(function(r){if(noRes)tbody.insertBefore(r,noRes);else tbody.appendChild(r);});
+    }
+    function sortStudents(){var val=document.getElementById('ddlStudSort').value;sortTable('<%=gvStudents.ClientID%>',val.startsWith('name')?1:0,val.endsWith('asc')?'asc':'desc');}
+    function sortLecturers(){var val=document.getElementById('ddlLectSort').value;sortTable('<%=gvLecturers.ClientID%>',val.startsWith('name')?1:0,val.endsWith('asc')?'asc':'desc');}
+
+    // ── View card ────────────────────────────────────────────────────
+    function showViewCard(){
+        var vtype=document.getElementById('<%=hfViewType.ClientID%>').value;if(!vtype)return;
+        var code=document.getElementById('<%=hfViewCode.ClientID%>').value;
+        var name=document.getElementById('<%=hfViewName.ClientID%>').value;
+        var email=document.getElementById('<%=hfViewEmail.ClientID%>').value;
+        var contact=document.getElementById('<%=hfViewContact.ClientID%>').value;
+        var addr=document.getElementById('<%=hfViewAddr.ClientID%>').value;
+        var dob=document.getElementById('<%=hfViewDOB.ClientID%>').value;
+        var e1=document.getElementById('<%=hfViewExtra1.ClientID%>').value;
+        var e2=document.getElementById('<%=hfViewExtra2.ClientID%>').value;
+        var status=document.getElementById('<%=hfViewStatus.ClientID%>').value;
+        document.getElementById('viewCardTitle').textContent=vtype==='student'?'Student Details':'Lecturer Details';
+        function r(lbl,val){return '<div class="view-row"><span class="view-lbl">'+lbl+'</span><span class="view-val">'+(val&&val.trim()&&val!=='-'?val:'N/A')+'</span></div>';}
+        var bc='bg-danger';if(status==='Active')bc='bg-success';if(status==='Graduated')bc='bg-primary';
+        var badge='<span class="badge '+bc+'">'+status+'</span>';
+        var html=vtype==='student'
+            ?r('Code',code)+r('Name',name)+r('Email',email)+r('Contact',contact)+r('Address',addr)+r('Date of Birth',dob)+r('Program',e1)+r('Semester',e2)+r('Status',badge)
+            :r('Code',code)+r('Name',name)+r('Email',email)+r('Contact',contact)+r('Address',addr)+r('Date of Birth',dob)+r('Department',e1)+r('Status',badge);
+        document.getElementById('viewCardBody').innerHTML=html;
+        document.getElementById('viewOverlay').classList.add('show');
+        document.getElementById('<%=hfViewType.ClientID%>').value='';
+    }
+    function closeViewOverlay(e){if(e.target===document.getElementById('viewOverlay'))document.getElementById('viewOverlay').classList.remove('show');}
+
+    // ── DOMContentLoaded ─────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded',function(){
+        populateDropdowns();
+        restoreFilters();
+        initProgDropdown();
+
+        var deptSel=document.getElementById('<%=ddlLectDept.ClientID%>');
+        if(deptSel){
+            if(deptSel.options.length>0&&deptSel.options[0].value===''){deptSel.options[0].disabled=true;deptSel.options[0].style.display='none';}
+            deptSel.style.color=deptSel.value?'#212529':'#6c757d';
         }
-        function sortTable(gvId, colIdx, dir){
-            var table=document.getElementById(gvId);
-            if(!table)return;
-            var tbody=table.querySelector('tbody'); if(!tbody)return;
-            var rows=Array.from(tbody.querySelectorAll('tr:not(.no-results-row)')).filter(function(r){
-                return r.querySelector('td') && !r.querySelector('th');
-            });
-            rows.sort(function(a,b){
-                var av=a.cells[colIdx]?a.cells[colIdx].textContent.trim().toLowerCase():'';
-                var bv=b.cells[colIdx]?b.cells[colIdx].textContent.trim().toLowerCase():'';
-                return dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
-            });
-            var noRes=tbody.querySelector('.no-results-row');
-            rows.forEach(function(r){
-                if(noRes) tbody.insertBefore(r, noRes);
-                else tbody.appendChild(r);
-            });
-        }
-        function sortStudents(){
-            var val=document.getElementById('ddlStudSort').value;
-            sortTable('<%=gvStudents.ClientID%>',val.startsWith('name')?1:0,val.endsWith('asc')?'asc':'desc');
-        }
-        function sortLecturers(){
-            var val=document.getElementById('ddlLectSort').value;
-            sortTable('<%=gvLecturers.ClientID%>',val.startsWith('name')?1:0,val.endsWith('asc')?'asc':'desc');
+        var semEl=document.getElementById('<%=txtStudSem.ClientID%>');
+        if(semEl){
+            semEl.setAttribute('min','1');semEl.setAttribute('max','12');
+            semEl.addEventListener('keydown',function(ev){if(ev.key==='-'||ev.key==='+'||ev.key==='e'||ev.key==='E')ev.preventDefault();});
+            semEl.addEventListener('change',function(){var v=parseInt(this.value)||1;if(v<1)v=1;if(v>12)v=12;this.value=v;});
+            semEl.addEventListener('blur',  function(){var v=parseInt(this.value)||1;if(v<1)v=1;if(v>12)v=12;this.value=v;});
         }
 
-        // ── View card ───────────────────────────────────────────────────
-        function showViewCard(){
-            var vtype=document.getElementById('<%=hfViewType.ClientID%>').value;if(!vtype)return;
-            var code=document.getElementById('<%=hfViewCode.ClientID%>').value;
-            var name=document.getElementById('<%=hfViewName.ClientID%>').value;
-            var email=document.getElementById('<%=hfViewEmail.ClientID%>').value;
-            var contact=document.getElementById('<%=hfViewContact.ClientID%>').value;
-            var addr=document.getElementById('<%=hfViewAddr.ClientID%>').value;
-            var dob=document.getElementById('<%=hfViewDOB.ClientID%>').value;
-            var e1=document.getElementById('<%=hfViewExtra1.ClientID%>').value;
-            var e2=document.getElementById('<%=hfViewExtra2.ClientID%>').value;
-            var status=document.getElementById('<%=hfViewStatus.ClientID%>').value;
-            document.getElementById('viewCardTitle').textContent=vtype==='student'?'Student Details':'Lecturer Details';
-            function r(lbl,val){return '<div class="view-row"><span class="view-lbl">'+lbl+'</span><span class="view-val">'+(val&&val.trim()&&val!=='-'?val:'N/A')+'</span></div>';}
-            
-            var badgeColor = 'bg-danger';
-            if(status === 'Active') badgeColor = 'bg-success';
-            if(status === 'Graduated') badgeColor = 'bg-primary';
-            var badge='<span class="badge '+badgeColor+'">'+status+'</span>';
-            
-            var html=vtype==='student'
-                ?r('Code',code)+r('Name',name)+r('Email',email)+r('Contact',contact)+r('Address',addr)+r('Date of Birth',dob)+r('Program',e1)+r('Semester',e2)+r('Status',badge)
-                :r('Code',code)+r('Name',name)+r('Email',email)+r('Contact',contact)+r('Address',addr)+r('Date of Birth',dob)+r('Department',e1)+r('Status',badge);
-            document.getElementById('viewCardBody').innerHTML=html;
-            document.getElementById('viewOverlay').classList.add('show');
-            document.getElementById('<%=hfViewType.ClientID%>').value='';
-        }
-        function closeViewOverlay(e){if(e.target===document.getElementById('viewOverlay'))document.getElementById('viewOverlay').classList.remove('show');}
+        var activeTab=document.getElementById('<%=hfActiveTab.ClientID%>').value||'students';
+        swapStats(activeTab);
 
-        window.addEventListener('DOMContentLoaded',function(){
-            populateDropdowns();
-            restoreFilters();
+        var tmsg=document.getElementById('<%=hfToastMsg.ClientID%>').value;
+        var ttype=document.getElementById('<%=hfToastType.ClientID%>').value;
+        var reopen=document.getElementById('<%=hfReopenModal.ClientID%>').value;
+        var pendingAction=document.getElementById('<%=hfPendingAction.ClientID%>').value;
+        if(tmsg && !reopen && !pendingAction){
+            showToast(tmsg,ttype||'success');
+        }
+        document.getElementById('<%=hfToastMsg.ClientID%>').value='';
+        document.getElementById('<%=hfToastType.ClientID%>').value='';
+
+        if(reopen==='addStudent')  new bootstrap.Modal(document.getElementById('modalAddStudent')).show();
+        if(reopen==='addLecturer') new bootstrap.Modal(document.getElementById('modalAddLecturer')).show();
+
+        showViewCard();
+        sortStudents();
+        sortLecturers();
+        
+        if(pendingAction==='delete') showDeleteSwal();
+        if (pendingAction === 'toggle') showToggleSwal();
+        if (pendingAction === 'resetpw') showResetPwSwal();
+    });
+
+    var addStudModal=document.getElementById('modalAddStudent');
+    if(addStudModal){
+        addStudModal.addEventListener('show.bs.modal',function(){
+            document.getElementById('<%=hfToastMsg.ClientID%>').value='';
+            document.getElementById('<%=hfToastType.ClientID%>').value='';
+            document.getElementById('<%=hfPendingAction.ClientID%>').value='';
+            document.getElementById('umToast').classList.remove('show');
+        });
+        addStudModal.addEventListener('shown.bs.modal',function(){
             initProgDropdown();
-
-            var deptSel=document.getElementById('<%=ddlLectDept.ClientID%>');
-            if(deptSel){
-                if(deptSel.options.length>0&&deptSel.options[0].value===''){
-                    deptSel.options[0].disabled=true;
-                    deptSel.options[0].style.display='none';
-                }
-                deptSel.style.color=deptSel.value?'#212529':'#6c757d';
-            }
-
-            var semEl=document.getElementById('<%=txtStudSem.ClientID%>');
-            if(semEl){
-                semEl.setAttribute('min','1');semEl.setAttribute('max','12');
-                semEl.addEventListener('keydown',function(ev){if(ev.key==='-'||ev.key==='+'||ev.key==='e'||ev.key==='E')ev.preventDefault();});
-                semEl.addEventListener('change',function(){var v=parseInt(this.value)||1;if(v<1)v=1;if(v>12)v=12;this.value=v;});
-                semEl.addEventListener('blur',  function(){var v=parseInt(this.value)||1;if(v<1)v=1;if(v>12)v=12;this.value=v;});
-            }
-
-            var activeTab=document.getElementById('<%=hfActiveTab.ClientID%>').value||'students';
-            swapStats(activeTab);
-
-            var reopen=document.getElementById('<%=hfReopenModal.ClientID%>').value;
-            if(reopen==='addStudent')  new bootstrap.Modal(document.getElementById('modalAddStudent')).show();
-            if(reopen==='addLecturer') new bootstrap.Modal(document.getElementById('modalAddLecturer')).show();
-
-            var tmsg=document.getElementById('<%=hfToastMsg.ClientID%>').value;
-            var ttype=document.getElementById('<%=hfToastType.ClientID%>').value;
-            if(tmsg)showToast(tmsg,ttype||'success');
-
-            showViewCard();
-
-            sortStudents();
-            sortLecturers();
         });
-
-        var addStudModal=document.getElementById('modalAddStudent');
-        if(addStudModal)addStudModal.addEventListener('shown.bs.modal',function(){initProgDropdown();});
-        document.querySelectorAll('#umTabs a').forEach(function(el){
-            el.addEventListener('shown.bs.tab',function(e){
-                var tab=e.target.getAttribute('href').replace('#tab','').toLowerCase();
-                sessionStorage.setItem('umTab',tab);
-                document.getElementById('<%=hfActiveTab.ClientID%>').value = tab;
-                swapStats(tab);
-            });
+        addStudModal.addEventListener('keydown',function(ev){
+            if(ev.key==='Enter'){
+                var tag=ev.target.tagName.toLowerCase();
+                if(tag==='input'||tag==='select'||tag==='textarea') ev.preventDefault();
+            }
         });
+    }
+    var addLectModal=document.getElementById('modalAddLecturer');
+    if(addLectModal){
+        addLectModal.addEventListener('show.bs.modal',function(){
+            document.getElementById('<%=hfToastMsg.ClientID%>').value='';
+            document.getElementById('<%=hfToastType.ClientID%>').value='';
+            document.getElementById('<%=hfPendingAction.ClientID%>').value='';
+            document.getElementById('umToast').classList.remove('show');
+        });
+        addLectModal.addEventListener('keydown',function(ev){
+            if(ev.key==='Enter'){
+                var tag=ev.target.tagName.toLowerCase();
+                if(tag==='input'||tag==='select'||tag==='textarea') ev.preventDefault();
+            }
+        });
+    }
+    document.querySelectorAll('#umTabs a').forEach(function(el){
+        el.addEventListener('shown.bs.tab',function(e){
+            var tab=e.target.getAttribute('href').replace('#tab','').toLowerCase();
+            sessionStorage.setItem('umTab',tab);
+            document.getElementById('<%=hfActiveTab.ClientID%>').value = tab;
+            swapStats(tab);
+        });
+    });
     </script>
     </div>
 </asp:Content>

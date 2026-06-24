@@ -231,6 +231,15 @@ namespace SchoolSystem
         protected global::System.Web.UI.WebControls.Button btnDoToggle;
 
         /// <summary>
+        /// btnDoResetPw control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnDoResetPw;
+
+        /// <summary>
         /// litDropdownData control.
         /// </summary>
         /// <remarks>
