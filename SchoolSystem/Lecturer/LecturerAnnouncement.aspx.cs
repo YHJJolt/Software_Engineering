@@ -10,13 +10,33 @@ namespace SchoolSystem
 {
     public partial class LecturerAnnouncement : System.Web.UI.Page
     {
+        // Effective academic session for this page: the URL value if present, otherwise the
+        // current global session. This lets the page work whether reached from the course
+        // dashboard (no session in URL) or the courses list (session in URL).
+        protected string EffectiveSession = "";
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            EffectiveSession = Request.QueryString["session"];
+            if (string.IsNullOrEmpty(EffectiveSession))
+                EffectiveSession = GetCurrentSession();
+
             if (!IsPostBack)
             {
                 LecturerCourseMaster master = (LecturerCourseMaster)this.Master;
                 master.PageTitle = "Announcements";
                 EnsureAnnouncementSessionColumn();
+            }
+        }
+
+        private static string GetCurrentSession()
+        {
+            string connStr = ConfigurationManager.ConnectionStrings["SchoolSystemDB"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand("SELECT setting_value FROM SystemSettings WHERE setting_key = 'current_session'", conn))
+            {
+                conn.Open();
+                return cmd.ExecuteScalar()?.ToString() ?? "";
             }
         }
 

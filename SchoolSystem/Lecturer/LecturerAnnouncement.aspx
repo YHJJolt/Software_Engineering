@@ -66,15 +66,11 @@
 // @ts-nocheck
 let rawData = [];
 let currentCourseId = <%= Request.QueryString["id"] ?? "0" %>
-    let currentSession = '<%= Uri.EscapeDataString(Request.QueryString["session"] ?? "") %>';
+    let currentSession = '<%= Uri.EscapeDataString(EffectiveSession ?? "") %>';
 
         $(document).ready(function () {
             if (currentCourseId == 0) {
                 alert("Course ID is missing in URL. Please access via course dashboard.");
-                return;
-            }
-            if (!decodeURIComponent(currentSession)) {
-                alert("Academic session is missing in URL. Please access via course dashboard.");
                 return;
             }
             loadAnnouncements();

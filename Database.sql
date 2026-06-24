@@ -922,3 +922,8 @@ SELECT * FROM [Announcement];
 SELECT * FROM [CourseGrade];
 SELECT * FROM [Grades];
 SELECT * FROM [CourseAssignment_Session];
+
+
+USE SchoolSystemDB;
+GO
+
